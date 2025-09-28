@@ -14,12 +14,17 @@ interface ArticleResult {
   confidence: number
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
-})
-
-console.log('OpenAI instance created:', openai.chat.completions.create)
+// Lazy initialization of OpenAI client
+const getOpenAIClient = () => {
+  if (!process.env.VITE_OPENAI_API_KEY) {
+    throw new Error('No API key available')
+  }
+  
+  return new OpenAI({
+    apiKey: process.env.VITE_OPENAI_API_KEY,
+    dangerouslyAllowBrowser: true,
+  })
+}
 
 const calculateConfidence = (data: ArticleData): number => {
   if (!data.price) return 0
@@ -113,6 +118,7 @@ MACD: ${data.macd ? `MACD: ${data.macd.MACD}, Signal: ${data.macd.signal}, Histo
 
 Write a concise, professional analysis (2-3 sentences) that explains the current market situation and provides actionable insights. Make it sound natural and engaging, not like a template.`
 
+    const openai = getOpenAIClient()
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
