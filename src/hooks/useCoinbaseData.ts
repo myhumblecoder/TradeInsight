@@ -3,13 +3,13 @@ import logger from '../utils/logger'
 
 interface CoinbaseData {
   price: number | null
-  candles: any[]
+  candles: number[][]
   error: string | null
   loading: boolean
 }
 
 // Simple in-memory cache
-const cache = new Map<string, { data: { price: number | null, candles: any[] }, timestamp: number }>()
+const cache = new Map<string, { data: { price: number | null, candles: number[][] }, timestamp: number }>()
 const CACHE_DURATION = 2 * 60 * 1000 // 2 minutes for price/candles
 
 // Map CoinGecko symbols to Coinbase product IDs
@@ -23,7 +23,7 @@ const coinbaseProductMap: Record<string, string> = {
 
 export const useCoinbaseData = (symbol: string, granularity: number = 86400, refreshTrigger: number = 0): CoinbaseData => {
   const [price, setPrice] = useState<number | null>(null)
-  const [candles, setCandles] = useState<any[]>([])
+  const [candles, setCandles] = useState<number[][]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 

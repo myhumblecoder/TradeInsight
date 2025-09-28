@@ -30,7 +30,7 @@ export function Detail() {
   const indicators = useMemo(() => {
     if (!candles || !Array.isArray(candles) || candles.length === 0) return null
 
-    const closes = candles.map((candle: any[]) => candle[4]) // Close prices
+    const closes = candles.map((candle: number[]) => candle[4]) // Close prices
 
     return {
       rsi: calculateRSI(closes),
