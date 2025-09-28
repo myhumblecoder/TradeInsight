@@ -4,7 +4,7 @@ import { UpgradeButton } from '../UpgradeButton'
 import { useAuth } from '../../hooks/useAuth'
 import * as stripeService from '../../services/stripe'
 
-vi.mock('../../contexts/AuthContext')
+vi.mock('../../hooks/useAuth')
 vi.mock('../../services/stripe')
 
 const mockUseAuth = vi.mocked(useAuth)

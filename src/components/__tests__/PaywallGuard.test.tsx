@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { PaywallGuard } from '../PaywallGuard'
 import { useAuth } from '../../hooks/useAuth'
 
-vi.mock('../../contexts/AuthContext')
+vi.mock('../../hooks/useAuth')
 const mockUseAuth = vi.mocked(useAuth)
 
 const PremiumContent = () => <div data-testid="premium-content">Premium Feature</div>

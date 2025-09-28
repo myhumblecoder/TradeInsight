@@ -3,7 +3,10 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { supabase } from '../config/supabase'
 import type { AuthContextType, User, Subscription } from '../types/auth'
 
-export const AuthContext = createContext<AuthContextType | null>(null)
+const AuthContext = createContext<AuthContextType | null>(null)
+
+// Export for useAuth hook
+export { AuthContext }
 
 interface AuthProviderProps {
   children: React.ReactNode

@@ -74,7 +74,7 @@ describe('Stripe Service', () => {
       const mockStripe = {
         redirectToCheckout: vi.fn().mockResolvedValue({ error: null })
       }
-      mockLoadStripe.mockResolvedValue(mockStripe as any)
+      mockLoadStripe.mockResolvedValue(mockStripe as unknown as Awaited<ReturnType<typeof loadStripe>>)
 
       await redirectToCheckout('cs_test_123')
 
@@ -96,7 +96,7 @@ describe('Stripe Service', () => {
           error: { message: 'Payment failed' }
         })
       }
-      mockLoadStripe.mockResolvedValue(mockStripe as any)
+      mockLoadStripe.mockResolvedValue(mockStripe as unknown as Awaited<ReturnType<typeof loadStripe>>)
 
       await expect(redirectToCheckout('cs_test_123')).rejects.toThrow('Payment failed')
     })
