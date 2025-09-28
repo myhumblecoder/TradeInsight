@@ -3,45 +3,77 @@ import logger from '../utils/logger'
 
 interface CoinbaseData {
   price: number | null
-  candles: any[]
+  candles: number[][]
   error: string | null
   loading: boolean
 }
 
-export const useCoinbaseData = (symbol: string): CoinbaseData => {
+// Simple in-memory cache
+const cache = new Map<string, { data: { price: number | null, candles: number[][] }, timestamp: number }>()
+const CACHE_DURATION = 2 * 60 * 1000 // 2 minutes for price/candles
+
+// Map CoinGecko symbols to Coinbase product IDs
+const coinbaseProductMap: Record<string, string> = {
+  bitcoin: 'BTC-USD',
+  ethereum: 'ETH-USD',
+  xrp: 'XRP-USD',
+  ripple: 'XRP-USD', // In case API returns 'ripple' as ID
+  // Add more as needed
+}
+
+export const useCoinbaseData = (symbol: string, granularity: number = 86400, refreshTrigger: number = 0): CoinbaseData => {
   const [price, setPrice] = useState<number | null>(null)
-  const [candles, setCandles] = useState<any[]>([])
+  const [candles, setCandles] = useState<number[][]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const cacheKey = `${symbol}-${granularity}`
+    const now = Date.now()
+    const cached = cache.get(cacheKey)
+
+    if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+      setPrice(cached.data.price)
+      setCandles(cached.data.candles)
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     const fetchData = async () => {
       try {
+        const days = granularity / 86400
+
         // Fetch price from Coinbase, fallback to CoinGecko
-        let btcPrice = null
-        try {
-          const priceRes = await fetch(
-            `https://api.coinbase.com/v2/prices/BTC-USD/spot`
-          )
-          if (priceRes.ok) {
-            const priceData = await priceRes.json()
-            btcPrice = parseFloat(priceData.data?.amount) || null
+        let currentPrice = null
+        const coinbaseProduct = coinbaseProductMap[symbol]
+        if (coinbaseProduct) {
+          try {
+            const priceRes = await fetch(
+              `https://api.coinbase.com/v2/prices/${coinbaseProduct}/spot`
+            )
+            if (priceRes.ok) {
+              const priceData = await priceRes.json()
+              currentPrice = parseFloat(priceData.data?.amount) || null
+            }
+          } catch (err) {
+            logger.warn({ error: err instanceof Error ? err.message : String(err) }, `Coinbase price API failed for ${coinbaseProduct}, trying CoinGecko`)
           }
-        } catch (err) {
-          logger.warn({ error: err }, 'Coinbase price API failed, trying CoinGecko')
         }
 
-        if (btcPrice === null) {
+        if (currentPrice === null) {
           try {
             const fallbackRes = await fetch(
-              `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`
+              `/api/simple/price?ids=${symbol}&vs_currencies=usd`
             )
             if (fallbackRes.ok) {
               const data = await fallbackRes.json()
-              btcPrice = data.bitcoin?.usd || null
+              currentPrice = data[symbol]?.usd || null
+            } else if (fallbackRes.status === 429) {
+              throw new Error('Rate limited, please try again later.')
             }
           } catch (err) {
-            logger.error({ error: err }, 'Fallback price API failed')
+            logger.error({ error: err instanceof Error ? err.message : String(err) }, 'Fallback price API failed')
             setError('Failed to fetch price data')
             setLoading(false)
             return
@@ -50,7 +82,7 @@ export const useCoinbaseData = (symbol: string): CoinbaseData => {
 
         // Fetch candles from CoinGecko (free alternative)
         const candlesRes = await fetch(
-          `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1`
+          `/api/coins/${symbol}/market_chart?vs_currency=usd&days=${days}`
         )
         let candlesData = []
         if (candlesRes.ok) {
@@ -58,24 +90,30 @@ export const useCoinbaseData = (symbol: string): CoinbaseData => {
           // CoinGecko returns {prices: [[timestamp, price], ...]}
           candlesData = data.prices?.map(([ts, price]: [number, number]) => [ts, price, price, price, price]) || [] // Mock OHLC as close
         } else {
-          logger.warn({ status: candlesRes.status }, 'Candles API failed')
+          if (candlesRes.status === 429) {
+            throw new Error('Rate limited, please try again later.')
+          }
+          logger.warn({ status: candlesRes.status, statusText: candlesRes.statusText }, 'Candles API failed')
           setError('Failed to fetch candles data')
           setLoading(false)
           return
         }
 
-        setPrice(btcPrice)
+        setPrice(currentPrice)
         setCandles(candlesData)
+        if (process.env.NODE_ENV !== 'test') {
+          cache.set(cacheKey, { data: { price: currentPrice, candles: candlesData }, timestamp: now })
+        }
       } catch (err) {
-        logger.error({ error: err }, 'Failed to fetch Coinbase data')
-        setError('Failed to fetch data')
+        logger.error({ error: err instanceof Error ? err.message : String(err) }, 'Failed to fetch Coinbase data')
+        setError(err instanceof Error ? err.message : 'Failed to fetch data')
       } finally {
         setLoading(false)
       }
     }
 
     fetchData()
-  }, [symbol])
+  }, [symbol, granularity, refreshTrigger])
 
   return { price, candles, error, loading }
 }

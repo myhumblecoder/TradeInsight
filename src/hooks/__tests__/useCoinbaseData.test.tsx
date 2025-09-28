@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, type MockedFunction } from 'vitest'
 import { useCoinbaseData } from '../useCoinbaseData'
 
 // Mock fetch
@@ -20,17 +20,17 @@ describe('useCoinbaseData', () => {
       [1640998800000, 50200, 50200, 50200, 50200],
     ]
 
-    ;(global.fetch as any)
+    ;(global.fetch as MockedFunction<typeof fetch>)
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockPriceResponse),
-      })
+      } as Response)
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockCandlesResponse),
-      })
+      } as Response)
 
-    const { result } = renderHook(() => useCoinbaseData('BTC'))
+    const { result } = renderHook(() => useCoinbaseData('bitcoin'))
 
     await waitFor(() => {
       expect(result.current.price).toBe(50000)
@@ -39,10 +39,10 @@ describe('useCoinbaseData', () => {
   })
 
   it('should handle API errors', async () => {
-    ;(global.fetch as any).mockResolvedValue({
+    ;(global.fetch as MockedFunction<typeof fetch>).mockResolvedValue({
       ok: false,
       status: 503,
-    })
+    } as Response)
 
     const { result } = renderHook(() => useCoinbaseData('BTC'))
 
