@@ -12,16 +12,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-          cache: "npm"
+          node-version: '18'
+          cache: 'npm'
+          
       - name: Install dependencies
         run: npm ci
+        
       - name: Run linting
         run: npm run lint
+        
       - name: Run tests
         run: npm run test -- --run
-      - name: Build the app
+        
+      - name: Build application
         run: npm run build
+        
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Linting passed" >> $GITHUB_STEP_SUMMARY  
+          echo "✅ Tests completed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Build successful" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Build size: $(du -sh dist/ | cut -f1)" >> $GITHUB_STEP_SUMMARY

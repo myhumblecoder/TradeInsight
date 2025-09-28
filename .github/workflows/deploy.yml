@@ -54,10 +54,12 @@ jobs:
       
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
-        if: always() && secrets.CODECOV_TOKEN != ''
+        if: always() && env.CODECOV_TOKEN != ''
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       
       - name: Build application
         run: npm run build
@@ -139,7 +141,7 @@ jobs:
     steps:
       - name: Notify deployment status
         uses: 8398a7/action-slack@v3
-        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        if: always() && env.SLACK_WEBHOOK_URL != ''
         with:
           status: ${{ job.status }}
           text: 'TradeInsight deployment completed'

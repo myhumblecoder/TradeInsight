@@ -81,13 +81,15 @@ jobs:
       
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
-        if: ${{ secrets.VERCEL_TOKEN }}
+        if: env.VERCEL_TOKEN != ''
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
           working-directory: ./
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       
       - name: Deployment Summary
         run: |
@@ -95,7 +97,7 @@ jobs:
           echo "✅ Security scan completed" >> $GITHUB_STEP_SUMMARY
           echo "✅ Tests passed with coverage" >> $GITHUB_STEP_SUMMARY
           echo "✅ Build artifacts generated" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ secrets.VERCEL_TOKEN }}" != "" ]; then
+          if [ "$VERCEL_TOKEN" != "" ]; then
             echo "✅ Deployed to Vercel" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ Vercel deployment skipped (no token)" >> $GITHUB_STEP_SUMMARY
@@ -103,3 +105,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Build Size:** $(du -sh dist/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
           echo "**Node Version:** ${{ env.NODE_VERSION }}" >> $GITHUB_STEP_SUMMARY
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
