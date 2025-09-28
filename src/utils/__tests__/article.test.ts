@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { generateArticle, generateLLMArticle, getCacheInfo, clearCache } from '../article';
+import { ValidationError } from '../validation';
 
 describe('generateArticle', () => {
 
@@ -30,6 +31,51 @@ describe('generateArticle', () => {
     expect(result.text).toContain('Data unavailable');
     expect(result.confidence).toBe(0);
   });
+
+  it('should throw ValidationError for invalid data', () => {
+    const invalidData = {
+      price: 'not-a-number', // Should be number or null
+      rsi: null,
+      ema12: null,
+      ema26: null,
+      macd: null
+    };
+
+    expect(() => generateArticle(invalidData)).toThrow(ValidationError);
+  });
+
+  it('should throw ValidationError for negative price', () => {
+    const invalidData = {
+      price: -50000, // Should be positive
+      rsi: null,
+      ema12: null,
+      ema26: null,
+      macd: null
+    };
+
+    expect(() => generateArticle(invalidData)).toThrow(ValidationError);
+  });
+
+  it('should throw ValidationError for RSI out of range', () => {
+    const invalidDataHigh = {
+      price: 50000,
+      rsi: 150, // Should be 0-100
+      ema12: null,
+      ema26: null,
+      macd: null
+    };
+
+    const invalidDataLow = {
+      price: 50000,
+      rsi: -10, // Should be 0-100
+      ema12: null,
+      ema26: null,
+      macd: null
+    };
+
+    expect(() => generateArticle(invalidDataHigh)).toThrow(ValidationError);
+    expect(() => generateArticle(invalidDataLow)).toThrow(ValidationError);
+  });
 });
 
 describe('generateLLMArticle', () => {
@@ -49,6 +95,19 @@ describe('generateLLMArticle', () => {
     expect(typeof result.text).toBe('string');
     expect(typeof result.confidence).toBe('number');
     expect(result.text).toContain('Bitcoin is currently trading at $50000');
+  });
+
+  it('should throw ValidationError for invalid LLM data', async () => {
+    const invalidData = {
+      price: 'not-a-number',
+      rsi: null,
+      ema12: null,
+      ema26: null,
+      macd: null
+    };
+
+    await expect(generateLLMArticle(invalidData, false))
+      .rejects.toThrow(ValidationError);
   });
 
   it('should fallback to template when no API key is available', async () => {

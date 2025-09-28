@@ -1,25 +1,29 @@
 import { loadStripe } from '@stripe/stripe-js'
 import { supabase } from '../config/supabase'
+import { 
+  validateOrThrow, 
+  StripeWebhookEventSchema, 
+  CheckoutSessionParamsSchema,
+  ValidationError
+} from '../utils/validation'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
-export interface CheckoutSessionParams {
-  priceId: string
-  userId: string
-  userEmail: string
-  successUrl?: string
-  cancelUrl?: string
-}
+// Re-export the validated type for backwards compatibility
+export type { CheckoutSessionParams } from '../utils/validation'
 
 export interface WebhookResult {
   success: boolean
   message: string
 }
 
-export const createCheckoutSession = async (params: CheckoutSessionParams): Promise<string> => {
-  const { priceId, userId, userEmail, successUrl, cancelUrl } = params
+export const createCheckoutSession = async (params: unknown): Promise<string> => {
+  const validatedParams = validateOrThrow(CheckoutSessionParamsSchema, params, 'checkout session parameters')
+  const { priceId, userId, userEmail, successUrl, cancelUrl } = validatedParams
 
-  const response = await fetch('/api/create-checkout-session', {
+  const apiEndpoint = import.meta.env.VITE_API_BASE_URL
+  const endpoint = apiEndpoint ? `${apiEndpoint}/api/create-checkout-session` : '/api/create-checkout-session'
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -59,9 +63,10 @@ export const redirectToCheckout = async (sessionId: string): Promise<void> => {
 
 export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<WebhookResult> => {
   try {
-    const payload = webhookData as { type: string; data: { object: unknown } }
+    // Validate the webhook payload structure
+    const payload = validateOrThrow(StripeWebhookEventSchema, webhookData, 'Stripe webhook event')
     const { type, data } = payload
-    const subscription = data.object as Record<string, unknown>
+    const subscription = data.object
 
     switch (type) {
       case 'customer.subscription.created':
@@ -71,13 +76,13 @@ export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<W
         }
 
         const subscriptionData = {
-          user_id: (subscription.metadata as Record<string, string>)?.userId,
-          stripe_subscription_id: subscription.id as string,
-          status: subscription.status as string,
-          price_id: ((subscription.items as { data: Array<{ price: { id: string } }> })?.data?.[0]?.price?.id) as string,
-          current_period_start: new Date((subscription.current_period_start as number) * 1000).toISOString(),
-          current_period_end: new Date((subscription.current_period_end as number) * 1000).toISOString(),
-          cancel_at_period_end: (subscription.cancel_at_period_end as boolean) || false,
+          user_id: subscription.metadata?.userId || null,
+          stripe_subscription_id: subscription.id,
+          status: subscription.status,
+          price_id: subscription.items.data[0]?.price.id || null,
+          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          cancel_at_period_end: subscription.cancel_at_period_end,
           updated_at: new Date().toISOString(),
         }
 
@@ -111,7 +116,7 @@ export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<W
             status: 'canceled',
             updated_at: new Date().toISOString(),
           })
-          .eq('stripe_subscription_id', subscription.id as string)
+          .eq('stripe_subscription_id', subscription.id)
 
         if (deleteError) {
           console.error('Error updating subscription status:', deleteError)
@@ -126,6 +131,14 @@ export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<W
     }
   } catch (error) {
     console.error('Webhook processing error:', error)
+    
+    if (error instanceof ValidationError) {
+      return {
+        success: false,
+        message: `Validation error: ${error.message}. Errors: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`
+      }
+    }
+    
     return {
       success: false,
       message: `Error processing webhook: ${error instanceof Error ? error.message : 'Unknown error'}`,

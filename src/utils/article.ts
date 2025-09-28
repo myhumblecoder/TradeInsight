@@ -1,21 +1,18 @@
 import OpenAI from 'openai'
+import { 
+  validateOrThrow, 
+  ArticleDataSchema, 
+  OllamaResponseSchema, 
+  OpenAIResponseSchema,
+  type ArticleData,
+  type LLMResponse
+} from './validation'
 
 // LLM Provider Types
 type LLMProvider = 'openai' | 'ollama' | 'template'
 
-interface LLMResponse {
-  text: string
-  provider: LLMProvider
-}
-
-interface ArticleData {
-  price: number | null
-  rsi: number | null
-  ema12: number | null
-  ema26: number | null
-  macd: { MACD: number; signal: number; histogram: number } | null
-  cryptoName?: string
-}
+// Re-export validated types for backwards compatibility
+export type { ArticleData, LLMResponse } from './validation'
 
 interface ArticleResult {
   text: string
@@ -65,7 +62,7 @@ const cleanExpiredCache = () => {
 
 // Ollama client function
 const callOllama = async (prompt: string, model: string = 'llama3.1:8b'): Promise<string> => {
-  const ollamaUrl = process.env.VITE_OLLAMA_URL || 'http://localhost:11434'
+  const ollamaUrl = import.meta.env.VITE_OLLAMA_URL || 'http://localhost:11434'
   
   const response = await fetch(`${ollamaUrl}/api/generate`, {
     method: 'POST',
@@ -83,18 +80,19 @@ const callOllama = async (prompt: string, model: string = 'llama3.1:8b'): Promis
     throw new Error(`Ollama API failed: ${response.status} ${response.statusText}`)
   }
 
-  const data = await response.json()
+  const rawData = await response.json()
+  const data = validateOrThrow(OllamaResponseSchema, rawData, 'Ollama API response')
   return data.response?.trim() || ''
 }
 
 // OpenAI client function  
 const callOpenAI = async (prompt: string): Promise<string> => {
-  if (!process.env.VITE_OPENAI_API_KEY) {
+  if (!import.meta.env.VITE_OPENAI_API_KEY) {
     throw new Error('No OpenAI API key available')
   }
   
   const openai = new OpenAI({
-    apiKey: process.env.VITE_OPENAI_API_KEY,
+    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
     dangerouslyAllowBrowser: true,
   })
 
@@ -105,7 +103,9 @@ const callOpenAI = async (prompt: string): Promise<string> => {
     temperature: 0.7,
   })
 
-  const text = completion.choices[0]?.message?.content?.trim()
+  const validatedResponse = validateOrThrow(OpenAIResponseSchema, completion, 'OpenAI API response')
+  const text = validatedResponse.choices[0]?.message?.content?.trim()
+  
   if (!text) {
     throw new Error('No response from OpenAI')
   }
@@ -177,25 +177,26 @@ const calculateConfidence = (data: ArticleData): number => {
   return Math.max(0, Math.min(100, confidence))
 }
 
-export const generateArticle = (data: ArticleData): ArticleResult => {
-  if (!data.price) {
+export const generateArticle = (data: unknown): ArticleResult => {
+  const validatedData = validateOrThrow(ArticleDataSchema, data, 'article generation data')
+  if (!validatedData.price) {
     return {
       text: 'Data unavailable. Please try again later.',
       confidence: 0,
     }
   }
 
-  const cryptoName = data.cryptoName || 'Bitcoin'
+  const cryptoName = validatedData.cryptoName || 'Bitcoin'
 
-  let text = `${cryptoName} is currently trading at $${data.price}. `
+  let text = `${cryptoName} is currently trading at $${validatedData.price}. `
 
   let confidence = 50 // Base
 
-  if (data.rsi) {
-    if (data.rsi > 70) {
+  if (validatedData.rsi) {
+    if (validatedData.rsi > 70) {
       text += 'The RSI indicates overbought conditions, suggesting a potential sell signal. '
       confidence += 10
-    } else if (data.rsi < 30) {
+    } else if (validatedData.rsi < 30) {
       text += 'The RSI indicates oversold conditions, suggesting a potential buy signal. '
       confidence += 10
     } else {
@@ -203,8 +204,8 @@ export const generateArticle = (data: ArticleData): ArticleResult => {
     }
   }
 
-  if (data.ema12 && data.ema26) {
-    if (data.ema12 > data.ema26) {
+  if (validatedData.ema12 && validatedData.ema26) {
+    if (validatedData.ema12 > validatedData.ema26) {
       text += 'The short-term EMA is above the long-term EMA, indicating bullish momentum. '
       confidence += 15
     } else {
@@ -213,8 +214,8 @@ export const generateArticle = (data: ArticleData): ArticleResult => {
     }
   }
 
-  if (data.macd) {
-    if (data.macd.histogram > 0) {
+  if (validatedData.macd) {
+    if (validatedData.macd.histogram > 0) {
       text += 'The MACD histogram is positive, supporting upward momentum. '
       confidence += 15
     } else {
@@ -231,17 +232,18 @@ export const generateArticle = (data: ArticleData): ArticleResult => {
 }
 
 export const generateLLMArticle = async (
-  data: ArticleData, 
+  data: unknown, 
   useEnhanced: boolean = false, 
   preferredProvider: LLMProvider = 'ollama'
 ): Promise<ArticleResult> => {
+  const validatedData = validateOrThrow(ArticleDataSchema, data, 'LLM article generation data')
   // Fallback to template if not using enhanced mode
   if (!useEnhanced) {
-    return generateArticle(data)
+    return generateArticle(validatedData)
   }
 
   // Check cache first
-  const cacheKey = generateCacheKey(data, preferredProvider)
+  const cacheKey = generateCacheKey(validatedData, preferredProvider)
   const cachedEntry = responseCache.get(cacheKey)
   
   if (cachedEntry && isCacheValid(cachedEntry)) {
@@ -255,18 +257,18 @@ export const generateLLMArticle = async (
   }
 
   try {
-    const prompt = `Generate a natural, engaging market analysis article for ${data.cryptoName || 'Bitcoin'} based on the following technical data:
+    const prompt = `Generate a natural, engaging market analysis article for ${validatedData.cryptoName || 'Bitcoin'} based on the following technical data:
 
-Price: $${data.price}
-RSI: ${data.rsi || 'N/A'}
-EMA 12: ${data.ema12 || 'N/A'}
-EMA 26: ${data.ema26 || 'N/A'}
-MACD: ${data.macd ? `MACD: ${data.macd.MACD}, Signal: ${data.macd.signal}, Histogram: ${data.macd.histogram}` : 'N/A'}
+Price: $${validatedData.price}
+RSI: ${validatedData.rsi || 'N/A'}
+EMA 12: ${validatedData.ema12 || 'N/A'}
+EMA 26: ${validatedData.ema26 || 'N/A'}
+MACD: ${validatedData.macd ? `MACD: ${validatedData.macd.MACD}, Signal: ${validatedData.macd.signal}, Histogram: ${validatedData.macd.histogram}` : 'N/A'}
 
 Write a concise, professional analysis (2-3 sentences) that explains the current market situation and provides actionable insights. Make it sound natural and engaging, not like a template.`
 
     const llmResponse = await callLLM(prompt, preferredProvider)
-    const confidence = calculateConfidence(data)
+    const confidence = calculateConfidence(validatedData)
     const result = { text: llmResponse.text, confidence }
 
     // Cache the successful result
@@ -279,7 +281,7 @@ Write a concise, professional analysis (2-3 sentences) that explains the current
     return result
   } catch (error) {
     console.warn('All LLM providers failed, falling back to template:', error)
-    return generateArticle(data)
+    return generateArticle(validatedData)
   }
 }
 

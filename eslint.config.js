@@ -22,6 +22,6 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    settings: { react: { version: '18.3' } },
+    settings: { react: { version: '19.1' } },
   },
 ])
