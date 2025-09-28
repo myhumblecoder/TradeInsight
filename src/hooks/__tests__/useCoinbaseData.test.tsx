@@ -30,7 +30,7 @@ describe('useCoinbaseData', () => {
         json: () => Promise.resolve(mockCandlesResponse),
       })
 
-    const { result } = renderHook(() => useCoinbaseData('BTC'))
+    const { result } = renderHook(() => useCoinbaseData('bitcoin'))
 
     await waitFor(() => {
       expect(result.current.price).toBe(50000)

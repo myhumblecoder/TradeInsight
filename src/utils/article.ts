@@ -4,6 +4,7 @@ interface ArticleData {
   ema12: number | null
   ema26: number | null
   macd: { MACD: number; signal: number; histogram: number } | null
+  cryptoName?: string
 }
 
 interface ArticleResult {
@@ -19,7 +20,9 @@ export const generateArticle = (data: ArticleData): ArticleResult => {
     }
   }
 
-  let text = `Bitcoin is currently trading at $${data.price}. `
+  const cryptoName = data.cryptoName || 'Bitcoin'
+
+  let text = `${cryptoName} is currently trading at $${data.price}. `
 
   let confidence = 50 // Base
 

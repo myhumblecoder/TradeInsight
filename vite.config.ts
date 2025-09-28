@@ -4,6 +4,15 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default (defineConfig as any)({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.coingecko.com/api/v3',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
