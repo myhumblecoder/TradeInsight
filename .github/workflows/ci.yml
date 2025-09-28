@@ -31,6 +31,28 @@ jobs:
       - name: Build application
         run: npm run build
         
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '0'
+          
+      - name: Upload security scan results
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        
       - name: Test Summary
         if: always()
         run: |
@@ -38,4 +60,5 @@ jobs:
           echo "✅ Linting passed" >> $GITHUB_STEP_SUMMARY  
           echo "✅ Tests completed" >> $GITHUB_STEP_SUMMARY
           echo "✅ Build successful" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Security scan completed" >> $GITHUB_STEP_SUMMARY
           echo "📦 Build size: $(du -sh dist/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
