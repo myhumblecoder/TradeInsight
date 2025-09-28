@@ -29,7 +29,7 @@ const localStorageMock = {
 global.localStorage = localStorageMock
 
 // Handle unhandled promise rejections in tests
-process.on('unhandledRejection', (reason, _promise) => {
+process.on('unhandledRejection', (reason) => {
   // Ignore logger-related unhandled rejections in tests
   if (reason && typeof reason === 'object' && 'message' in reason) {
     const message = String(reason.message)
@@ -44,7 +44,7 @@ process.on('unhandledRejection', (reason, _promise) => {
 const originalConsoleError = console.error
 const originalConsoleWarn = console.warn
 
-console.error = (...args: any[]) => {
+console.error = (...args: unknown[]) => {
   // Filter out logger-related errors
   if (args.some(arg => typeof arg === 'string' && (arg.includes('pino') || arg.includes('logger')))) {
     return
@@ -52,7 +52,7 @@ console.error = (...args: any[]) => {
   originalConsoleError(...args)
 }
 
-console.warn = (...args: any[]) => {
+console.warn = (...args: unknown[]) => {
   // Filter out logger-related warnings
   if (args.some(arg => typeof arg === 'string' && (arg.includes('pino') || arg.includes('logger')))) {
     return
