@@ -10,6 +10,10 @@ const logger = pino({
       },
     },
   }),
+  // Ensure synchronous logging in tests to avoid unhandled promise rejections
+  ...(process.env.NODE_ENV === 'test' && {
+    sync: true,
+  }),
 })
 
 export default logger
