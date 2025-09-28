@@ -24,11 +24,11 @@ describe('useCoinbaseData', () => {
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockPriceResponse),
-      })
+      } as Response)
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockCandlesResponse),
-      })
+      } as Response)
 
     const { result } = renderHook(() => useCoinbaseData('bitcoin'))
 
