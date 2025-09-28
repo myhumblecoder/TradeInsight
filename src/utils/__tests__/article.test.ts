@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateArticle, generateLLMArticle } from '../article';
+import { generateArticle, generateLLMArticle, getCacheInfo, clearCache } from '../article';
 
 describe('generateArticle', () => {
 
@@ -53,7 +53,10 @@ describe('generateLLMArticle', () => {
 
   it('should fallback to template when no API key is available', async () => {
     const originalKey = process.env.VITE_OPENAI_API_KEY;
+    const originalOllamaUrl = process.env.VITE_OLLAMA_URL;
+    
     delete process.env.VITE_OPENAI_API_KEY;
+    process.env.VITE_OLLAMA_URL = 'http://localhost:99999'; // Non-existent port
 
     const data = {
       price: 50000,
@@ -63,12 +66,24 @@ describe('generateLLMArticle', () => {
       macd: { MACD: 200, signal: 150, histogram: 50 },
     };
 
-    const result = await generateLLMArticle(data, true);
+    const result = await generateLLMArticle(data, true, 'openai'); // Use OpenAI provider to avoid Ollama
 
     expect(result).toHaveProperty('text');
     expect(result).toHaveProperty('confidence');
     expect(result.text).toContain('Bitcoin is currently trading at $50000');
 
     process.env.VITE_OPENAI_API_KEY = originalKey;
+    process.env.VITE_OLLAMA_URL = originalOllamaUrl;
+  }, 10000); // Increase timeout
+});
+
+describe('LLM Cache', () => {
+  it('should provide cache utilities', () => {
+    clearCache();
+    
+    const cacheInfo = getCacheInfo();
+    expect(cacheInfo.size).toBe(0);
+    expect(Array.isArray(cacheInfo.entries)).toBe(true);
+    expect(typeof cacheInfo.duration).toBe('number');
   });
 });

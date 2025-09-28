@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useState, useMemo, useEffect } from 'react'
 import { useCoinbaseData } from '../hooks/useCoinbaseData'
 import { calculateRSI, calculateEMA, calculateMACD } from '../utils/indicators'
-import { generateArticle, generateLLMArticle } from '../utils/article'
+import { generateArticle, generateLLMArticle, getCacheInfo, clearCache } from '../utils/article'
 import { Article } from './Article'
 import { DarkModeToggle } from './DarkModeToggle'
 import { useTheme } from '../contexts/ThemeContext'
@@ -24,6 +24,7 @@ export function Detail() {
   const [granularity, setGranularity] = useState(86400)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [enhancedMode, setEnhancedMode] = useState(false)
+  const [llmProvider, setLlmProvider] = useState<'ollama' | 'openai'>('ollama')
   const [article, setArticle] = useState({ text: 'Loading...', confidence: 0 })
   const [articleLoading, setArticleLoading] = useState(false)
   const { price, candles, error, loading } = useCoinbaseData(cryptoId, granularity, refreshTrigger)
@@ -63,7 +64,7 @@ export function Detail() {
         }
 
         const result = enhancedMode 
-          ? await generateLLMArticle(data, true)
+          ? await generateLLMArticle(data, true, llmProvider)
           : generateArticle(data)
 
         setArticle(result)
@@ -85,7 +86,7 @@ export function Detail() {
     }
 
     generateArticleAsync()
-  }, [price, indicators, cryptoName, enhancedMode])
+  }, [price, indicators, cryptoName, enhancedMode, llmProvider])
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
   if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
@@ -115,7 +116,7 @@ export function Detail() {
               Refresh
             </button>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <input
                 type="checkbox"
@@ -127,7 +128,37 @@ export function Detail() {
               {articleLoading && (
                 <span className="text-xs text-blue-500 animate-pulse">Generating...</span>
               )}
+              {enhancedMode && (
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  (Cache: {getCacheInfo().size})
+                </span>
+              )}
             </label>
+            
+            {enhancedMode && (
+              <div className="flex items-center gap-2">
+                <select
+                  value={llmProvider}
+                  onChange={(e) => setLlmProvider(e.target.value as 'ollama' | 'openai')}
+                  className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="ollama">Ollama (Local)</option>
+                  <option value="openai">OpenAI (Cloud)</option>
+                </select>
+                
+                {getCacheInfo().size > 0 && (
+                  <button
+                    onClick={() => {
+                      clearCache();
+                      setRefreshTrigger(prev => prev + 1);
+                    }}
+                    className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+                  >
+                    Clear Cache
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <Article text={article.text} confidence={article.confidence} isEnhanced={enhancedMode} />

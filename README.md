@@ -38,8 +38,14 @@ A React TypeScript cryptocurrency analysis dashboard that provides technical ind
 
 3. Set up environment variables:
    ```bash
-   # Create .env file with your OpenAI API key
-   echo "VITE_OPENAI_API_KEY=your_openai_api_key_here" > .env
+   # Create .env file with LLM configuration
+   cat > .env << EOF
+   # OpenAI API key (optional - for cloud AI)
+   VITE_OPENAI_API_KEY=your_openai_api_key_here
+   
+   # Ollama URL (optional - defaults to localhost:11434)
+   VITE_OLLAMA_URL=http://localhost:11434
+   EOF
    ```
 
 4. Start development server:
@@ -92,22 +98,33 @@ CLAUDE.md               # Project documentation
 This project implements AI-enhanced article generation with the following features:
 
 ### ✅ Implemented Features
-- **OpenAI Integration**: GPT-4 API for natural article generation
-- **Smart Fallbacks**: Graceful degradation to template-based articles
+- **Multi-LLM Support**: Choose between Ollama (local) and OpenAI (cloud)
+- **Smart Fallback Chain**: Ollama → OpenAI → Template with automatic recovery
 - **Enhanced Mode Toggle**: User choice between AI and template modes
-- **Error Handling**: Comprehensive error handling with user-friendly messages
+- **Provider Selection**: Dropdown to choose Ollama or OpenAI
+- **In-Memory Caching**: 5-minute cache with provider-specific keys
+- **Error Handling**: Comprehensive error handling with graceful degradation
 - **Testing**: TDD approach with simplified mocking strategies
+
+### LLM Providers
+- **Ollama (Default)**: Free local inference with your models
+- **OpenAI**: Premium cloud API with GPT-4
+- **Template**: Fast template-based fallback
 
 ### Environment Setup
 ```bash
-# Required for AI features
+# Optional - Ollama configuration
+VITE_OLLAMA_URL=http://localhost:11434
+
+# Optional - OpenAI configuration  
 VITE_OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ### Usage
-- **Enhanced Mode ON**: Articles generated using OpenAI GPT-4
-- **Enhanced Mode OFF**: Template-based articles (faster, no API costs)
-- **Auto-fallback**: If API fails, automatically uses template
+1. **Enhanced Mode OFF**: Template-based articles (instant, no costs)
+2. **Enhanced Mode ON + Ollama**: Local AI generation (free, requires Ollama)
+3. **Enhanced Mode ON + OpenAI**: Cloud AI generation (premium, requires API key)
+4. **Auto-fallback**: Ollama → OpenAI → Template if providers fail
 
 ## Contributing
 
