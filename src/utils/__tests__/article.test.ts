@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { generateArticle, generateLLMArticle, getCacheInfo, clearCache } from '../article';
 
 describe('generateArticle', () => {
@@ -78,12 +78,89 @@ describe('generateLLMArticle', () => {
 });
 
 describe('LLM Cache', () => {
+  beforeEach(() => {
+    clearCache(); // Clean slate for each test
+  });
+
   it('should provide cache utilities', () => {
-    clearCache();
-    
     const cacheInfo = getCacheInfo();
     expect(cacheInfo.size).toBe(0);
     expect(Array.isArray(cacheInfo.entries)).toBe(true);
     expect(typeof cacheInfo.duration).toBe('number');
+    expect(cacheInfo.duration).toBe(5 * 60 * 1000); // 5 minutes
+  });
+
+  it('should clear cache properly', () => {
+    clearCache();
+    const cacheInfo = getCacheInfo();
+    expect(cacheInfo.size).toBe(0);
+  });
+});
+
+describe('Multi-LLM Integration', () => {
+  beforeEach(() => {
+    clearCache(); // Clean slate for each test
+  });
+
+  it('should accept provider parameter', async () => {
+    const data = {
+      price: 50000,
+      rsi: 65,
+      ema12: 49500,
+      ema26: 49000,
+      macd: { MACD: 200, signal: 150, histogram: 50 },
+    };
+
+    // Test with template mode (should work regardless of provider)
+    const result = await generateLLMArticle(data, false, 'ollama');
+    expect(result).toHaveProperty('text');
+    expect(result).toHaveProperty('confidence');
+    expect(result.text).toContain('Bitcoin is currently trading at $50000');
+  });
+
+  it('should fallback gracefully when all providers fail', async () => {
+    const originalOpenAIKey = process.env.VITE_OPENAI_API_KEY;
+    const originalOllamaUrl = process.env.VITE_OLLAMA_URL;
+    
+    // Disable both providers
+    delete process.env.VITE_OPENAI_API_KEY;
+    process.env.VITE_OLLAMA_URL = 'http://localhost:99999';
+
+    const data = {
+      price: 50000,
+      rsi: 65,
+      ema12: 49500,
+      ema26: 49000,
+      macd: { MACD: 200, signal: 150, histogram: 50 },
+    };
+
+    // Should fallback to template even when enhanced mode is on
+    const result = await generateLLMArticle(data, true, 'ollama');
+    expect(result).toHaveProperty('text');
+    expect(result).toHaveProperty('confidence');
+    expect(result.text).toContain('Bitcoin is currently trading at $50000');
+
+    // Restore environment
+    if (originalOpenAIKey) process.env.VITE_OPENAI_API_KEY = originalOpenAIKey;
+    if (originalOllamaUrl) process.env.VITE_OLLAMA_URL = originalOllamaUrl;
+  }, 15000); // Longer timeout for network operations
+
+  it('should handle provider selection correctly', async () => {
+    const data = {
+      price: 50000,
+      rsi: 65,
+      ema12: 49500,
+      ema26: 49000,
+      macd: { MACD: 200, signal: 150, histogram: 50 },
+    };
+
+    // Test that different providers can be specified
+    const result1 = await generateLLMArticle(data, false, 'ollama');
+    const result2 = await generateLLMArticle(data, false, 'openai');
+
+    // Both should work in template mode
+    expect(result1).toHaveProperty('text');
+    expect(result2).toHaveProperty('text');
+    expect(result1.text).toBe(result2.text); // Same template result
   });
 });
