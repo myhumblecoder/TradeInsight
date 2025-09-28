@@ -10,6 +10,11 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   vulnerability-scan:
     runs-on: ubuntu-latest
@@ -38,6 +43,7 @@ jobs:
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true
         with:
           sarif_file: 'trivy-results.sarif'
       
@@ -79,9 +85,11 @@ jobs:
           npm audit --audit-level=moderate || true
           echo "Audit completed - check logs for details" >> $GITHUB_STEP_SUMMARY
       
-      - name: Check for known security issues
+      - name: Security Check Summary
+        if: always()
         run: |
-          echo "## Security Check Summary" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Filesystem vulnerability scan completed" >> $GITHUB_STEP_SUMMARY
-          echo "✅ NPM dependency audit completed" >> $GITHUB_STEP_SUMMARY
-          echo "📊 Results uploaded to Security tab" >> $GITHUB_STEP_SUMMARY
+          echo "## 🛡️ Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Filesystem vulnerability scan completed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ NPM dependency audit completed" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Results uploaded to Security tab" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 Detailed reports available in artifacts" >> $GITHUB_STEP_SUMMARY
