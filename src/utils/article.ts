@@ -1,3 +1,5 @@
+import OpenAI from 'openai'
+
 interface ArticleData {
   price: number | null
   rsi: number | null
@@ -10,6 +12,35 @@ interface ArticleData {
 interface ArticleResult {
   text: string
   confidence: number
+}
+
+const openai = new OpenAI({
+  apiKey: process.env.VITE_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
+})
+
+console.log('OpenAI instance created:', openai.chat.completions.create)
+
+const calculateConfidence = (data: ArticleData): number => {
+  if (!data.price) return 0
+
+  let confidence = 50 // Base
+
+  if (data.rsi) {
+    if (data.rsi > 70 || data.rsi < 30) {
+      confidence += 10
+    }
+  }
+
+  if (data.ema12 && data.ema26) {
+    confidence += 15
+  }
+
+  if (data.macd) {
+    confidence += 15
+  }
+
+  return Math.max(0, Math.min(100, confidence))
 }
 
 export const generateArticle = (data: ArticleData): ArticleResult => {
@@ -63,4 +94,42 @@ export const generateArticle = (data: ArticleData): ArticleResult => {
   confidence = Math.max(0, Math.min(100, confidence))
 
   return { text, confidence }
+}
+
+export const generateLLMArticle = async (data: ArticleData, useEnhanced: boolean = false): Promise<ArticleResult> => {
+  // Fallback to template if not using enhanced mode or no API key
+  if (!useEnhanced || !process.env.VITE_OPENAI_API_KEY) {
+    return generateArticle(data)
+  }
+
+  try {
+    const prompt = `Generate a natural, engaging market analysis article for ${data.cryptoName || 'Bitcoin'} based on the following technical data:
+
+Price: $${data.price}
+RSI: ${data.rsi || 'N/A'}
+EMA 12: ${data.ema12 || 'N/A'}
+EMA 26: ${data.ema26 || 'N/A'}
+MACD: ${data.macd ? `MACD: ${data.macd.MACD}, Signal: ${data.macd.signal}, Histogram: ${data.macd.histogram}` : 'N/A'}
+
+Write a concise, professional analysis (2-3 sentences) that explains the current market situation and provides actionable insights. Make it sound natural and engaging, not like a template.`
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 300,
+      temperature: 0.7,
+    })
+
+    const llmText = completion.choices[0]?.message?.content?.trim()
+    if (!llmText) {
+      throw new Error('No response from LLM')
+    }
+
+    const confidence = calculateConfidence(data)
+
+    return { text: llmText, confidence }
+  } catch (error) {
+    console.warn('LLM article generation failed, falling back to template:', error)
+    return generateArticle(data)
+  }
 }
