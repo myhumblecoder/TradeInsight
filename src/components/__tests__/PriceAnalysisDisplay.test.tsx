@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import '@testing-library/jest-dom'
 import { PriceAnalysisDisplay } from '../PriceAnalysisDisplay'
 import type { PriceAnalysis } from '../../utils/priceAnalysis'
 
@@ -128,8 +129,17 @@ describe('PriceAnalysisDisplay', () => {
   it('should display method explanations', () => {
     render(<PriceAnalysisDisplay analysis={mockAnalysis} showMethodExplanations={true} />)
 
+    // Check that tooltip content is present in the DOM (always rendered, controlled by CSS)
+    const entryMethods = screen.getAllByText('Entry Method:')
+    expect(entryMethods).toHaveLength(3) // 3 entry points
+
+    const profitMethods = screen.getAllByText('Profit Target Method:')
+    expect(profitMethods).toHaveLength(3) // 3 profit targets
+
     expect(screen.getByText('Support + 2%')).toBeInTheDocument()
     expect(screen.getByText('Fibonacci 61.8%')).toBeInTheDocument()
+
+    // Check that stop loss explanation is still shown inline
     expect(screen.getByText('2x ATR below entry')).toBeInTheDocument()
   })
 })

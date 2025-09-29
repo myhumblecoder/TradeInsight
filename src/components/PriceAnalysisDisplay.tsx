@@ -107,19 +107,49 @@ export function PriceAnalysisDisplay({
             <div className="flex justify-between items-center">
               <span className="text-green-600 dark:text-green-400 flex-shrink-0">Conservative: {formatPrice(analysis.entryPoints.conservative)}</span>
               {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.entryPoints.methods.conservative}</span>
+                <div className="relative group">
+                  <svg className="w-4 h-4 text-gray-400 hover:text-blue-500 cursor-help transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="absolute bottom-6 left-0 w-64 p-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="font-medium mb-2">Entry Method:</div>
+                    <div className="text-gray-300">
+                      {analysis.entryPoints.methods.conservative}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
             <div className="flex justify-between items-center">
               <span className="text-blue-600 dark:text-blue-400 flex-shrink-0">Moderate: {formatPrice(analysis.entryPoints.moderate)}</span>
               {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.entryPoints.methods.moderate}</span>
+                <div className="relative group">
+                  <svg className="w-4 h-4 text-gray-400 hover:text-blue-500 cursor-help transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="absolute bottom-6 left-0 w-64 p-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="font-medium mb-2">Entry Method:</div>
+                    <div className="text-gray-300">
+                      {analysis.entryPoints.methods.moderate}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
             <div className="flex justify-between items-center">
               <span className="text-orange-600 dark:text-orange-400 flex-shrink-0">Aggressive: {formatPrice(analysis.entryPoints.aggressive)}</span>
               {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.entryPoints.methods.aggressive}</span>
+                <div className="relative group">
+                  <svg className="w-4 h-4 text-gray-400 hover:text-blue-500 cursor-help transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="absolute bottom-6 left-0 w-64 p-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="font-medium mb-2">Entry Method:</div>
+                    <div className="text-gray-300">
+                      {analysis.entryPoints.methods.aggressive}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -153,19 +183,49 @@ export function PriceAnalysisDisplay({
             <div className="flex justify-between items-center">
               <span className="text-green-600 dark:text-green-400 flex-shrink-0">Target 1: {formatPrice(analysis.profitTargets.target1)}</span>
               {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.profitTargets.methods.target1}</span>
+                <div className="relative group">
+                  <svg className="w-4 h-4 text-gray-400 hover:text-blue-500 cursor-help transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="absolute bottom-6 left-0 w-64 p-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="font-medium mb-2">Profit Target Method:</div>
+                    <div className="text-gray-300">
+                      {analysis.profitTargets.methods.target1}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
             <div className="flex justify-between items-center">
               <span className="text-green-600 dark:text-green-400 flex-shrink-0">Target 2: {formatPrice(analysis.profitTargets.target2)}</span>
               {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.profitTargets.methods.target2}</span>
+                <div className="relative group">
+                  <svg className="w-4 h-4 text-gray-400 hover:text-blue-500 cursor-help transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="absolute bottom-6 left-0 w-64 p-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="font-medium mb-2">Profit Target Method:</div>
+                    <div className="text-gray-300">
+                      {analysis.profitTargets.methods.target2}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
             <div className="flex justify-between items-center">
               <span className="text-green-600 dark:text-green-400 flex-shrink-0">Target 3: {formatPrice(analysis.profitTargets.target3)}</span>
               {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.profitTargets.methods.target3}</span>
+                <div className="relative group">
+                  <svg className="w-4 h-4 text-gray-400 hover:text-blue-500 cursor-help transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="absolute bottom-6 left-0 w-64 p-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="font-medium mb-2">Profit Target Method:</div>
+                    <div className="text-gray-300">
+                      {analysis.profitTargets.methods.target3}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
             <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
