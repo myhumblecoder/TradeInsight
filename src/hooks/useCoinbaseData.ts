@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
 import logger from '../utils/logger'
+import { convertCandlesToOHLCV } from '../utils/dataConversion'
+import { type OHLCV } from '../utils/priceAnalysis'
 
 interface CoinbaseData {
   price: number | null
   candles: number[][]
+  ohlcvData: OHLCV[]
   error: string | null
   loading: boolean
 }
@@ -24,6 +27,7 @@ const coinbaseProductMap: Record<string, string> = {
 export const useCoinbaseData = (symbol: string, granularity: number = 86400, refreshTrigger: number = 0): CoinbaseData => {
   const [price, setPrice] = useState<number | null>(null)
   const [candles, setCandles] = useState<number[][]>([])
+  const [ohlcvData, setOhlcvData] = useState<OHLCV[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -35,6 +39,7 @@ export const useCoinbaseData = (symbol: string, granularity: number = 86400, ref
     if (cached && (now - cached.timestamp) < CACHE_DURATION) {
       setPrice(cached.data.price)
       setCandles(cached.data.candles)
+      setOhlcvData(convertCandlesToOHLCV(cached.data.candles))
       setLoading(false)
       setError(null)
       return
@@ -99,8 +104,11 @@ export const useCoinbaseData = (symbol: string, granularity: number = 86400, ref
           return
         }
 
+        const ohlcv = convertCandlesToOHLCV(candlesData)
+        
         setPrice(currentPrice)
         setCandles(candlesData)
+        setOhlcvData(ohlcv)
         if (process.env.NODE_ENV !== 'test') {
           cache.set(cacheKey, { data: { price: currentPrice, candles: candlesData }, timestamp: now })
         }
@@ -115,5 +123,5 @@ export const useCoinbaseData = (symbol: string, granularity: number = 86400, ref
     fetchData()
   }, [symbol, granularity, refreshTrigger])
 
-  return { price, candles, error, loading }
+  return { price, candles, ohlcvData, error, loading }
 }
