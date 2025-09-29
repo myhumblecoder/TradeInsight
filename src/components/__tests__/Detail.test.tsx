@@ -124,7 +124,7 @@ describe('Detail', () => {
     expect(screen.queryByText('Ollama (Local)')).not.toBeInTheDocument()
   })
 
-  it('shows provider selection when AI enhanced is enabled', async () => {
+  it('shows provider information when AI enhanced is enabled', async () => {
     mockUseCoinbaseData.mockReturnValue({
       price: 50000,
       candles: [[1640995200000, 50000, 50000, 50000, 50000]],
@@ -145,17 +145,15 @@ describe('Detail', () => {
     const aiButton = screen.getByRole('button', { name: /AI Enhanced/i })
     fireEvent.click(aiButton)
 
-    // Wait for provider dropdown to appear
+    // Wait for AI enhanced state to be active and provider info to appear
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Ollama (Local)')).toBeInTheDocument()
-      expect(screen.getByText('OpenAI (Cloud)')).toBeInTheDocument()
+      // Check that the button shows the enhanced state with provider badge
+      expect(screen.getByText('Local')).toBeInTheDocument() // Provider badge appears when enhanced
+      expect(aiButton).toHaveAttribute('title', expect.stringContaining('Disable AI Enhanced'))
     })
-
-    // Check that cache info is shown
-    expect(screen.getByText('(Cache: 0)')).toBeInTheDocument()
   })
 
-  it('allows provider selection', async () => {
+  it('toggles AI enhanced mode on and off', async () => {
     mockUseCoinbaseData.mockReturnValue({
       price: 50000,
       candles: [[1640995200000, 50000, 50000, 50000, 50000]],
@@ -172,15 +170,27 @@ describe('Detail', () => {
       </ThemeProvider>
     )
 
-    // Enable AI enhanced mode
     const aiButton = screen.getByRole('button', { name: /AI Enhanced/i })
+    
+    // Initially AI enhanced should be off (no Local badge)
+    expect(screen.queryByText('Local')).not.toBeInTheDocument()
+    expect(aiButton).toHaveAttribute('title', expect.stringContaining('Enable AI Enhanced'))
+
+    // Enable AI enhanced mode
     fireEvent.click(aiButton)
 
-    // Wait for provider dropdown and change selection
+    // Wait for AI enhanced state and check the toggle worked
     await waitFor(() => {
-      const providerSelect = screen.getByDisplayValue('Ollama (Local)')
-      fireEvent.change(providerSelect, { target: { value: 'openai' } })
-      expect(screen.getByDisplayValue('OpenAI (Cloud)')).toBeInTheDocument()
+      expect(screen.getByText('Local')).toBeInTheDocument() // Provider badge appears
+      expect(aiButton).toHaveAttribute('title', expect.stringContaining('Disable AI Enhanced'))
+    })
+
+    // Disable AI enhanced mode
+    fireEvent.click(aiButton)
+
+    await waitFor(() => {
+      expect(screen.queryByText('Local')).not.toBeInTheDocument() // Provider badge disappears
+      expect(aiButton).toHaveAttribute('title', expect.stringContaining('Enable AI Enhanced'))
     })
   })
 })

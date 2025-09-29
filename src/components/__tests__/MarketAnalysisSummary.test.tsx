@@ -1,19 +1,14 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MarketAnalysisSummary } from '../MarketAnalysisSummary'
 import type { OHLCV } from '../../utils/priceAnalysis'
 
+// Create mock functions that can be controlled per test
+const mockUsePriceAnalysis = vi.fn()
+
 // Mock the hooks and utilities
 vi.mock('../../hooks/usePriceAnalysis', () => ({
-  usePriceAnalysis: vi.fn(() => ({
-    analysis: {
-      entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
-      stopLoss: { price: 95, percentage: 5 },
-      profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: 2 },
-      confidence: 0.75
-    },
-    isAnalyzing: false
-  }))
+  usePriceAnalysis: () => mockUsePriceAnalysis()
 }))
 
 vi.mock('../../utils/indicators', () => ({
@@ -33,6 +28,22 @@ describe('MarketAnalysisSummary', () => {
     { timestamp: 1000, open: 100, high: 105, low: 95, close: 102, volume: 1000 }
   ]
 
+  beforeEach(() => {
+    // Reset and set default mock behavior
+    vi.clearAllMocks()
+    
+    // Default mock return value
+    mockUsePriceAnalysis.mockReturnValue({
+      analysis: {
+        entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
+        stopLoss: { price: 95, percentage: 5 },
+        profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: 2 },
+        confidence: 0.75
+      },
+      isAnalyzing: false
+    })
+  })
+
   it('should render market analysis summary', () => {
     render(
       <MarketAnalysisSummary
@@ -49,13 +60,11 @@ describe('MarketAnalysisSummary', () => {
   })
 
   it('should show loading state when analyzing', () => {
-    // Import vi.mocked from vitest and mock the module properly
-    vi.doMock('../../hooks/usePriceAnalysis', () => ({
-      usePriceAnalysis: vi.fn(() => ({
-        analysis: null,
-        isAnalyzing: true
-      }))
-    }))
+    // Override mock to return analyzing state
+    mockUsePriceAnalysis.mockReturnValue({
+      analysis: null,
+      isAnalyzing: true
+    })
 
     render(
       <MarketAnalysisSummary
@@ -97,18 +106,16 @@ describe('MarketAnalysisSummary', () => {
   })
 
   it('should display "Unavailable" when Risk:Reward is NaN', () => {
-    // Mock with NaN risk-reward ratio
-    vi.doMock('../../hooks/usePriceAnalysis', () => ({
-      usePriceAnalysis: vi.fn(() => ({
-        analysis: {
-          entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
-          stopLoss: { price: 95, percentage: 5 },
-          profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: NaN },
-          confidence: 0.75
-        },
-        isAnalyzing: false
-      }))
-    }))
+    // Override mock to return NaN risk-reward ratio
+    mockUsePriceAnalysis.mockReturnValue({
+      analysis: {
+        entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
+        stopLoss: { price: 95, percentage: 5 },
+        profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: NaN },
+        confidence: 0.75
+      },
+      isAnalyzing: false
+    })
 
     render(
       <MarketAnalysisSummary
@@ -125,18 +132,16 @@ describe('MarketAnalysisSummary', () => {
   })
 
   it('should display "Unavailable" when Risk:Reward is Infinity', () => {
-    // Mock with Infinity risk-reward ratio
-    vi.doMock('../../hooks/usePriceAnalysis', () => ({
-      usePriceAnalysis: vi.fn(() => ({
-        analysis: {
-          entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
-          stopLoss: { price: 95, percentage: 5 },
-          profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: Infinity },
-          confidence: 0.75
-        },
-        isAnalyzing: false
-      }))
-    }))
+    // Override mock to return Infinity risk-reward ratio
+    mockUsePriceAnalysis.mockReturnValue({
+      analysis: {
+        entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
+        stopLoss: { price: 95, percentage: 5 },
+        profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: Infinity },
+        confidence: 0.75
+      },
+      isAnalyzing: false
+    })
 
     render(
       <MarketAnalysisSummary
