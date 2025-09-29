@@ -168,15 +168,12 @@ describe('App Routing', () => {
       </ThemeProvider>
     )
 
-    // Wait for any async operations
-    await new Promise(resolve => setTimeout(resolve, 50))
-    
-    // Test that the routing system rendered something (even if it's an error boundary)
-    // The key success is that it didn't hang/timeout
+    // Test that the routing system rendered something immediately
+    // The key success is that it doesn't hang/timeout during render
     expect(container.firstChild).toBeTruthy()
     
     // Verify that the app responded to the route (error boundary counts as a response)
     // This confirms routing is working and the page doesn't hang indefinitely
     expect(container.innerHTML.length).toBeGreaterThan(0)
-  })
+  }, 5000)
 })

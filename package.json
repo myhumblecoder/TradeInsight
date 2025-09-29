@@ -10,6 +10,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "test": "vitest",
+    "test:ci": "vitest run --reporter=dot --bail=1",
     "test:ui": "vitest --ui",
     "preview": "vite preview"
   },

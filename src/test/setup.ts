@@ -79,7 +79,10 @@ const localStorageMock = {
   key: vi.fn(),
 } as Storage
 
-global.localStorage = localStorageMock
+Object.defineProperty(global, 'localStorage', {
+  value: localStorageMock,
+  writable: true
+})
 
 // Handle unhandled promise rejections in tests
 process.on('unhandledRejection', (reason) => {
