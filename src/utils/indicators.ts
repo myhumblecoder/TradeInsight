@@ -98,10 +98,30 @@ export function analyzeIndicators(data: OHLCV[]): IndicatorAnalysis {
   const ema26 = ema26Array.length > 0 ? ema26Array[ema26Array.length - 1] : null
   const macd = calculateMACD(prices)
   
-  // Calculate advanced indicators
-  const bollingerBands = calculateBollingerBands(data)
-  const stochasticRSI = calculateStochasticRSI(data)
-  const volumeProfile = calculateVolumeProfile(data)
+  // Calculate advanced indicators with error handling
+  let bollingerBands: BollingerBands
+  try {
+    bollingerBands = calculateBollingerBands(data)
+  } catch (error) {
+    console.warn('Error calculating Bollinger Bands:', error)
+    bollingerBands = { upper: 0, middle: 0, lower: 0, bandwidth: 0, percentB: 0 }
+  }
+
+  let stochasticRSI: StochasticRSI
+  try {
+    stochasticRSI = calculateStochasticRSI(data)
+  } catch (error) {
+    console.warn('Error calculating Stochastic RSI:', error)
+    stochasticRSI = { k: 50, d: 50, signal: 'neutral', overbought: false, oversold: false }
+  }
+
+  let volumeProfile: VolumeProfile
+  try {
+    volumeProfile = calculateVolumeProfile(data)
+  } catch (error) {
+    console.warn('Error calculating Volume Profile:', error)
+    volumeProfile = { levels: [], poc: 0, valueAreaHigh: 0, valueAreaLow: 0, totalVolume: 0 }
+  }
   
   // Generate signals
   const rsiSignal = rsi > 70 ? 'overbought' : rsi < 30 ? 'oversold' : 'neutral'

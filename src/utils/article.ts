@@ -29,7 +29,7 @@ interface CacheEntry {
 }
 
 const responseCache = new Map<string, CacheEntry>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes in milliseconds
+const CACHE_DURATION = 20 * 60 * 1000 // 20 minutes in milliseconds
 
 // Generate cache key from article data and provider
 const generateCacheKey = (data: ArticleData, provider: LLMProvider, analysisType?: AnalysisType): string => {

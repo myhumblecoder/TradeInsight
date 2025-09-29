@@ -1,4 +1,4 @@
-export type TimeInterval = '5m' | '15m' | '30m' | '1h' | '4h' | '1d' | '1w'
+export type TimeInterval = '5m' | '15m' | '30m' | '1h' | '4h' | '1d' | '1w' | '1M'
 
 export interface TimeIntervalConfig {
   label: string
@@ -49,6 +49,12 @@ export const TIME_INTERVALS: Record<TimeInterval, TimeIntervalConfig> = {
     seconds: 604800,
     category: 'Long-term',
     useCase: 'Position trading, long-term investing'
+  },
+  '1M': {
+    label: '1 Month',
+    seconds: 2592000, // 30 days * 24 hours * 60 minutes * 60 seconds
+    category: 'Long-term',
+    useCase: 'Long-term investing, macro trends'
   }
 }
 

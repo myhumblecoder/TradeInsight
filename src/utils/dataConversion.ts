@@ -19,7 +19,7 @@ export function convertCandlesToOHLCV(candleData: CandleData[]): OHLCV[] {
         high: candle[2],
         low: candle[3],
         close: candle[4],
-        volume: candle[5]
+        volume: typeof candle[5] === 'number' && !isNaN(candle[5]) ? candle[5] : 0
       }
     } else if (candle.length >= 2) {
       // Price only format: [timestamp, price] - convert to OHLC with same price
@@ -30,7 +30,7 @@ export function convertCandlesToOHLCV(candleData: CandleData[]): OHLCV[] {
         high: price,
         low: price,
         close: price,
-        volume: candle[2] || 0 // Use third element as volume if available
+        volume: typeof candle[2] === 'number' && !isNaN(candle[2]) ? candle[2] : 0 // Use third element as volume if available
       }
     } else {
       // Malformed data - use first element as price

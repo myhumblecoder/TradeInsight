@@ -191,10 +191,10 @@ export function PriceAnalysisDisplay({
       {/* Confidence Indicator */}
       {!compact && (
         <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Analysis Confidence</span>
-            <div className="flex items-center">
-              <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full mr-2">
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-gray-600 dark:text-gray-400 flex-shrink-0">Analysis Confidence:</span>
+            <div className="flex items-center gap-2">
+              <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                 <div 
                   className="h-2 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-full transition-all duration-300"
                   style={{ width: `${analysis.confidence * 100}%` }}

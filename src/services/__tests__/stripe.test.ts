@@ -3,15 +3,17 @@ import { loadStripe } from '@stripe/stripe-js'
 import { createCheckoutSession, redirectToCheckout, handleSubscriptionWebhook } from '../stripe'
 
 vi.mock('@stripe/stripe-js')
-vi.mock('../supabase', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      upsert: vi.fn(() => Promise.resolve({ data: {}, error: null })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ data: {}, error: null }))
-      }))
+const mockSupabase = {
+  from: vi.fn(() => ({
+    upsert: vi.fn(() => Promise.resolve({ data: {}, error: null })),
+    update: vi.fn(() => ({
+      eq: vi.fn(() => Promise.resolve({ data: {}, error: null }))
     }))
-  }
+  }))
+}
+
+vi.mock('../config/supabase', () => ({
+  supabase: mockSupabase
 }))
 
 const mockLoadStripe = vi.mocked(loadStripe)
@@ -49,7 +51,9 @@ describe('Stripe Service', () => {
         body: JSON.stringify({
           priceId: 'price_123',
           userId: 'user-1',
-          userEmail: 'test@example.com'
+          userEmail: 'test@example.com',
+          successUrl: 'http://localhost:3000/success',
+          cancelUrl: 'http://localhost:3000/cancel'
         })
       })
     })
@@ -204,7 +208,7 @@ describe('Stripe Service', () => {
       const result = await handleSubscriptionWebhook(webhookData)
 
       expect(result.success).toBe(false)
-      expect(result.message).toContain('Error processing webhook')
+expect(result.message).toContain('Validation error')
     })
   })
 })

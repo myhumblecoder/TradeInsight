@@ -13,7 +13,7 @@ interface CoinbaseData {
 
 // Simple in-memory cache
 const cache = new Map<string, { data: { price: number | null, candles: number[][] }, timestamp: number }>()
-const CACHE_DURATION = 2 * 60 * 1000 // 2 minutes for price/candles
+const CACHE_DURATION = 10 * 60 * 1000 // 10 minutes for price/candles (reduce API calls)
 
 // Map CoinGecko symbols to Coinbase product IDs
 const coinbaseProductMap: Record<string, string> = {
@@ -68,6 +68,8 @@ export const useCoinbaseData = (symbol: string, granularity: number = 86400, ref
 
         if (currentPrice === null) {
           try {
+            // Add delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 500))
             const fallbackRes = await fetch(
               `/api/simple/price?ids=${symbol}&vs_currencies=usd`
             )
@@ -75,17 +77,33 @@ export const useCoinbaseData = (symbol: string, granularity: number = 86400, ref
               const data = await fallbackRes.json()
               currentPrice = data[symbol]?.usd || null
             } else if (fallbackRes.status === 429) {
-              throw new Error('Rate limited, please try again later.')
+              // Use last cached price if available during rate limit
+              const lastCached = cache.get(cacheKey)
+              if (lastCached?.data.price) {
+                currentPrice = lastCached.data.price
+                logger.warn('Using cached price due to rate limiting')
+              } else {
+                throw new Error('Rate limited, please try again later.')
+              }
             }
           } catch (err) {
             logger.error({ error: err instanceof Error ? err.message : String(err) }, 'Fallback price API failed')
-            setError('Failed to fetch price data')
-            setLoading(false)
-            return
+            // Try to use cached data even if expired
+            const lastCached = cache.get(cacheKey)
+            if (lastCached?.data.price) {
+              currentPrice = lastCached.data.price
+              logger.warn('Using expired cached price due to API failure')
+            } else {
+              setError('Failed to fetch price data')
+              setLoading(false)
+              return
+            }
           }
         }
 
         // Fetch candles from CoinGecko (free alternative)
+        // Add delay between API calls
+        await new Promise(resolve => setTimeout(resolve, 800))
         const candlesRes = await fetch(
           `/api/coins/${symbol}/market_chart?vs_currency=usd&days=${days}`
         )
@@ -96,12 +114,27 @@ export const useCoinbaseData = (symbol: string, granularity: number = 86400, ref
           candlesData = data.prices?.map(([ts, price]: [number, number]) => [ts, price, price, price, price]) || [] // Mock OHLC as close
         } else {
           if (candlesRes.status === 429) {
-            throw new Error('Rate limited, please try again later.')
+            // Use last cached candles if available during rate limit
+            const lastCached = cache.get(cacheKey)
+            if (lastCached?.data.candles && lastCached.data.candles.length > 0) {
+              candlesData = lastCached.data.candles
+              logger.warn('Using cached candles due to rate limiting')
+            } else {
+              throw new Error('Rate limited, please try again later.')
+            }
+          } else {
+            logger.warn({ status: candlesRes.status, statusText: candlesRes.statusText }, 'Candles API failed')
+            // Try to use cached data
+            const lastCached = cache.get(cacheKey)
+            if (lastCached?.data.candles && lastCached.data.candles.length > 0) {
+              candlesData = lastCached.data.candles
+              logger.warn('Using expired cached candles due to API failure')
+            } else {
+              setError('Failed to fetch candles data')
+              setLoading(false)
+              return
+            }
           }
-          logger.warn({ status: candlesRes.status, statusText: candlesRes.statusText }, 'Candles API failed')
-          setError('Failed to fetch candles data')
-          setLoading(false)
-          return
         }
 
         const ohlcv = convertCandlesToOHLCV(candlesData)

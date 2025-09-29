@@ -19,8 +19,12 @@ describe('Article', () => {
 
     render(<Article text={text} confidence={confidence} />)
 
-    // Assuming the component has dark mode classes
-    const container = screen.getByText(text).closest('div')
-    expect(container).toHaveClass('bg-white', 'dark:bg-gray-800')
+    // Check for actual dark mode classes that exist in the component
+    const textElement = screen.getByText(text)
+    expect(textElement).toHaveClass('text-gray-700', 'dark:text-gray-300')
+    
+    // Check confidence score has dark mode classes
+    const confidenceElement = screen.getByText('Confidence Score: 50%')
+    expect(confidenceElement).toHaveClass('text-blue-600', 'dark:text-blue-400')
   })
 })

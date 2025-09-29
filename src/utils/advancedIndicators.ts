@@ -152,12 +152,35 @@ export function calculateVolumeProfile(data: OHLCV[], bins: number = 20): Volume
     return { levels: [], poc: 0, valueAreaHigh: 0, valueAreaLow: 0, totalVolume: 0 }
   }
 
+  // Validate data and filter out invalid entries
+  const validData = data.filter(candle => 
+    candle && 
+    typeof candle.high === 'number' && 
+    typeof candle.low === 'number' && 
+    typeof candle.close === 'number' &&
+    typeof candle.volume === 'number' &&
+    !isNaN(candle.high) && 
+    !isNaN(candle.low) && 
+    !isNaN(candle.close) && 
+    !isNaN(candle.volume) &&
+    candle.volume >= 0
+  )
+
+  if (validData.length === 0) {
+    return { levels: [], poc: 0, valueAreaHigh: 0, valueAreaLow: 0, totalVolume: 0 }
+  }
+
   // Find price range
-  const highs = data.map(candle => candle.high)
-  const lows = data.map(candle => candle.low)
+  const highs = validData.map(candle => candle.high)
+  const lows = validData.map(candle => candle.low)
   const maxPrice = Math.max(...highs)
   const minPrice = Math.min(...lows)
   const priceRange = maxPrice - minPrice
+  
+  if (priceRange <= 0 || !isFinite(priceRange)) {
+    return { levels: [], poc: 0, valueAreaHigh: 0, valueAreaLow: 0, totalVolume: 0 }
+  }
+  
   const binSize = priceRange / bins
   
   // Initialize bins
@@ -169,11 +192,14 @@ export function calculateVolumeProfile(data: OHLCV[], bins: number = 20): Volume
   
   // Distribute volume across price levels
   let totalVolume = 0
-  data.forEach(candle => {
+  validData.forEach(candle => {
     const avgPrice = (candle.high + candle.low + candle.close) / 3
     const binIndex = Math.min(Math.floor((avgPrice - minPrice) / binSize), bins - 1)
-    volumeBins[binIndex].volume += candle.volume
-    totalVolume += candle.volume
+    
+    if (binIndex >= 0 && binIndex < volumeBins.length) {
+      volumeBins[binIndex].volume += candle.volume
+      totalVolume += candle.volume
+    }
   })
   
   // Calculate percentages

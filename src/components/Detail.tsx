@@ -2,15 +2,17 @@ import { Link, useParams } from 'react-router-dom'
 import { useState, useMemo, useEffect } from 'react'
 import { useCoinbaseData } from '../hooks/useCoinbaseData'
 import { calculateRSI, calculateEMA, calculateMACD } from '../utils/indicators'
-import { generateArticle, generateLLMArticle, getCacheInfo, clearCache } from '../utils/article'
+import { generateArticle, generateLLMArticle } from '../utils/article'
 import { Article } from './Article'
 import { DarkModeToggle } from './DarkModeToggle'
 import { TimeIntervalSelector } from './TimeIntervalSelector'
 import { PriceAnalysisDisplay } from './PriceAnalysisDisplay'
+import { TechnicalIndicatorsDisplay } from './TechnicalIndicatorsDisplay'
 import { MarketAnalysisSummary } from './MarketAnalysisSummary'
 import { useTheme } from '../contexts/ThemeContext'
 import { getGranularityFromInterval, type TimeInterval } from '../utils/timeIntervals'
 import { usePriceAnalysis } from '../hooks/usePriceAnalysis'
+import { usePageTransition } from '../hooks/usePageTransition'
 
 // Map crypto IDs to display names
 const cryptoDisplayNames: Record<string, string> = {
@@ -36,10 +38,10 @@ export function Detail() {
   })
   const [article, setArticle] = useState({ text: 'Loading...', confidence: 0 })
   const [marketInsights, setMarketInsights] = useState({ text: 'Loading...', confidence: 0 })
-  const [articleLoading, setArticleLoading] = useState(false)
   const [marketInsightsLoading, setMarketInsightsLoading] = useState(false)
   const [technicalReportLoading, setTechnicalReportLoading] = useState(false)
   const { price, candles, ohlcvData, error, loading } = useCoinbaseData(cryptoId, granularity, refreshTrigger)
+  const { isTransitioning } = usePageTransition()
 
   const cryptoName = cryptoDisplayNames[cryptoId] || (cryptoId.charAt(0).toUpperCase() + cryptoId.slice(1))
 
@@ -74,7 +76,6 @@ export function Detail() {
         return
       }
 
-      setArticleLoading(true)
       try {
         const data = {
           price,
@@ -127,7 +128,6 @@ export function Detail() {
         setArticle(fallbackResult)
         setMarketInsights(fallbackResult)
       } finally {
-        setArticleLoading(false)
         setMarketInsightsLoading(false)
         setTechnicalReportLoading(false)
       }
@@ -136,17 +136,34 @@ export function Detail() {
     generateAnalysisAsync()
   }, [price, indicators, cryptoName, enhancedMode, llmProvider, priceAnalysis, selectedInterval])
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
-
-  return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors">
-      <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 shadow">
+  // For data loading within the page, just show the layout with loading placeholders
+  // Navigation loading is handled by the global overlay
+  if (error) return (
+    <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors page-container ${isTransitioning ? 'transitioning' : ''}`}>
+      <header className="flex items-center justify-between px-2 sm:px-4 lg:px-6 xl:px-8 py-4 bg-white dark:bg-gray-800 shadow">
         <Link to="/" className="text-blue-500 hover:underline text-2xl">←</Link>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white flex-1 text-center">{cryptoName}</h1>
         <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
       </header>
-      <main className="px-3 py-4 sm:p-4 lg:p-6 xl:p-8 max-w-7xl mx-auto">
+      <main className="px-2 py-4 sm:px-4 lg:px-6 xl:px-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
+        <div className="text-center text-red-500">
+          <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>{error}</div>
+        </div>
+      </main>
+    </div>
+  )
+
+  return (
+    <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors page-container ${isTransitioning ? 'transitioning' : ''}`}>
+      <header className="flex items-center justify-between px-2 sm:px-4 lg:px-6 xl:px-8 py-4 bg-white dark:bg-gray-800 shadow">
+        <Link to="/" className="text-blue-500 hover:underline text-2xl">←</Link>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white flex-1 text-center">{cryptoName}</h1>
+        <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
+      </header>
+      <main className="px-2 py-4 sm:px-4 lg:px-6 xl:px-8 transition-opacity duration-150 ease-in-out">
         {/* Controls */}
         <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="flex flex-wrap gap-4 items-center">
@@ -187,25 +204,7 @@ export function Detail() {
                   </span>
                 )}
               </button>
-              {enhancedMode && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Cache: {getCacheInfo().size}
-                </span>
-              )}
             </div>
-            
-            {enhancedMode && getCacheInfo().size > 0 && (
-              <button
-                onClick={() => {
-                  clearCache();
-                  setRefreshTrigger(prev => prev + 1);
-                }}
-                className="px-3 py-1.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                title="Clear LLM response cache"
-              >
-                Clear Cache
-              </button>
-            )}
           </div>
         </div>
 
@@ -224,41 +223,55 @@ export function Detail() {
           />
         )}
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+        {/* Main Content Grid - Optimized for 3 cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 mb-6">
           {/* Price Analysis */}
-          <PriceAnalysisDisplay
-            analysis={priceAnalysis}
-            isLoading={isPriceAnalyzing}
-            error={priceAnalysisError}
-            showMethodExplanations={true}
-          />
+          <div className="lg:col-span-1">
+            <PriceAnalysisDisplay
+              analysis={priceAnalysis}
+              isLoading={isPriceAnalyzing}
+              error={priceAnalysisError}
+              showMethodExplanations={true}
+            />
+          </div>
+
+          {/* Technical Indicators */}
+          <div className="lg:col-span-1">
+            <TechnicalIndicatorsDisplay
+              ohlcvData={ohlcvData}
+              currentPrice={price || 0}
+              isLoading={loading}
+              className=""
+            />
+          </div>
 
           {/* Technical Analysis Report */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {enhancedMode ? 'AI Technical Analysis' : 'Technical Analysis Summary'}
-              </h3>
-              {technicalReportLoading && (
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span className="text-blue-600 dark:text-blue-400 text-xs font-medium">
-                    Generating...
-                  </span>
-                </div>
-              )}
+          <div className="lg:col-span-2 xl:col-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 h-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {enhancedMode ? 'AI Technical Analysis' : 'Technical Analysis Summary'}
+                </h3>
+                {technicalReportLoading && (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-blue-600 dark:text-blue-400 text-xs font-medium">
+                      Generating...
+                    </span>
+                  </div>
+                )}
+              </div>
+              <Article 
+                text={article.text} 
+                confidence={article.confidence} 
+                isEnhanced={enhancedMode}
+                showTitle={false}
+                showAIBadge={false}
+              />
             </div>
-            <Article 
-              text={article.text} 
-              confidence={article.confidence} 
-              isEnhanced={enhancedMode}
-              showTitle={false}
-              showAIBadge={false}
-            />
           </div>
         </div>
       </main>

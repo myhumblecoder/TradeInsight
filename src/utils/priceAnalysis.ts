@@ -1,4 +1,5 @@
 import { type TimeInterval } from './timeIntervals'
+import { calculateFibonacciExtensions } from './advancedIndicators'
 
 export interface OHLCV {
   timestamp: number
@@ -229,29 +230,38 @@ export function calculateProfitTargets(data: OHLCV[], entryPrice: number, stopLo
   const target1 = entryPrice + (risk * 2) // 1:2 risk-reward
   const target2 = entryPrice + (risk * 3) // 1:3 risk-reward
   
-  // Fibonacci extension or resistance-based target
+  // Enhanced Fibonacci extension calculations
   const recentData = data.slice(-20)
   const recentHigh = Math.max(...recentData.map(d => d.high))
   const recentLow = Math.min(...recentData.map(d => d.low))
   
-  const fibExtensions = {
-    '127.2%': recentHigh + (recentHigh - recentLow) * 0.272,
-    '161.8%': recentHigh + (recentHigh - recentLow) * 0.618
-  }
+  // Use advanced Fibonacci Extensions utility
+  const fibExtensions = calculateFibonacciExtensions(recentHigh, recentLow, entryPrice)
   
   let target3 = entryPrice + (risk * 4) // Default 1:4 risk-reward
+  let target3Method = '1:4 risk-reward ratio'
   
   // Use resistance levels if available and reasonable
   if (levels.resistance.length > 0) {
     const nextResistance = levels.resistance.find(r => r > entryPrice)
     if (nextResistance && nextResistance > target2) {
       target3 = Math.max(target3, nextResistance)
+      target3Method = `Resistance level at $${nextResistance.toFixed(2)}`
     }
   }
   
-  // Use Fibonacci extension if reasonable
-  if (fibExtensions['161.8%'] > target2) {
-    target3 = Math.max(target3, fibExtensions['127.2%'])
+  // Use Fibonacci extension if it provides better target
+  if (fibExtensions.targets.length > 0) {
+    const fib127 = fibExtensions.targets.find(t => t.level === '127.2%')
+    const fib161 = fibExtensions.targets.find(t => t.level === '161.8%')
+    
+    if (fib127 && fib127.price > target2 && fib127.price > target3) {
+      target3 = fib127.price
+      target3Method = `Fibonacci 127.2% extension`
+    } else if (fib161 && fib161.price > target2 && fib161.price < target3 * 1.5) { // Reasonable upper bound
+      target3 = Math.max(target3, fib161.price)
+      target3Method = `Fibonacci 161.8% extension`
+    }
   }
   
   const riskRewardRatio = (target1 - entryPrice) / risk
@@ -264,7 +274,7 @@ export function calculateProfitTargets(data: OHLCV[], entryPrice: number, stopLo
     methods: {
       target1: `1:2 risk-reward ratio (Risk: $${risk.toFixed(2)})`,
       target2: `1:3 risk-reward ratio`,
-      target3: `Resistance level or Fibonacci extension`
+      target3: target3Method
     }
   }
 }

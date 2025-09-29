@@ -215,13 +215,8 @@ export function MarketAnalysisSummary({
           <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Overall Sentiment</div>
           <div className="flex items-center space-x-3">
             {getSentimentIcon()}
-            <div>
-              <div className={`text-lg font-semibold capitalize ${getSentimentColor()}`}>
-                {overallSentiment.strength} {overallSentiment.direction}
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {Math.round(overallSentiment.confidence * 100)}% confidence
-              </div>
+            <div className={`text-lg font-semibold capitalize ${getSentimentColor()}`}>
+              {overallSentiment.strength} {overallSentiment.direction}
             </div>
           </div>
         </div>
@@ -266,7 +261,9 @@ export function MarketAnalysisSummary({
           <div className="text-center">
             <div className="text-sm text-gray-600 dark:text-gray-400">Risk:Reward</div>
             <div className="text-lg font-semibold text-purple-600 dark:text-purple-400">
-              1:{priceAnalysis.profitTargets.riskRewardRatio}
+              {isNaN(priceAnalysis.profitTargets.riskRewardRatio) || !isFinite(priceAnalysis.profitTargets.riskRewardRatio) 
+                ? 'Unavailable' 
+                : `1:${priceAnalysis.profitTargets.riskRewardRatio}`}
             </div>
           </div>
         </div>
@@ -321,9 +318,9 @@ export function MarketAnalysisSummary({
 
       {/* Confidence Indicator */}
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Analysis Confidence</span>
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-gray-600 dark:text-gray-400 flex-shrink-0">Analysis Confidence:</span>
+          <div className="flex items-center gap-2">
             <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
               <div 
                 className="h-2 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-full transition-all duration-300"
