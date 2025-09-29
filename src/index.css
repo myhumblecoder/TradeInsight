@@ -6,15 +6,50 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Theme-aware CSS custom properties */
+  --bg-primary: theme('colors.gray.100');
+  --bg-secondary: theme('colors.white');
+  --text-primary: theme('colors.gray.900');
+  --text-secondary: theme('colors.gray.600');
+}
+
+/* Dark mode custom properties */
+.dark {
+  --bg-primary: theme('colors.gray.900');
+  --bg-secondary: theme('colors.gray.800');
+  --text-primary: theme('colors.white');
+  --text-secondary: theme('colors.gray.300');
+}
+
+/* Ensure body has consistent background */
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-primary, #f3f4f6);
+  color: var(--text-primary, #111827);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Light mode fallback */
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: #f3f4f6;
+    color: #111827;
+  }
+}
+
+/* Dark mode fallback */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #111827;
+    color: #f9fafb;
+  }
 }
 
 a {
@@ -26,12 +61,21 @@ a:hover {
   color: #535bf2;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+/* Page transition classes */
+.page-container {
+  opacity: 1;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.page-container.transitioning {
+  opacity: 0.95;
+}
+
+/* Respect user preferences for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .page-container {
+    transition: none;
+  }
 }
 
 h1 {

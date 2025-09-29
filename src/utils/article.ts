@@ -11,6 +11,9 @@ import {
 // LLM Provider Types
 type LLMProvider = 'openai' | 'ollama' | 'template'
 
+// Analysis Types for different content generation
+type AnalysisType = 'market-insights' | 'technical-report'
+
 // Re-export validated types for backwards compatibility
 export type { ArticleData, LLMResponse } from './validation'
 
@@ -26,12 +29,13 @@ interface CacheEntry {
 }
 
 const responseCache = new Map<string, CacheEntry>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes in milliseconds
+const CACHE_DURATION = 20 * 60 * 1000 // 20 minutes in milliseconds
 
 // Generate cache key from article data and provider
-const generateCacheKey = (data: ArticleData, provider: LLMProvider): string => {
+const generateCacheKey = (data: ArticleData, provider: LLMProvider, analysisType?: AnalysisType): string => {
   return JSON.stringify({
     provider,
+    analysisType: analysisType || 'technical-report',
     price: Math.round(data.price || 0),
     rsi: Math.round(data.rsi || 0),
     ema12: Math.round(data.ema12 || 0),
@@ -231,10 +235,89 @@ export const generateArticle = (data: unknown): ArticleResult => {
   return { text, confidence }
 }
 
+// Create prompts for different analysis types
+const createPrompt = (data: ArticleData, analysisType: AnalysisType): string => {
+  const cryptoName = data.cryptoName || 'Bitcoin'
+  const priceAnalysisText = data.priceAnalysis ? `
+Price Analysis:
+- Entry Points: Conservative: $${data.priceAnalysis.entryPoints.conservative}, Moderate: $${data.priceAnalysis.entryPoints.moderate}, Aggressive: $${data.priceAnalysis.entryPoints.aggressive}
+- Stop Loss: $${data.priceAnalysis.stopLoss.price} (${data.priceAnalysis.stopLoss.method})
+- Profit Targets: T1: $${data.priceAnalysis.profitTargets.target1}, T2: $${data.priceAnalysis.profitTargets.target2}
+- Risk Assessment: ${data.priceAnalysis.riskAssessment}
+- Analysis Confidence: ${Math.round(data.priceAnalysis.confidence * 100)}%` : ''
+  
+  const baseData = `
+Current Data for ${cryptoName}:
+Price: $${data.price}
+RSI: ${data.rsi || 'N/A'}
+EMA 12: ${data.ema12 || 'N/A'}
+EMA 26: ${data.ema26 || 'N/A'}
+MACD: ${data.macd ? `MACD: ${data.macd.MACD}, Signal: ${data.macd.signal}, Histogram: ${data.macd.histogram}` : 'N/A'}${priceAnalysisText}
+Timeframe: ${data.timeframe || '1d'}`
+
+  if (analysisType === 'market-insights') {
+    return `You are a professional crypto trading analyst providing real-time market insights for immediate decision-making.
+
+${baseData}
+
+Generate actionable market insights focused on:
+- **Immediate trading signals** and specific action items
+- **Risk-reward analysis** with clear entry/exit recommendations  
+- **Short-term outlook** (next few days/weeks)
+- **Current market sentiment** and momentum
+
+Format as markdown with:
+## Current Signal: [Bullish/Bearish/Neutral]
+
+### Action Items:
+- Specific trading recommendations
+- Entry levels and timing
+- Risk management advice
+
+### Key Risks:
+- Main downside scenarios to watch
+
+Keep it concise, actionable, and focused on immediate decisions. Use bullet points and clear formatting.`
+  } else {
+    return `You are a senior technical analyst providing comprehensive educational analysis for ${cryptoName}.
+
+${baseData}
+
+Generate an in-depth technical analysis report focused on:
+- **Detailed pattern recognition** and chart analysis explanations
+- **Longer-term trend analysis** (weeks to months perspective)  
+- **Educational content** explaining the "why" behind technical signals
+- **Historical context** and comparative market analysis
+- **Multiple timeframe perspective**
+
+Format as markdown with:
+## Technical Overview
+
+### Chart Pattern Analysis
+- Detailed explanation of current patterns
+- Historical significance and reliability
+
+### Indicator Deep Dive
+- Why each indicator is showing current readings
+- What this means for different timeframes
+
+### Longer-Term Outlook
+- Monthly/quarterly perspective
+- Key levels to watch over time
+
+### Educational Insights
+- Why these signals matter
+- How to interpret in different market conditions
+
+Focus on education and comprehensive understanding rather than immediate actions.`
+  }
+}
+
 export const generateLLMArticle = async (
   data: unknown, 
   useEnhanced: boolean = false, 
-  preferredProvider: LLMProvider = 'ollama'
+  preferredProvider: LLMProvider = 'ollama',
+  analysisType: AnalysisType = 'technical-report'
 ): Promise<ArticleResult> => {
   const validatedData = validateOrThrow(ArticleDataSchema, data, 'LLM article generation data')
   // Fallback to template if not using enhanced mode
@@ -243,11 +326,11 @@ export const generateLLMArticle = async (
   }
 
   // Check cache first
-  const cacheKey = generateCacheKey(validatedData, preferredProvider)
+  const cacheKey = generateCacheKey(validatedData, preferredProvider, analysisType)
   const cachedEntry = responseCache.get(cacheKey)
   
   if (cachedEntry && isCacheValid(cachedEntry)) {
-    console.log(`Using cached LLM response (${preferredProvider})`)
+    console.log(`Using cached LLM response (${preferredProvider}, ${analysisType})`)
     return cachedEntry.result
   }
 
@@ -257,16 +340,7 @@ export const generateLLMArticle = async (
   }
 
   try {
-    const prompt = `Generate a natural, engaging market analysis article for ${validatedData.cryptoName || 'Bitcoin'} based on the following technical data:
-
-Price: $${validatedData.price}
-RSI: ${validatedData.rsi || 'N/A'}
-EMA 12: ${validatedData.ema12 || 'N/A'}
-EMA 26: ${validatedData.ema26 || 'N/A'}
-MACD: ${validatedData.macd ? `MACD: ${validatedData.macd.MACD}, Signal: ${validatedData.macd.signal}, Histogram: ${validatedData.macd.histogram}` : 'N/A'}
-
-Write a concise, professional analysis (2-3 sentences) that explains the current market situation and provides actionable insights. Make it sound natural and engaging, not like a template.`
-
+    const prompt = createPrompt(validatedData, analysisType)
     const llmResponse = await callLLM(prompt, preferredProvider)
     const confidence = calculateConfidence(validatedData)
     const result = { text: llmResponse.text, confidence }
@@ -277,7 +351,7 @@ Write a concise, professional analysis (2-3 sentences) that explains the current
       timestamp: Date.now()
     })
 
-    console.log(`Cached new LLM response (${llmResponse.provider})`)
+    console.log(`Cached new LLM response (${llmResponse.provider}, ${analysisType})`)
     return result
   } catch (error) {
     console.warn('All LLM providers failed, falling back to template:', error)

@@ -1,10 +1,15 @@
 import { z } from 'zod'
 
 // Stripe webhook event schemas
-export const StripeSubscriptionSchema = z.object({
+// Base subscription schema with common fields
+export const BaseStripeSubscriptionSchema = z.object({
   id: z.string(),
+  metadata: z.record(z.string()).optional()
+})
+
+// Full subscription schema for active/updated subscriptions
+export const StripeSubscriptionSchema = BaseStripeSubscriptionSchema.extend({
   status: z.enum(['active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'trialing', 'unpaid']),
-  metadata: z.record(z.string()).optional(),
   current_period_start: z.number(),
   current_period_end: z.number(),
   cancel_at_period_end: z.boolean(),
@@ -17,10 +22,15 @@ export const StripeSubscriptionSchema = z.object({
   })
 })
 
+// More flexible webhook event schema that handles different event types
 export const StripeWebhookEventSchema = z.object({
   type: z.string(),
   data: z.object({
-    object: StripeSubscriptionSchema
+    object: z.union([
+      StripeSubscriptionSchema,
+      BaseStripeSubscriptionSchema,
+      z.object({}).passthrough() // Allow any object for unhandled event types
+    ])
   })
 })
 
@@ -46,7 +56,25 @@ export const ArticleDataSchema = z.object({
   ema12: z.number().positive().nullable(),
   ema26: z.number().positive().nullable(),
   macd: MACDDataSchema.nullable(),
-  cryptoName: z.string().optional()
+  cryptoName: z.string().optional(),
+  timeframe: z.string().optional(),
+  priceAnalysis: z.object({
+    entryPoints: z.object({
+      conservative: z.number(),
+      moderate: z.number(),
+      aggressive: z.number()
+    }),
+    stopLoss: z.object({
+      price: z.number(),
+      method: z.string().optional()
+    }),
+    profitTargets: z.object({
+      target1: z.number(),
+      target2: z.number()
+    }),
+    riskAssessment: z.string().optional(),
+    confidence: z.number()
+  }).optional()
 })
 
 // LLM response validation
@@ -111,6 +139,7 @@ export function validateOrThrow<T>(schema: z.ZodSchema<T>, data: unknown, contex
 
 // Export types for convenience
 export type StripeSubscription = z.infer<typeof StripeSubscriptionSchema>
+export type BaseStripeSubscription = z.infer<typeof BaseStripeSubscriptionSchema>
 export type StripeWebhookEvent = z.infer<typeof StripeWebhookEventSchema>
 export type CheckoutSessionParams = z.infer<typeof CheckoutSessionParamsSchema>
 export type ArticleData = z.infer<typeof ArticleDataSchema>

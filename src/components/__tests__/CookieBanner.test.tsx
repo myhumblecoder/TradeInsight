@@ -23,7 +23,7 @@ describe('CookieBanner', () => {
 
     render(<CookieBanner />)
 
-    expect(screen.getByText('We use cookies to improve your experience')).toBeInTheDocument()
+    expect(screen.getByText(/We use cookies to improve your experience/)).toBeInTheDocument()
     expect(screen.getByText('Accept All')).toBeInTheDocument()
     expect(screen.getByText('Manage Preferences')).toBeInTheDocument()
   })
@@ -92,7 +92,7 @@ describe('CookieBanner', () => {
     fireEvent.click(screen.getByText('Cancel'))
 
     expect(screen.queryByText('Cookie Preferences')).not.toBeInTheDocument()
-    expect(screen.getByText('We use cookies to improve your experience')).toBeInTheDocument()
+    expect(screen.getByText(/We use cookies to improve your experience/)).toBeInTheDocument()
   })
 
   it('should show expired consent banner after 30 days', () => {
@@ -106,6 +106,6 @@ describe('CookieBanner', () => {
 
     render(<CookieBanner />)
 
-    expect(screen.getByText('We use cookies to improve your experience')).toBeInTheDocument()
+    expect(screen.getByText(/We use cookies to improve your experience/)).toBeInTheDocument()
   })
 })

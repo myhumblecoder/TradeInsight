@@ -12,7 +12,7 @@ interface TopCrypto {
 
 // Simple in-memory cache
 const cache = new Map<string, { data: TopCrypto[], timestamp: number }>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+const CACHE_DURATION = 15 * 60 * 1000 // 15 minutes (reduce API calls)
 
 export function useTopCryptos() {
   const [data, setData] = useState<TopCrypto[]>([])
@@ -35,12 +35,22 @@ export function useTopCryptos() {
       try {
         setLoading(true)
         console.log('Fetching top cryptos...')
+        // Add delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000))
         const response = await fetch(
           '/api/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1'
         )
         console.log('Response status:', response.status)
         if (!response.ok) {
           if (response.status === 429) {
+            // Use cached data if available during rate limit
+            const lastCached = cache.get(cacheKey)
+            if (lastCached?.data && lastCached.data.length > 0) {
+              setData(lastCached.data)
+              setError(null)
+              logger.warn('Using cached top cryptos due to rate limiting')
+              return
+            }
             throw new Error('Rate limited, please try again later.')
           }
           throw new Error(`CoinGecko API error: ${response.status}`)
@@ -55,7 +65,15 @@ export function useTopCryptos() {
       } catch (err) {
         console.error('Error fetching top cryptos:', err)
         logger.error({ err }, 'Failed to fetch top cryptos')
-        setError(err instanceof Error ? err.message : 'Failed to load top cryptocurrencies')
+        // Try to use cached data even if expired during errors
+        const lastCached = cache.get(cacheKey)
+        if (lastCached?.data && lastCached.data.length > 0) {
+          setData(lastCached.data)
+          setError(null)
+          logger.warn('Using expired cached top cryptos due to API failure')
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to load top cryptocurrencies')
+        }
       } finally {
         setLoading(false)
       }

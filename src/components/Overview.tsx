@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { DarkModeToggle } from './DarkModeToggle'
 import { useTopCryptos } from '../hooks/useTopCryptos'
 import { useTheme } from '../contexts/ThemeContext'
+import { usePageTransition } from '../hooks/usePageTransition'
 
 // Map crypto IDs to display names for consistency
 const cryptoDisplayNames: Record<string, string> = {
@@ -15,6 +16,7 @@ const cryptoDisplayNames: Record<string, string> = {
 export function Overview() {
   const { isDark, toggleDarkMode } = useTheme()
   const { data: cryptos, loading, error } = useTopCryptos()
+  const { isTransitioning } = usePageTransition()
 
   if (loading) return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors flex items-center justify-center">
@@ -29,14 +31,14 @@ export function Overview() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors">
-      <header className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 shadow">
+    <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors page-container ${isTransitioning ? 'transitioning' : ''}`}>
+      <header className="flex justify-between items-center px-2 sm:px-4 lg:px-6 xl:px-8 py-4 bg-white dark:bg-gray-800 shadow">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">TradeInsight</h1>
         <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
       </header>
-      <main className="px-3 py-4 sm:p-4">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Top Cryptocurrencies</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+      <main className="px-2 py-4 sm:px-4 lg:px-6 xl:px-8 transition-opacity duration-150 ease-in-out">
+        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Top Cryptocurrencies</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3 sm:gap-4">
           {cryptos.map((crypto) => (
             <Link
               key={crypto.id}
