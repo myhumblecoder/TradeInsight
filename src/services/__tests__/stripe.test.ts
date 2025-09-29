@@ -1,10 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { loadStripe } from '@stripe/stripe-js'
-import { createCheckoutSession, redirectToCheckout, handleSubscriptionWebhook } from '../stripe'
 
-vi.mock('@stripe/stripe-js', () => ({
-  loadStripe: vi.fn()
-}))
+vi.mock('@stripe/stripe-js', async () => {
+  const actual = await vi.importActual('@stripe/stripe-js')
+  return {
+    ...actual,
+    loadStripe: vi.fn()
+  }
+})
+
+// Import after mocking to ensure the mock is applied before the module is evaluated
+import { createCheckoutSession, redirectToCheckout, handleSubscriptionWebhook } from '../stripe'
 
 vi.mock('../../config/supabase', () => ({
   supabase: {

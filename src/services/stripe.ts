@@ -8,7 +8,8 @@ import {
   ValidationError
 } from '../utils/validation'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+// Create a function to get the stripe promise lazily
+const getStripePromise = () => loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 // Re-export the validated type for backwards compatibility
 export type { CheckoutSessionParams } from '../utils/validation'
@@ -47,7 +48,7 @@ export const createCheckoutSession = async (params: unknown): Promise<string> =>
 }
 
 export const redirectToCheckout = async (sessionId: string): Promise<void> => {
-  const stripe = await stripePromise
+  const stripe = await getStripePromise()
 
   if (!stripe) {
     throw new Error('Stripe failed to load')
