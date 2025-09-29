@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useTopCryptos } from '../useTopCryptos'
 
@@ -8,10 +8,13 @@ global.fetch = mockFetch
 describe('useTopCryptos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Mock setTimeout to avoid delays in tests
+    vi.useFakeTimers({ shouldAdvanceTime: true })
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.useRealTimers()
   })
 
   it('fetches top cryptos successfully', async () => {
@@ -28,7 +31,7 @@ describe('useTopCryptos', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(mockData),
-    })
+    } as Response)
 
     const { result } = renderHook(() => useTopCryptos())
 
@@ -36,9 +39,14 @@ describe('useTopCryptos', () => {
     expect(result.current.data).toEqual([])
     expect(result.current.error).toBe(null)
 
+    // Fast-forward past the setTimeout delay and let async operations complete
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
-    })
+    }, { timeout: 3000 })
 
     expect(result.current.data).toEqual(mockData)
     expect(result.current.error).toBe(null)
@@ -52,9 +60,14 @@ describe('useTopCryptos', () => {
 
     const { result } = renderHook(() => useTopCryptos())
 
+    // Fast-forward past the setTimeout delay and let async operations complete
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+    })
+
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
-    })
+    }, { timeout: 3000 })
 
     expect(result.current.data).toEqual([])
     expect(result.current.error).toBe('Network error')

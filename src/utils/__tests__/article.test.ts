@@ -146,7 +146,7 @@ describe('LLM Cache', () => {
     expect(cacheInfo.size).toBe(0);
     expect(Array.isArray(cacheInfo.entries)).toBe(true);
     expect(typeof cacheInfo.duration).toBe('number');
-    expect(cacheInfo.duration).toBe(5 * 60 * 1000); // 5 minutes
+    expect(cacheInfo.duration).toBe(20 * 60 * 1000); // 20 minutes
   });
 
   it('should clear cache properly', () => {

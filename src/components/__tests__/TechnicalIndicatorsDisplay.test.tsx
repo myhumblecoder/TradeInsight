@@ -20,8 +20,8 @@ vi.mock('../../utils/indicators', () => ({
       bandwidth: 0.15
     },
     stochasticRSI: {
-      K: 75.2,
-      D: 72.8
+      k: 75.2,
+      d: 72.8
     },
     volumeProfile: {
       poc: 45200,
