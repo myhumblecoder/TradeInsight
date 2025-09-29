@@ -89,6 +89,7 @@ export function Detail() {
             entryPoints: priceAnalysis.entryPoints,
             stopLoss: priceAnalysis.stopLoss,
             profitTargets: priceAnalysis.profitTargets,
+            timeHorizon: priceAnalysis.timeHorizon,
             riskAssessment: priceAnalysis.riskAssessment,
             confidence: priceAnalysis.confidence
           } : null,
@@ -209,7 +210,7 @@ export function Detail() {
         </div>
 
 
-        {/* Market Analysis Summary */}
+        {/* Market Analysis */}
         {price && ohlcvData.length > 0 && (
           <MarketAnalysisSummary
             ohlcvData={ohlcvData}
@@ -231,7 +232,6 @@ export function Detail() {
               analysis={priceAnalysis}
               isLoading={isPriceAnalyzing}
               error={priceAnalysisError}
-              showMethodExplanations={true}
             />
           </div>
 
@@ -250,7 +250,7 @@ export function Detail() {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 h-full">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {enhancedMode ? 'AI Technical Analysis' : 'Technical Analysis Summary'}
+                  {enhancedMode ? 'AI Technical Analysis' : 'Technical Analysis'}
                 </h3>
                 {technicalReportLoading && (
                   <div className="flex items-center gap-2">

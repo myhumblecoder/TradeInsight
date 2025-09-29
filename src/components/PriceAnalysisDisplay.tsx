@@ -1,11 +1,11 @@
 import { type PriceAnalysis } from '../utils/priceAnalysis'
+import { Tooltip } from './Tooltip'
 
 interface PriceAnalysisDisplayProps {
   analysis: PriceAnalysis | null
   isLoading?: boolean
   error?: string | null
   compact?: boolean
-  showMethodExplanations?: boolean
   className?: string
 }
 
@@ -14,7 +14,6 @@ export function PriceAnalysisDisplay({
   isLoading = false,
   error = null,
   compact = false,
-  showMethodExplanations = false,
   className = ''
 }: PriceAnalysisDisplayProps) {
   const baseClassName = `price-analysis-display rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 ${compact ? 'compact' : ''}`
@@ -26,6 +25,29 @@ export function PriceAnalysisDisplay({
   const formatPercentage = (percentage: number): string => {
     return `${percentage.toFixed(1)}%`
   }
+
+  const PriceEntryWithTooltip = ({ 
+    label, 
+    price, 
+    explanation, 
+    colorClass 
+  }: {
+    label: string
+    price: number
+    explanation?: string
+    colorClass: string
+  }) => (
+    <div className="flex justify-between items-center">
+      <Tooltip content={explanation || 'No explanation available'} position="right">
+        <span className={`${colorClass} flex-shrink-0 cursor-help flex items-center`}>
+          {label}: {formatPrice(price)}
+          <svg className="w-3 h-3 ml-1 opacity-60" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+          </svg>
+        </span>
+      </Tooltip>
+    </div>
+  )
 
   // Loading state
   if (isLoading) {
@@ -104,24 +126,24 @@ export function PriceAnalysisDisplay({
             Entry Points
           </h4>
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-green-600 dark:text-green-400 flex-shrink-0">Conservative: {formatPrice(analysis.entryPoints.conservative)}</span>
-              {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.entryPoints.methods.conservative}</span>
-              )}
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-blue-600 dark:text-blue-400 flex-shrink-0">Moderate: {formatPrice(analysis.entryPoints.moderate)}</span>
-              {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.entryPoints.methods.moderate}</span>
-              )}
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-orange-600 dark:text-orange-400 flex-shrink-0">Aggressive: {formatPrice(analysis.entryPoints.aggressive)}</span>
-              {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.entryPoints.methods.aggressive}</span>
-              )}
-            </div>
+            <PriceEntryWithTooltip
+              label="Conservative"
+              price={analysis.entryPoints.conservative}
+              explanation={analysis.entryPoints.methods?.conservative}
+              colorClass="text-green-600 dark:text-green-400"
+            />
+            <PriceEntryWithTooltip
+              label="Moderate"
+              price={analysis.entryPoints.moderate}
+              explanation={analysis.entryPoints.methods?.moderate}
+              colorClass="text-blue-600 dark:text-blue-400"
+            />
+            <PriceEntryWithTooltip
+              label="Aggressive"
+              price={analysis.entryPoints.aggressive}
+              explanation={analysis.entryPoints.methods?.aggressive}
+              colorClass="text-orange-600 dark:text-orange-400"
+            />
           </div>
         </div>
 
@@ -133,12 +155,14 @@ export function PriceAnalysisDisplay({
             </svg>
             Stop Loss
           </h4>
-          <div className="text-red-600 dark:text-red-400">
-            {formatPrice(analysis.stopLoss.price)} ({formatPercentage(analysis.stopLoss.percentage)} below entry)
-          </div>
-          {showMethodExplanations && (
-            <div className="text-xs text-gray-500">{analysis.stopLoss.explanation}</div>
-          )}
+          <Tooltip content={analysis.stopLoss.explanation || 'Stop loss level calculated based on technical analysis'} position="right">
+            <div className="text-red-600 dark:text-red-400 cursor-help flex items-center">
+              {formatPrice(analysis.stopLoss.price)} ({formatPercentage(analysis.stopLoss.percentage)} below entry)
+              <svg className="w-3 h-3 ml-1 opacity-60" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </Tooltip>
         </div>
 
         {/* Profit Targets */}
@@ -150,26 +174,42 @@ export function PriceAnalysisDisplay({
             Profit Targets
           </h4>
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-green-600 dark:text-green-400 flex-shrink-0">Target 1: {formatPrice(analysis.profitTargets.target1)}</span>
-              {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.profitTargets.methods.target1}</span>
-              )}
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-green-600 dark:text-green-400 flex-shrink-0">Target 2: {formatPrice(analysis.profitTargets.target2)}</span>
-              {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.profitTargets.methods.target2}</span>
-              )}
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-green-600 dark:text-green-400 flex-shrink-0">Target 3: {formatPrice(analysis.profitTargets.target3)}</span>
-              {showMethodExplanations && (
-                <span className="text-xs text-gray-500 text-right ml-2">{analysis.profitTargets.methods.target3}</span>
-              )}
-            </div>
+            <PriceEntryWithTooltip
+              label="Target 1"
+              price={analysis.profitTargets.target1}
+              explanation={analysis.profitTargets.methods?.target1}
+              colorClass="text-green-600 dark:text-green-400"
+            />
+            <PriceEntryWithTooltip
+              label="Target 2"
+              price={analysis.profitTargets.target2}
+              explanation={analysis.profitTargets.methods?.target2}
+              colorClass="text-green-600 dark:text-green-400"
+            />
+            <PriceEntryWithTooltip
+              label="Target 3"
+              price={analysis.profitTargets.target3}
+              explanation={analysis.profitTargets.methods?.target3}
+              colorClass="text-green-600 dark:text-green-400"
+            />
             <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
-              Risk-Reward: 1:{analysis.profitTargets.riskRewardRatio}
+              <Tooltip 
+                content="For every $1 you risk, how much you could potentially gain. 1:2 = gain $2 for every $1 risked. Very high ratios indicate very tight stop losses." 
+                position="right"
+              >
+                <span className="cursor-help flex items-center">
+                  Risk-Reward: {
+                    isNaN(analysis.profitTargets.riskRewardRatio) 
+                      ? 'Unavailable' 
+                      : analysis.profitTargets.riskRewardRatio > 50 
+                        ? `1:${analysis.profitTargets.riskRewardRatio.toFixed(1)} (Very High)`
+                        : `1:${analysis.profitTargets.riskRewardRatio}`
+                  }
+                  <svg className="w-3 h-3 ml-1 opacity-60" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                </span>
+              </Tooltip>
             </div>
           </div>
         </div>

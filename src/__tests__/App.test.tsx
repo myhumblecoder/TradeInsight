@@ -24,10 +24,35 @@ vi.mock('../hooks/useTopCryptos', () => ({
 vi.mock('../hooks/usePriceAnalysis', () => ({
   usePriceAnalysis: () => ({
     analysis: {
-      entryPoints: { conservative: 48000, moderate: 47000, aggressive: 46000 },
-      stopLoss: { price: 45000, percentage: 5 },
-      profitTargets: { target1: 52000, target2: 55000, target3: 58000, riskRewardRatio: 2 },
-      riskAssessment: { risk: 'medium', factors: [] },
+      entryPoints: { 
+        conservative: 48000, 
+        moderate: 47000, 
+        aggressive: 46000,
+        methods: {
+          conservative: 'Support + 2%',
+          moderate: 'Fibonacci 61.8%',
+          aggressive: 'Current price - 2%'
+        }
+      },
+      stopLoss: { 
+        price: 45000, 
+        percentage: 5, 
+        method: 'atr', 
+        explanation: '2x ATR below entry' 
+      },
+      profitTargets: { 
+        target1: 52000, 
+        target2: 55000, 
+        target3: 58000, 
+        riskRewardRatio: 2,
+        methods: {
+          target1: '1:2 risk-reward',
+          target2: '1:3 risk-reward', 
+          target3: 'Resistance level'
+        }
+      },
+      timeHorizon: '1d',
+      riskAssessment: 'Medium - Balanced timeframe suitable for swing trading',
       confidence: 0.75
     },
     isAnalyzing: false,

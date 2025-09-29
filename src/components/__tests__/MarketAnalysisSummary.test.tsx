@@ -54,7 +54,7 @@ describe('MarketAnalysisSummary', () => {
       />
     )
 
-    expect(screen.getByText('Market Analysis Summary')).toBeInTheDocument()
+    expect(screen.getByText('Market Analysis')).toBeInTheDocument()
     expect(screen.getByText(/Bitcoin/)).toBeInTheDocument()
     expect(screen.getByText('$105.00')).toBeInTheDocument()
   })
