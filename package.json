@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "test": "vitest",
     "test:ci": "vitest run --reporter=dot --bail=1",
+    "test:ci:coverage": "vitest run --reporter=dot --coverage",
     "test:ui": "vitest --ui",
     "preview": "vite preview"
   },
