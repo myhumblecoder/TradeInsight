@@ -40,26 +40,21 @@ describe('StripeWebhookEventSchema', () => {
     expect(isValidStripeWebhookEvent(validEvent)).toBe(true)
   })
 
-  it('should reject invalid webhook event', () => {
-    const invalidEvent = {
-      type: 'invalid_type',
+  it('should accept unknown webhook event types via passthrough', () => {
+    const unknownEvent = {
+      type: 'some.unknown.event',
       data: {
         object: {
-          id: 'sub_1234567890',
-          status: 'invalid_status', // Invalid status
-          current_period_start: 'invalid_timestamp', // Should be number
-          current_period_end: 1706572800,
-          cancel_at_period_end: false,
-          items: {
-            data: []
-          }
+          id: 'obj_1234567890',
+          custom_field: 'custom_value',
+          // Any structure is allowed for unknown events
         }
       }
     }
 
-    const result = StripeWebhookEventSchema.safeParse(invalidEvent)
-    expect(result.success).toBe(false)
-    expect(isValidStripeWebhookEvent(invalidEvent)).toBe(false)
+    const result = StripeWebhookEventSchema.safeParse(unknownEvent)
+    expect(result.success).toBe(true)
+    expect(isValidStripeWebhookEvent(unknownEvent)).toBe(true)
   })
 
   it('should handle missing metadata', () => {

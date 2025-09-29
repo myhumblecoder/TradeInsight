@@ -8,10 +8,13 @@ global.fetch = mockFetch
 describe('useTopCryptos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Mock setTimeout to avoid delays in tests
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.useRealTimers()
   })
 
   it('fetches top cryptos successfully', async () => {
@@ -36,6 +39,9 @@ describe('useTopCryptos', () => {
     expect(result.current.data).toEqual([])
     expect(result.current.error).toBe(null)
 
+    // Fast-forward past the setTimeout delay
+    vi.advanceTimersByTime(1000)
+
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
     })
@@ -51,6 +57,9 @@ describe('useTopCryptos', () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'))
 
     const { result } = renderHook(() => useTopCryptos())
+
+    // Fast-forward past the setTimeout delay
+    vi.advanceTimersByTime(1000)
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
