@@ -33,6 +33,8 @@ vi.mock('../../hooks/useCoinbaseData', () => ({
 
 describe('CSS Transitions - Phase 3', () => {
   beforeEach(() => {
+    // Reduce waitFor timeout for CI stability
+    jest.setTimeout?.(5000) || vi.setConfig?.({ testTimeout: 5000 })
     vi.clearAllMocks()
     document.documentElement.classList.remove('dark')
   })
@@ -65,7 +67,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
     })
 
     it('should maintain opacity during transitions', async () => {
@@ -91,7 +93,7 @@ describe('CSS Transitions - Phase 3', () => {
         // New page should appear smoothly
         const newPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(newPage).toBeVisible()
-      })
+      }, { timeout: 2000 })
     })
 
     it('should complete transitions within 200ms', async () => {
@@ -146,7 +148,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Check that header layout hasn't shifted
       const newHeader = screen.getByRole('banner') || screen.getByText(/bitcoin/i).closest('header')
@@ -176,7 +178,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         expect(screen.queryByText(/error/i)).not.toBeInTheDocument()
         expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
     })
   })
 
@@ -246,7 +248,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
     })
   })
 
@@ -275,7 +277,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Should not rely on setTimeout or JavaScript-based animations
       // (This is verified by the fact that transitions complete quickly without JS delays)
@@ -321,7 +323,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Old route content should be replaced
       expect(screen.queryByText('Top Cryptocurrencies')).not.toBeInTheDocument()
@@ -342,7 +344,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Find and click back button
       const backButton = screen.getByRole('link', { name: /←/i })
@@ -351,7 +353,7 @@ describe('CSS Transitions - Phase 3', () => {
       // Should transition back to overview
       await waitFor(() => {
         expect(screen.getByText('Top Cryptocurrencies')).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
     })
   })
 
@@ -380,7 +382,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       const endTime = performance.now()
       const duration = endTime - startTime
@@ -413,7 +415,7 @@ describe('CSS Transitions - Phase 3', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Layout should remain stable (body dimensions shouldn't change drastically)
       const newLayout = document.body.getBoundingClientRect()

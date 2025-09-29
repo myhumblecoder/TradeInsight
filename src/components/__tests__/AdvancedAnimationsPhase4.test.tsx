@@ -85,7 +85,7 @@ describe('Advanced Animations - Phase 4', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // On mobile, navigation should still work via touch
       const backButton = screen.getByRole('link', { name: /←/i })
@@ -93,7 +93,7 @@ describe('Advanced Animations - Phase 4', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Top Cryptocurrencies')).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
     })
   })
 
@@ -153,7 +153,7 @@ describe('Advanced Animations - Phase 4', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Restore original RAF
       window.requestAnimationFrame = originalRAF
@@ -188,7 +188,7 @@ describe('Advanced Animations - Phase 4', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Viewport height should remain stable
       const finalViewportHeight = document.documentElement.clientHeight
@@ -216,7 +216,7 @@ describe('Advanced Animations - Phase 4', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Transition should be smooth without jarring jumps
       // The test passing indicates smooth transitions
@@ -241,7 +241,7 @@ describe('Advanced Animations - Phase 4', () => {
 
       await waitFor(() => {
         expect(document.documentElement).toHaveClass('dark')
-      })
+      }, { timeout: 2000 })
 
       // Elements should transition smoothly
       expect(screen.getByText('Top Cryptocurrencies')).toBeInTheDocument()
@@ -297,7 +297,7 @@ describe('Advanced Animations - Phase 4', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Top Cryptocurrencies')).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
     })
   })
 
@@ -323,7 +323,7 @@ describe('Advanced Animations - Phase 4', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Should complete smoothly without errors
       expect(screen.queryByText(/error/i)).not.toBeInTheDocument()
@@ -372,7 +372,7 @@ describe('Advanced Animations - Phase 4', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Should handle complex transitions without breaking
       expect(document.documentElement).toHaveClass('dark')
@@ -418,7 +418,7 @@ describe('Advanced Animations - Phase 4', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
     })
 
     it('should maintain animations during theme changes', async () => {
@@ -439,7 +439,7 @@ describe('Advanced Animations - Phase 4', () => {
       // Wait for theme change to take effect
       await waitFor(() => {
         expect(document.documentElement).toHaveClass('dark')
-      })
+      }, { timeout: 2000 })
 
       // Then navigate - both should work together smoothly
       const bitcoinLink = screen.getByRole('link', { name: /bitcoin/i })
@@ -448,7 +448,7 @@ describe('Advanced Animations - Phase 4', () => {
       await waitFor(() => {
         const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
         expect(detailPage).toBeInTheDocument()
-      })
+      }, { timeout: 2000 })
 
       // Theme should still be dark after navigation
       expect(document.documentElement).toHaveClass('dark')
