@@ -239,7 +239,7 @@ describe('handleSubscriptionWebhook validation', () => {
 
     const result = await handleSubscriptionWebhook(malformedWebhook)
     expect(result.success).toBe(false)
-    expect(result.message).toContain('Validation error')
+    expect(result.message).toContain('Invalid subscription')
   })
 
   it('should return validation error for missing required fields', async () => {
@@ -255,7 +255,7 @@ describe('handleSubscriptionWebhook validation', () => {
 
     const result = await handleSubscriptionWebhook(incompleteWebhook)
     expect(result.success).toBe(false)
-    expect(result.message).toContain('Validation error')
+    expect(result.message).toContain('Invalid subscription data - missing required fields')
   })
 
   it('should handle webhook with missing metadata gracefully', async () => {
