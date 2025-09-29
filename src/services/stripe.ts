@@ -2,7 +2,8 @@ import { loadStripe } from '@stripe/stripe-js'
 import { supabase } from '../config/supabase'
 import { 
   validateOrThrow, 
-  StripeWebhookEventSchema, 
+  StripeWebhookEventSchema,
+  StripeSubscriptionSchema, 
   CheckoutSessionParamsSchema,
   ValidationError
 } from '../utils/validation'
@@ -75,14 +76,27 @@ export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<W
           return { success: false, message: 'Database not available' }
         }
 
+        // Type guard to ensure we have a full subscription object
+        if (!('status' in subscription) || !('items' in subscription) || !('current_period_start' in subscription)) {
+          return { success: false, message: 'Invalid subscription data - missing required fields' }
+        }
+        
+        // Validate that the subscription matches our expected schema
+        const validationResult = StripeSubscriptionSchema.safeParse(subscription)
+        if (!validationResult.success) {
+          return { success: false, message: 'Invalid subscription schema' }
+        }
+        
+        const validatedSubscription = validationResult.data
+
         const subscriptionData = {
-          user_id: subscription.metadata?.userId || null,
-          stripe_subscription_id: subscription.id,
-          status: subscription.status,
-          price_id: subscription.items.data[0]?.price.id || null,
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          cancel_at_period_end: subscription.cancel_at_period_end,
+          user_id: validatedSubscription.metadata?.userId || null,
+          stripe_subscription_id: validatedSubscription.id,
+          status: validatedSubscription.status,
+          price_id: validatedSubscription.items.data[0]?.price.id || null,
+          current_period_start: new Date(validatedSubscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(validatedSubscription.current_period_end * 1000).toISOString(),
+          cancel_at_period_end: validatedSubscription.cancel_at_period_end,
           updated_at: new Date().toISOString(),
         }
 

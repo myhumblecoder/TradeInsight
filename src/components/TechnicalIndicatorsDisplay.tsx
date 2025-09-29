@@ -213,14 +213,14 @@ export function TechnicalIndicatorsDisplay({
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Stoch RSI K</span>
                 <span className="font-medium text-gray-900 dark:text-white">
-                  {formatValue(analysis.stochasticRSI?.k || analysis.stochasticRSI?.K)}
+                  {formatValue(analysis.stochasticRSI?.k)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Stoch RSI D</span>
                 <div className="text-right">
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {formatValue(analysis.stochasticRSI?.d || analysis.stochasticRSI?.D)}
+                    {formatValue(analysis.stochasticRSI?.d)}
                   </span>
                   <div className={`text-xs ${getSignalColor(analysis.signals?.stochRSI || 'neutral')}`}>
                     {getSignalBadge(analysis.signals?.stochRSI || 'neutral')}

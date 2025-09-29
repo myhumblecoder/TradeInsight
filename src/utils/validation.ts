@@ -56,7 +56,25 @@ export const ArticleDataSchema = z.object({
   ema12: z.number().positive().nullable(),
   ema26: z.number().positive().nullable(),
   macd: MACDDataSchema.nullable(),
-  cryptoName: z.string().optional()
+  cryptoName: z.string().optional(),
+  timeframe: z.string().optional(),
+  priceAnalysis: z.object({
+    entryPoints: z.object({
+      conservative: z.number(),
+      moderate: z.number(),
+      aggressive: z.number()
+    }),
+    stopLoss: z.object({
+      price: z.number(),
+      method: z.string().optional()
+    }),
+    profitTargets: z.object({
+      target1: z.number(),
+      target2: z.number()
+    }),
+    riskAssessment: z.string().optional(),
+    confidence: z.number()
+  }).optional()
 })
 
 // LLM response validation

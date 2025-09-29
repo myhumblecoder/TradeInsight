@@ -4,7 +4,7 @@ import { TimeInterval, getTimeIntervalConfig, formatTimeInterval, getGranularity
 describe('Time Intervals Utils', () => {
   describe('getTimeIntervalConfig', () => {
     it('should return correct config for all supported intervals', () => {
-      const intervals: TimeInterval[] = ['5m', '15m', '30m', '1h', '4h', '1d', '1w']
+      const intervals: TimeInterval[] = ['5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M']
       
       intervals.forEach(interval => {
         const config = getTimeIntervalConfig(interval)
@@ -27,6 +27,7 @@ describe('Time Intervals Utils', () => {
       expect(getTimeIntervalConfig('4h').seconds).toBe(14400)
       expect(getTimeIntervalConfig('1d').seconds).toBe(86400)
       expect(getTimeIntervalConfig('1w').seconds).toBe(604800)
+      expect(getTimeIntervalConfig('1M').seconds).toBe(2592000)
     })
 
     it('should categorize intervals correctly', () => {
@@ -37,6 +38,7 @@ describe('Time Intervals Utils', () => {
       expect(getTimeIntervalConfig('4h').category).toBe('Medium-term')
       expect(getTimeIntervalConfig('1d').category).toBe('Long-term')
       expect(getTimeIntervalConfig('1w').category).toBe('Long-term')
+      expect(getTimeIntervalConfig('1M').category).toBe('Long-term')
     })
   })
 
@@ -49,6 +51,7 @@ describe('Time Intervals Utils', () => {
       expect(formatTimeInterval('4h')).toBe('4 Hours')
       expect(formatTimeInterval('1d')).toBe('1 Day')
       expect(formatTimeInterval('1w')).toBe('1 Week')
+      expect(formatTimeInterval('1M')).toBe('1 Month')
     })
   })
 
@@ -61,6 +64,7 @@ describe('Time Intervals Utils', () => {
       expect(getGranularityFromInterval('4h')).toBe(14400)
       expect(getGranularityFromInterval('1d')).toBe(86400)
       expect(getGranularityFromInterval('1w')).toBe(604800)
+      expect(getGranularityFromInterval('1M')).toBe(2592000)
     })
   })
 })
