@@ -35,11 +35,3 @@ jobs:
       
       - name: Build application
         run: npm run build
-      
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        if: github.ref == 'refs/heads/main'
-        with:
-          name: build-files
-          path: dist/
-          retention-days: 7
