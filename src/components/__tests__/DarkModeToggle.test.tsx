@@ -1,8 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { DarkModeToggle } from '../DarkModeToggle'
 
 describe('DarkModeToggle', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   it('should toggle dark mode on click', () => {
     const mockToggle = vi.fn()
     render(<DarkModeToggle isDark={false} onToggle={mockToggle} />)

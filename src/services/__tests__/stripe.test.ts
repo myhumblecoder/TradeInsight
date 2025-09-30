@@ -1,19 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { loadStripe } from '@stripe/stripe-js'
+
+vi.mock('@stripe/stripe-js', async () => {
+  const actual = await vi.importActual('@stripe/stripe-js')
+  return {
+    ...actual,
+    loadStripe: vi.fn()
+  }
+})
+
+// Import after mocking to ensure the mock is applied before the module is evaluated
 import { createCheckoutSession, redirectToCheckout, handleSubscriptionWebhook } from '../stripe'
 
-vi.mock('@stripe/stripe-js')
-const mockSupabase = {
-  from: vi.fn(() => ({
-    upsert: vi.fn(() => Promise.resolve({ data: {}, error: null })),
-    update: vi.fn(() => ({
-      eq: vi.fn(() => Promise.resolve({ data: {}, error: null }))
+vi.mock('../../config/supabase', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      upsert: vi.fn(() => Promise.resolve({ data: {}, error: null })),
+      update: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ data: {}, error: null }))
+      })),
+      delete: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ data: {}, error: null }))
+      }))
     }))
-  }))
-}
-
-vi.mock('../config/supabase', () => ({
-  supabase: mockSupabase
+  }
 }))
 
 const mockLoadStripe = vi.mocked(loadStripe)
@@ -24,6 +34,10 @@ const mockFetch = vi.mocked(fetch)
 describe('Stripe Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    
+    // Mock loadStripe to return null by default, tests will override as needed
+    mockLoadStripe.mockResolvedValue(null)
+    
     process.env.VITE_STRIPE_PUBLISHABLE_KEY = 'pk_test_123'
   })
 
@@ -78,7 +92,7 @@ describe('Stripe Service', () => {
       const mockStripe = {
         redirectToCheckout: vi.fn().mockResolvedValue({ error: null })
       }
-      mockLoadStripe.mockResolvedValue(mockStripe as unknown as Awaited<ReturnType<typeof loadStripe>>)
+      mockLoadStripe.mockResolvedValueOnce(mockStripe as unknown as Awaited<ReturnType<typeof loadStripe>>)
 
       await redirectToCheckout('cs_test_123')
 
@@ -89,7 +103,7 @@ describe('Stripe Service', () => {
     })
 
     it('should throw error when Stripe fails to load', async () => {
-      mockLoadStripe.mockResolvedValue(null)
+      mockLoadStripe.mockResolvedValueOnce(null)
 
       await expect(redirectToCheckout('cs_test_123')).rejects.toThrow('Stripe failed to load')
     })
@@ -100,7 +114,7 @@ describe('Stripe Service', () => {
           error: { message: 'Payment failed' }
         })
       }
-      mockLoadStripe.mockResolvedValue(mockStripe as unknown as Awaited<ReturnType<typeof loadStripe>>)
+      mockLoadStripe.mockResolvedValueOnce(mockStripe as unknown as Awaited<ReturnType<typeof loadStripe>>)
 
       await expect(redirectToCheckout('cs_test_123')).rejects.toThrow('Payment failed')
     })
@@ -208,7 +222,7 @@ describe('Stripe Service', () => {
       const result = await handleSubscriptionWebhook(webhookData)
 
       expect(result.success).toBe(false)
-expect(result.message).toContain('Validation error')
+      expect(result.message).toContain('Invalid subscription data - missing required fields')
     })
   })
 })

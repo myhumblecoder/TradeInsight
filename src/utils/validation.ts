@@ -62,19 +62,34 @@ export const ArticleDataSchema = z.object({
     entryPoints: z.object({
       conservative: z.number(),
       moderate: z.number(),
-      aggressive: z.number()
+      aggressive: z.number(),
+      methods: z.object({
+        conservative: z.string(),
+        moderate: z.string(),
+        aggressive: z.string()
+      }).optional()
     }),
     stopLoss: z.object({
       price: z.number(),
-      method: z.string().optional()
+      percentage: z.number(),
+      method: z.enum(['percentage', 'atr', 'support']),
+      explanation: z.string()
     }),
     profitTargets: z.object({
       target1: z.number(),
-      target2: z.number()
+      target2: z.number(),
+      target3: z.number(),
+      riskRewardRatio: z.number(),
+      methods: z.object({
+        target1: z.string(),
+        target2: z.string(),
+        target3: z.string()
+      }).optional()
     }),
+    timeHorizon: z.string().optional(),
     riskAssessment: z.string().optional(),
     confidence: z.number()
-  }).optional()
+  }).nullable().optional()
 })
 
 // LLM response validation

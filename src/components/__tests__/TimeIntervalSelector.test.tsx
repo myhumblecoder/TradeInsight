@@ -1,10 +1,14 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { TimeIntervalSelector } from '../TimeIntervalSelector'
 import type { TimeInterval } from '../../utils/timeIntervals'
 
 describe('TimeIntervalSelector', () => {
   const mockOnChange = vi.fn()
+
+  afterEach(() => {
+    cleanup()
+  })
 
   beforeEach(() => {
     mockOnChange.mockClear()

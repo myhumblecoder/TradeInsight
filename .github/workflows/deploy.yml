@@ -50,7 +50,7 @@ jobs:
         run: npm run lint
       
       - name: Run tests with coverage
-        run: npm run test -- --run --coverage
+        run: npm run test:ci:coverage
       
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4

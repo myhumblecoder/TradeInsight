@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '../../contexts/ThemeContext'
 import { LoadingOverlay } from '../LoadingOverlay'
@@ -8,6 +8,10 @@ describe('Loading Overlay - Phase 2', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     document.documentElement.classList.remove('dark')
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   describe('Basic functionality', () => {

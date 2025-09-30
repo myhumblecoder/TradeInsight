@@ -19,5 +19,16 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     dangerouslyIgnoreUnhandledErrors: true,
+    testTimeout: 6000, // 6 second timeout for all tests to prevent CI hangs
+    hookTimeout: 3000, // 3 second timeout for hooks (beforeEach, etc)
+    // Force timeouts in CI environment
+    teardownTimeout: 3000, // 3 second timeout for cleanup
+    // Pool options for CI stability
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true, // Use single fork to prevent resource issues in CI
+      }
+    }
   },
 })

@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { TechnicalIndicatorsDisplay } from '../TechnicalIndicatorsDisplay'
 import { type OHLCV } from '../../utils/priceAnalysis'
 
@@ -20,8 +20,8 @@ vi.mock('../../utils/indicators', () => ({
       bandwidth: 0.15
     },
     stochasticRSI: {
-      K: 75.2,
-      D: 72.8
+      k: 75.2,
+      d: 72.8
     },
     volumeProfile: {
       poc: 45200,
@@ -64,6 +64,10 @@ const mockOHLCVData: OHLCV[] = Array.from({ length: 50 }, (_, i) => ({
 }))
 
 describe('TechnicalIndicatorsDisplay', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   it('should render all basic indicators correctly', () => {
     render(
       <TechnicalIndicatorsDisplay

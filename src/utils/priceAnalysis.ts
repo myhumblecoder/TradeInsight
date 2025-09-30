@@ -195,10 +195,25 @@ export function calculateStopLoss(
     }
     
     case 'atr': {
-      const atr = calculateATR(data)
+      const rawATR = calculateATR(data)
+      
+      // Apply minimum ATR based on price level to avoid unrealistic tight stops
+      let minATR: number
+      if (entryPrice > 50000) {
+        minATR = entryPrice * 0.015 // 1.5% minimum for high-value assets like Bitcoin
+      } else if (entryPrice > 1000) {
+        minATR = entryPrice * 0.02 // 2% minimum for mid-value assets
+      } else {
+        minATR = entryPrice * 0.03 // 3% minimum for low-value assets
+      }
+      
+      const atr = Math.max(rawATR, minATR)
+      
       price = entryPrice - (atr * 2) // 2x ATR
       percentage = ((entryPrice - price) / entryPrice) * 100
-      explanation = `2x ATR (${atr.toFixed(2)}) below entry price`
+      explanation = atr > rawATR 
+        ? `2x minimum ATR (${atr.toFixed(2)}) below entry price`
+        : `2x ATR (${atr.toFixed(2)}) below entry price`
       break
     }
     
@@ -226,9 +241,20 @@ export function calculateProfitTargets(data: OHLCV[], entryPrice: number, stopLo
   const risk = entryPrice - stopLossPrice
   const levels = findSupportResistanceLevels(data)
   
-  // Risk-reward based targets
-  const target1 = entryPrice + (risk * 2) // 1:2 risk-reward
-  const target2 = entryPrice + (risk * 3) // 1:3 risk-reward
+  // Ensure minimum meaningful risk for target calculations
+  // If risk is too small (less than 1% of entry price), use percentage-based targets
+  const minRisk = entryPrice * 0.01 // 1% minimum
+  const effectiveRisk = Math.max(risk, minRisk)
+  
+  // Risk-reward based targets using effective risk
+  let target1 = entryPrice + (effectiveRisk * 2) // 1:2 risk-reward
+  let target2 = entryPrice + (effectiveRisk * 3) // 1:3 risk-reward
+  
+  // If still too close to entry price, use percentage-based fallback
+  if (target1 - entryPrice < entryPrice * 0.02) { // Less than 2% gain
+    target1 = entryPrice * 1.05 // 5% above entry
+    target2 = entryPrice * 1.10 // 10% above entry
+  }
   
   // Enhanced Fibonacci extension calculations
   const recentData = data.slice(-20)
@@ -238,8 +264,13 @@ export function calculateProfitTargets(data: OHLCV[], entryPrice: number, stopLo
   // Use advanced Fibonacci Extensions utility
   const fibExtensions = calculateFibonacciExtensions(recentHigh, recentLow, entryPrice)
   
-  let target3 = entryPrice + (risk * 4) // Default 1:4 risk-reward
+  let target3 = entryPrice + (effectiveRisk * 4) // Default 1:4 risk-reward
   let target3Method = '1:4 risk-reward ratio'
+  
+  // Ensure target3 is properly spaced above target2
+  if (target3 - target2 < entryPrice * 0.03) { // Less than 3% between targets
+    target3 = entryPrice * 1.15 // 15% above entry as fallback
+  }
   
   // Use resistance levels if available and reasonable
   if (levels.resistance.length > 0) {
@@ -264,13 +295,22 @@ export function calculateProfitTargets(data: OHLCV[], entryPrice: number, stopLo
     }
   }
   
-  const riskRewardRatio = (target1 - entryPrice) / risk
+  // Calculate risk-reward ratio using the same risk that was used for target calculation
+  let riskRewardRatio: number
+  const actualReward = target1 - entryPrice
+  const actualRisk = entryPrice - stopLossPrice
+  
+  if (actualRisk <= 0 || !isFinite(actualRisk)) {
+    riskRewardRatio = NaN // Will be handled in the display component
+  } else {
+    riskRewardRatio = actualReward / actualRisk
+  }
   
   return {
     target1: Math.round(target1 * 100) / 100,
     target2: Math.round(target2 * 100) / 100,
     target3: Math.round(target3 * 100) / 100,
-    riskRewardRatio: Math.round(riskRewardRatio * 10) / 10,
+    riskRewardRatio: isFinite(riskRewardRatio) ? Math.round(riskRewardRatio * 10) / 10 : NaN,
     methods: {
       target1: `1:2 risk-reward ratio (Risk: $${risk.toFixed(2)})`,
       target2: `1:3 risk-reward ratio`,
