@@ -34,9 +34,7 @@ vi.mock('../../hooks/useCoinbaseData', () => ({
 describe('CSS Transitions - Phase 3', () => {
   beforeEach(() => {
     // Reduce waitFor timeout for CI stability
-    if (jest.setTimeout) {
-      jest.setTimeout(5000)
-    } else if (vi.setConfig) {
+    if (vi.setConfig) {
       vi.setConfig({ testTimeout: 5000 })
     }
     vi.clearAllMocks()
