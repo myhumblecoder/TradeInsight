@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
@@ -40,6 +40,7 @@ describe('Page Transitions - Phase 1 Baseline', () => {
 
   afterEach(() => {
     // Clean up after each test
+    cleanup()
     document.documentElement.classList.remove('dark')
   })
 
