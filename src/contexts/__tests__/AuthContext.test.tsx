@@ -1,5 +1,5 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { AuthProvider } from '../AuthContext'
 import { useAuth } from '../../hooks/useAuth'
 import { useAuth0 } from '@auth0/auth0-react'
@@ -57,6 +57,10 @@ const TestComponent = () => {
 describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   it('should show loading state initially', () => {
