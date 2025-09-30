@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { UpgradeButton } from '../UpgradeButton'
 import { useAuth } from '../../hooks/useAuth'
 import * as stripeService from '../../services/stripe'
@@ -14,6 +14,10 @@ const mockRedirectToCheckout = vi.mocked(stripeService.redirectToCheckout)
 describe('UpgradeButton', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   it('should show login prompt for unauthenticated users', () => {
