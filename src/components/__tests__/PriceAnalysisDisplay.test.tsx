@@ -1,9 +1,13 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, afterEach } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
 import { PriceAnalysisDisplay } from '../PriceAnalysisDisplay'
 import type { PriceAnalysis } from '../../utils/priceAnalysis'
 
 describe('PriceAnalysisDisplay', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   const mockAnalysis: PriceAnalysis = {
     entryPoints: {
       conservative: 105,
