@@ -29,6 +29,7 @@
     "src/**/*.test.*",
     "src/**/__tests__/**",
     "**/*.test.ts",
-    "**/*.test.tsx"
+    "**/*.test.tsx",
+    "src/services/firebase-*.ts"
   ]
 }
