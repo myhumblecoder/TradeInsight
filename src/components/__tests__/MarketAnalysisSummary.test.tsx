@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
 import { MarketAnalysisSummary } from '../MarketAnalysisSummary'
 import type { OHLCV } from '../../utils/priceAnalysis'
 
@@ -42,6 +42,10 @@ describe('MarketAnalysisSummary', () => {
       },
       isAnalyzing: false
     })
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   it('should render market analysis summary', () => {
