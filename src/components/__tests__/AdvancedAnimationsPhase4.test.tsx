@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, waitFor, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { AppContent } from '../AppContent'
@@ -35,6 +35,10 @@ describe('Advanced Animations - Phase 4', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     document.documentElement.classList.remove('dark')
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   describe('Slide transitions for mobile', () => {
