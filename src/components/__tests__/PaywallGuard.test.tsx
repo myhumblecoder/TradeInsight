@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { PaywallGuard } from '../PaywallGuard'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -9,6 +9,9 @@ const mockUseAuth = vi.mocked(useAuth)
 const PremiumContent = () => <div data-testid="premium-content">Premium Feature</div>
 
 describe('PaywallGuard', () => {
+  afterEach(() => {
+    cleanup()
+  })
   it('should show content for users with active subscription', () => {
     mockUseAuth.mockReturnValue({
       user: {

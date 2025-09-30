@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
 import { MarketAnalysisSummary } from '../MarketAnalysisSummary'
 import type { OHLCV } from '../../utils/priceAnalysis'
 
@@ -44,6 +44,10 @@ describe('MarketAnalysisSummary', () => {
     })
   })
 
+  afterEach(() => {
+    cleanup()
+  })
+
   it('should render market analysis summary', () => {
     render(
       <MarketAnalysisSummary
@@ -54,7 +58,7 @@ describe('MarketAnalysisSummary', () => {
       />
     )
 
-    expect(screen.getByText('Market Analysis Summary')).toBeInTheDocument()
+    expect(screen.getByText('Market Analysis')).toBeInTheDocument()
     expect(screen.getByText(/Bitcoin/)).toBeInTheDocument()
     expect(screen.getByText('$105.00')).toBeInTheDocument()
   })

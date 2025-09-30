@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { Overview } from '../Overview'
 import { useTopCryptos } from '../../hooks/useTopCryptos'
@@ -10,6 +10,9 @@ vi.mock('../../hooks/useTopCryptos')
 const mockUseTopCryptos = vi.mocked(useTopCryptos)
 
 describe('Overview', () => {
+  afterEach(() => {
+    cleanup()
+  })
   beforeEach(() => {
     vi.clearAllMocks()
   })

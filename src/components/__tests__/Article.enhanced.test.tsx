@@ -1,8 +1,11 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, afterEach } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
 import { Article } from '../Article'
 
 describe('Article Component - Enhanced with Markdown', () => {
+  afterEach(() => {
+    cleanup()
+  })
   it('should render plain text when not enhanced', () => {
     const plainText = 'Bitcoin is trading at $50,000. This is a simple analysis.'
     

@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { Detail } from '../Detail'
 import { useCoinbaseData } from '../../hooks/useCoinbaseData'
@@ -30,6 +30,10 @@ describe('Detail', () => {
       isAnalyzing: false,
       error: null,
     })
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   it('renders loading state', () => {
@@ -93,7 +97,7 @@ describe('Detail', () => {
     )
 
     expect(screen.getByText('Bitcoin')).toBeInTheDocument()
-    expect(screen.getByText('Market Analysis Summary')).toBeInTheDocument()
+    expect(screen.getByText('Market Analysis')).toBeInTheDocument()
     expect(screen.getByText('Test article')).toBeInTheDocument()
     expect(screen.getByText('Confidence Score: 75%')).toBeInTheDocument()
   })

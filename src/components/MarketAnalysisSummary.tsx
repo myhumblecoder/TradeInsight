@@ -195,7 +195,7 @@ export function MarketAnalysisSummary({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Market Analysis Summary
+          Market Analysis
         </h2>
         <div className="text-sm text-gray-500 dark:text-gray-400">
           {timeConfig.label} • {cryptoName}
