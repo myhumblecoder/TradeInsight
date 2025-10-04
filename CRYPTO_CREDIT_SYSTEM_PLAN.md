@@ -1,17 +1,20 @@
 # TradeInsight Crypto Credit System Implementation Plan
 
 ## Overview
+
 This document outlines the complete migration from Stripe subscription model to a NOWPayments-based crypto credit system where users purchase credits in bulk and spend them per coin analysis.
 
 ## Business Model
 
 ### Current (Stripe)
+
 - $9.99/month subscription
 - Unlimited analyses during subscription period
 - Recurring billing challenges
 - Fiat payment processing
 
 ### New (NOWPayments Credit System)
+
 - Pay-per-use model: $0.25 per coin analysis
 - Bulk credit purchases: $5, $10, $25 packages
 - Crypto-native payment experience
@@ -35,6 +38,7 @@ graph TD
 ### Detailed User Journey
 
 1. **New User Experience**
+
    ```
    User lands on Bitcoin analysis page
    → Paywall: "Unlock this analysis for 1 credit ($0.25)"
@@ -47,6 +51,7 @@ graph TD
    ```
 
 2. **Returning User Experience**
+
    ```
    User with existing credits visits analysis
    → Header shows "Credits: 23"
@@ -66,25 +71,28 @@ graph TD
 ## Credit Package Structure
 
 ### Package Tiers
-| Package | Credits | USD Value | Bonus Credits | Total Credits | Cost per Analysis | Savings |
-|---------|---------|-----------|---------------|---------------|------------------|---------|
-| **Starter** | 20 | $5.00 | 0 | 20 | $0.25 | 0% |
-| **Popular** | 40 | $10.00 | 10 (25%) | 50 | $0.20 | 20% |
-| **Premium** | 80 | $20.00 | 20 (25%) | 100 | $0.20 | 20% |
-| **Whale** | 200 | $50.00 | 50 (25%) | 250 | $0.20 | 20% |
+
+| Package     | Credits | USD Value | Bonus Credits | Total Credits | Cost per Analysis | Savings |
+| ----------- | ------- | --------- | ------------- | ------------- | ----------------- | ------- |
+| **Starter** | 20      | $5.00     | 0             | 20            | $0.25             | 0%      |
+| **Popular** | 40      | $10.00    | 10 (25%)      | 50            | $0.20             | 20%     |
+| **Premium** | 80      | $20.00    | 20 (25%)      | 100           | $0.20             | 20%     |
+| **Whale**   | 200     | $50.00    | 50 (25%)      | 250           | $0.20             | 20%     |
 
 ### Credit Usage Model
+
 - **Basic Analysis**: 1 credit ($0.25)
 - **Premium AI Analysis**: 1 credit ($0.25)
 - **Technical Indicators**: 1 credit ($0.25)
 - **Export Features**: 1 credit ($0.25)
 - **Historical Data**: 1 credit ($0.25)
 
-*Note: All features cost the same to keep UX simple*
+_Note: All features cost the same to keep UX simple_
 
 ## NOWPayments Setup with MetaMask Wallet
 
 ### Prerequisites
+
 1. **NOWPayments Account**
    - Sign up at [nowpayments.io](https://nowpayments.io)
    - Complete KYC verification
@@ -108,6 +116,7 @@ graph TD
 ### NOWPayments Configuration Steps
 
 1. **Account Setup**
+
    ```bash
    # Step 1: Register and verify NOWPayments account
    # Step 2: Navigate to Settings > API Keys
@@ -116,6 +125,7 @@ graph TD
    ```
 
 2. **Payout Wallet Configuration**
+
    ```json
    {
      "BTC": "your-metamask-bitcoin-address",
@@ -128,6 +138,7 @@ graph TD
    ```
 
 3. **Environment Variables**
+
    ```bash
    # Add to .env file
    VITE_NOWPAYMENTS_API_KEY=your_nowpayments_api_key
@@ -289,7 +300,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     credits: 20,
     bonusCredits: 0,
     totalCredits: 20,
-    usdAmount: 5.00
+    usdAmount: 5.0,
   },
   {
     id: 'popular',
@@ -297,8 +308,8 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     credits: 40,
     bonusCredits: 10,
     totalCredits: 50,
-    usdAmount: 10.00,
-    popular: true
+    usdAmount: 10.0,
+    popular: true,
   },
   {
     id: 'premium',
@@ -306,7 +317,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     credits: 80,
     bonusCredits: 20,
     totalCredits: 100,
-    usdAmount: 20.00
+    usdAmount: 20.0,
   },
   {
     id: 'whale',
@@ -314,8 +325,8 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     credits: 200,
     bonusCredits: 50,
     totalCredits: 250,
-    usdAmount: 50.00
-  }
+    usdAmount: 50.0,
+  },
 ]
 
 export interface PaymentRequest {
@@ -348,9 +359,10 @@ class NOWPaymentsService {
 
   constructor() {
     this.apiKey = import.meta.env.VITE_NOWPAYMENTS_API_KEY
-    this.baseUrl = import.meta.env.VITE_NOWPAYMENTS_ENVIRONMENT === 'sandbox'
-      ? 'https://api-sandbox.nowpayments.io/v1'
-      : 'https://api.nowpayments.io/v1'
+    this.baseUrl =
+      import.meta.env.VITE_NOWPAYMENTS_ENVIRONMENT === 'sandbox'
+        ? 'https://api-sandbox.nowpayments.io/v1'
+        : 'https://api.nowpayments.io/v1'
   }
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
@@ -365,7 +377,9 @@ class NOWPaymentsService {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(`NOWPayments API error: ${error.message || response.statusText}`)
+      throw new Error(
+        `NOWPayments API error: ${error.message || response.statusText}`
+      )
     }
 
     return response.json()
@@ -377,7 +391,9 @@ class NOWPaymentsService {
   }
 
   async getMinimumPaymentAmount(currency: string): Promise<number> {
-    const data = await this.makeRequest(`/min-amount?currency_from=${currency}&currency_to=usd`)
+    const data = await this.makeRequest(
+      `/min-amount?currency_from=${currency}&currency_to=usd`
+    )
     return data.min_amount
   }
 
@@ -397,7 +413,7 @@ class NOWPaymentsService {
     packageId: string,
     payCurrency: string = 'btc'
   ): Promise<PaymentResponse> {
-    const package_ = CREDIT_PACKAGES.find(p => p.id === packageId)
+    const package_ = CREDIT_PACKAGES.find((p) => p.id === packageId)
     if (!package_) {
       throw new Error('Invalid package ID')
     }
@@ -405,26 +421,26 @@ class NOWPaymentsService {
     // Check minimum payment amount
     const minAmount = await this.getMinimumPaymentAmount(payCurrency)
     if (package_.usdAmount < minAmount) {
-      throw new Error(`Minimum payment amount for ${payCurrency} is $${minAmount}`)
+      throw new Error(
+        `Minimum payment amount for ${payCurrency} is $${minAmount}`
+      )
     }
 
     const orderId = `credit_${userId}_${Date.now()}`
 
     // Store pending purchase in database
-    const { error } = await supabase
-      .from('credit_purchases')
-      .insert({
-        user_id: userId,
-        package_type: packageId,
-        credits_purchased: package_.credits,
-        bonus_credits: package_.bonusCredits,
-        total_credits: package_.totalCredits,
-        usd_amount: package_.usdAmount,
-        crypto_currency: payCurrency.toUpperCase(),
-        crypto_amount: 0, // Will be updated by webhook
-        nowpayments_payment_id: orderId, // Temporary, will be updated
-        payment_status: 'pending'
-      })
+    const { error } = await supabase.from('credit_purchases').insert({
+      user_id: userId,
+      package_type: packageId,
+      credits_purchased: package_.credits,
+      bonus_credits: package_.bonusCredits,
+      total_credits: package_.totalCredits,
+      usd_amount: package_.usdAmount,
+      crypto_currency: payCurrency.toUpperCase(),
+      crypto_amount: 0, // Will be updated by webhook
+      nowpayments_payment_id: orderId, // Temporary, will be updated
+      payment_status: 'pending',
+    })
 
     if (error) {
       throw new Error(`Database error: ${error.message}`)
@@ -438,7 +454,7 @@ class NOWPaymentsService {
       order_description: `TradeInsight ${package_.name} Package - ${package_.totalCredits} credits`,
       ipn_callback_url: `${window.location.origin}/api/nowpayments/webhook`,
       success_url: `${window.location.origin}/credits/success`,
-      cancel_url: `${window.location.origin}/credits/cancel`
+      cancel_url: `${window.location.origin}/credits/cancel`,
     }
 
     const payment = await this.createPayment(paymentData)
@@ -449,7 +465,7 @@ class NOWPaymentsService {
       .update({
         nowpayments_payment_id: payment.payment_id,
         crypto_amount: payment.pay_amount,
-        payment_address: payment.pay_address
+        payment_address: payment.pay_address,
       })
       .eq('nowpayments_payment_id', orderId)
 
@@ -496,7 +512,8 @@ class CreditService {
       .eq('user_id', userId)
       .single()
 
-    if (error && error.code !== 'PGRST116') { // Not found error
+    if (error && error.code !== 'PGRST116') {
+      // Not found error
       throw new Error(`Error fetching credits: ${error.message}`)
     }
 
@@ -515,14 +532,12 @@ class CreditService {
       throw new Error('Insufficient credits')
     }
 
-    const { error } = await supabase
-      .from('credit_usage')
-      .insert({
-        user_id: userId,
-        coin_symbol: coinSymbol,
-        feature_type: featureType,
-        credits_used: creditsToUse
-      })
+    const { error } = await supabase.from('credit_usage').insert({
+      user_id: userId,
+      coin_symbol: coinSymbol,
+      feature_type: featureType,
+      credits_used: creditsToUse,
+    })
 
     if (error) {
       throw new Error(`Error using credits: ${error.message}`)
@@ -531,14 +546,19 @@ class CreditService {
     return true
   }
 
-  async getCreditHistory(userId: string, limit: number = 50): Promise<{
+  async getCreditHistory(
+    userId: string,
+    limit: number = 50
+  ): Promise<{
     purchases: CreditPurchase[]
     usage: CreditUsage[]
   }> {
     const [purchaseResult, usageResult] = await Promise.all([
       supabase
         .from('credit_purchases')
-        .select('id, package_type, total_credits, usd_amount, crypto_currency, payment_status, created_at')
+        .select(
+          'id, package_type, total_credits, usd_amount, crypto_currency, payment_status, created_at'
+        )
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit),
@@ -548,33 +568,37 @@ class CreditService {
         .select('coin_symbol, feature_type, credits_used, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(limit)
+        .limit(limit),
     ])
 
     if (purchaseResult.error) {
-      throw new Error(`Error fetching purchase history: ${purchaseResult.error.message}`)
+      throw new Error(
+        `Error fetching purchase history: ${purchaseResult.error.message}`
+      )
     }
 
     if (usageResult.error) {
-      throw new Error(`Error fetching usage history: ${usageResult.error.message}`)
+      throw new Error(
+        `Error fetching usage history: ${usageResult.error.message}`
+      )
     }
 
     return {
-      purchases: purchaseResult.data.map(p => ({
+      purchases: purchaseResult.data.map((p) => ({
         id: p.id,
         packageType: p.package_type,
         totalCredits: p.total_credits,
         usdAmount: p.usd_amount,
         cryptoCurrency: p.crypto_currency,
         paymentStatus: p.payment_status,
-        createdAt: p.created_at
+        createdAt: p.created_at,
       })),
-      usage: usageResult.data.map(u => ({
+      usage: usageResult.data.map((u) => ({
         coinSymbol: u.coin_symbol,
         featureType: u.feature_type,
         creditsUsed: u.credits_used,
-        createdAt: u.created_at
-      }))
+        createdAt: u.created_at,
+      })),
     }
   }
 
@@ -587,7 +611,9 @@ class CreditService {
   }
 
   // Webhook handler for NOWPayments
-  async handlePaymentWebhook(webhookData: any): Promise<{ success: boolean, message: string }> {
+  async handlePaymentWebhook(
+    webhookData: any
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const { payment_id, payment_status, order_id } = webhookData
 
@@ -597,7 +623,7 @@ class CreditService {
           .from('credit_purchases')
           .update({
             payment_status: 'completed',
-            completed_at: new Date().toISOString()
+            completed_at: new Date().toISOString(),
           })
           .eq('nowpayments_payment_id', payment_id)
 
@@ -621,7 +647,7 @@ class CreditService {
       console.error('Webhook processing error:', error)
       return {
         success: false,
-        message: `Error processing webhook: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `Error processing webhook: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }
     }
   }
@@ -788,6 +814,7 @@ export const BuyCreditButton: React.FC<BuyCreditButtonProps> = ({
 ## Migration Strategy
 
 ### Phase 1: Database & Backend (Week 1)
+
 1. **Database Migration**
    ```bash
    # Create migration script
@@ -803,6 +830,7 @@ export const BuyCreditButton: React.FC<BuyCreditButtonProps> = ({
    - Add webhook handlers
 
 ### Phase 2: Frontend Components (Week 2)
+
 1. **Replace Components**
    - `UpgradeButton.tsx` → `BuyCreditButton.tsx`
    - Add `CreditBalance.tsx` to header
@@ -815,6 +843,7 @@ export const BuyCreditButton: React.FC<BuyCreditButtonProps> = ({
    - Add low credit notifications
 
 ### Phase 3: Testing & Migration (Week 3)
+
 1. **Testing**
    - Test all payment flows
    - Verify webhook handling
@@ -829,6 +858,7 @@ export const BuyCreditButton: React.FC<BuyCreditButtonProps> = ({
    - Revenue monitoring
 
 ### Phase 4: Launch & Optimization (Week 4)
+
 1. **Soft Launch**
    - Beta test with select users
    - Monitor payment success rates
@@ -845,6 +875,7 @@ export const BuyCreditButton: React.FC<BuyCreditButtonProps> = ({
 ## Environment Setup
 
 ### NOWPayments Configuration
+
 ```bash
 # 1. Register at NOWPayments
 https://account.nowpayments.io/
@@ -871,6 +902,7 @@ VITE_METAMASK_WALLET_ADDRESS=0xYourMainAddress
 ```
 
 ### Webhook Configuration
+
 ```bash
 # Set up webhook endpoint in NOWPayments dashboard
 # Webhook URL: https://your-domain.com/api/nowpayments/webhook
@@ -880,6 +912,7 @@ VITE_METAMASK_WALLET_ADDRESS=0xYourMainAddress
 ## Success Metrics
 
 ### Key Performance Indicators (KPIs)
+
 - **Conversion Rate**: % of visitors who purchase credits
 - **Average Purchase Value**: Average USD per credit purchase
 - **Credit Usage Rate**: % of purchased credits actually used
@@ -888,6 +921,7 @@ VITE_METAMASK_WALLET_ADDRESS=0xYourMainAddress
 - **Customer Acquisition Cost (CAC)**: Cost to acquire paying users
 
 ### Target Metrics
+
 - Payment success rate: >95%
 - Conversion rate: >3% (vs current subscription model)
 - Average purchase value: $15 (Popular package)
@@ -895,6 +929,7 @@ VITE_METAMASK_WALLET_ADDRESS=0xYourMainAddress
 - User retention (30-day): >60%
 
 ### Analytics Implementation
+
 ```typescript
 // Track key events
 analytics.track('Credit Package Selected', { packageId, usdAmount })
@@ -907,6 +942,7 @@ analytics.track('Low Credit Warning', { remainingCredits })
 ## Risk Mitigation
 
 ### Technical Risks
+
 1. **Payment Failures**
    - Implement retry logic
    - Clear error messages
@@ -921,6 +957,7 @@ analytics.track('Low Credit Warning', { remainingCredits })
    - Regular balance audits
 
 ### Business Risks
+
 1. **User Adoption**
    - Gradual migration with grace period
    - Clear value communication
@@ -933,6 +970,7 @@ analytics.track('Low Credit Warning', { remainingCredits })
 ## Conclusion
 
 This crypto credit system will provide:
+
 - **Better user experience** - Pay only for what you use
 - **Higher conversion** - Lower barrier to entry ($5 vs $9.99/month)
 - **Crypto-native experience** - Aligns with target audience
@@ -951,4 +989,4 @@ The implementation plan provides a structured approach to migrate from Stripe to
 
 ---
 
-*This plan can be executed iteratively with continuous user feedback and optimization.*
+_This plan can be executed iteratively with continuous user feedback and optimization._

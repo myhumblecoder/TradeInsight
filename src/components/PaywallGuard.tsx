@@ -20,7 +20,7 @@ export const PaywallGuard: React.FC<PaywallGuardProps> = ({
   featureName,
   coinSymbol,
   showPreview = true,
-  className = ''
+  className = '',
 }) => {
   const { isAuthenticated } = useAuth()
   const { hasCredits } = useCredits()
@@ -36,7 +36,7 @@ export const PaywallGuard: React.FC<PaywallGuardProps> = ({
   const blurClasses = {
     light: 'blur-sm',
     medium: 'blur-md',
-    heavy: 'blur-lg'
+    heavy: 'blur-lg',
   }
 
   return (
@@ -45,7 +45,9 @@ export const PaywallGuard: React.FC<PaywallGuardProps> = ({
       {showPreview && (
         <div
           className={`${blurClasses[blurLevel]} select-none pointer-events-none`}
-          style={{ filter: `blur(${blurLevel === 'light' ? '2px' : blurLevel === 'medium' ? '4px' : '8px'})` }}
+          style={{
+            filter: `blur(${blurLevel === 'light' ? '2px' : blurLevel === 'medium' ? '4px' : '8px'})`,
+          }}
         >
           {children}
         </div>
@@ -78,8 +80,7 @@ export const PaywallGuard: React.FC<PaywallGuardProps> = ({
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {coinSymbol
               ? `Get detailed ${featureName.toLowerCase()} for ${coinSymbol}`
-              : `Access premium ${featureName.toLowerCase()}`
-            }
+              : `Access premium ${featureName.toLowerCase()}`}
           </p>
 
           {/* Pricing */}
@@ -104,20 +105,44 @@ export const PaywallGuard: React.FC<PaywallGuardProps> = ({
           {/* Features preview */}
           <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 space-y-1">
             <div className="flex items-center justify-center space-x-2">
-              <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg
+                className="w-3 h-3 text-green-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span>Real-time data</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
-              <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg
+                className="w-3 h-3 text-green-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span>Pay per analysis</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
-              <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg
+                className="w-3 h-3 text-green-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span>No subscription</span>
             </div>

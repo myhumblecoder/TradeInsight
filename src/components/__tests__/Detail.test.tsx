@@ -17,6 +17,9 @@ vi.mock('../../hooks/useCoinbaseData')
 vi.mock('../../hooks/usePriceAnalysis', () => ({
   usePriceAnalysis: vi.fn(),
 }))
+vi.mock('../../hooks/useCredits', () => ({
+  useCredits: vi.fn(),
+}))
 vi.mock('../../utils/article', () => ({
   generateArticle: () => ({ text: 'Test article', confidence: 75 }),
   generateLLMArticle: () =>
@@ -28,6 +31,10 @@ vi.mock('../../utils/article', () => ({
 const mockUseCoinbaseData = vi.mocked(useCoinbaseData)
 const mockUsePriceAnalysis = vi.mocked(usePriceAnalysis)
 
+// Import useCredits after mocking
+import { useCredits } from '../../hooks/useCredits'
+const mockUseCredits = vi.mocked(useCredits)
+
 describe('Detail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -38,6 +45,17 @@ describe('Detail', () => {
       isAnalyzing: false,
       error: null,
       refresh: () => {},
+    })
+
+    // Setup default mock for useCredits (user has credits)
+    mockUseCredits.mockReturnValue({
+      credits: { balance: 10, totalPurchased: 10, totalUsed: 0 },
+      isLoading: false,
+      error: null,
+      hasCredits: () => true,
+      useCredit: vi.fn().mockResolvedValue(true),
+      purchaseCredits: vi.fn().mockResolvedValue(true),
+      refreshCredits: vi.fn().mockResolvedValue(undefined),
     })
   })
 
@@ -206,7 +224,7 @@ describe('Detail', () => {
     })
   })
 
-  it('toggles AI enhanced mode on and off', async () => {
+  it('toggles AI enhanced mode on and off when user has credits', async () => {
     mockUseCoinbaseData.mockReturnValue({
       price: 50000,
       candles: [[1640995200000, 50000, 50000, 50000, 50000]],
@@ -264,6 +282,72 @@ describe('Detail', () => {
         'title',
         expect.stringContaining('Enable AI Enhanced')
       )
+    })
+  })
+
+  it('shows credit modal when user without credits clicks Buy Credits for AI button', async () => {
+    // Mock user without credits
+    mockUseCredits.mockReturnValue({
+      credits: { balance: 0, totalPurchased: 0, totalUsed: 0 },
+      isLoading: false,
+      error: null,
+      hasCredits: () => false,
+      useCredit: vi.fn().mockResolvedValue(false),
+      purchaseCredits: vi.fn().mockResolvedValue(true),
+      refreshCredits: vi.fn().mockResolvedValue(undefined),
+    })
+
+    mockUseCoinbaseData.mockReturnValue({
+      price: 50000,
+      candles: [[1640995200000, 50000, 50000, 50000, 50000]],
+      ohlcvData: [
+        {
+          timestamp: 1640995200000,
+          open: 50000,
+          high: 50000,
+          low: 50000,
+          close: 50000,
+          volume: 0,
+        },
+      ],
+      error: null,
+      loading: false,
+    })
+
+    render(
+      <ThemeProvider>
+        <MockAuthProvider>
+          <MemoryRouter initialEntries={['/crypto/bitcoin']}>
+            <Detail />
+          </MemoryRouter>
+        </MockAuthProvider>
+      </ThemeProvider>
+    )
+
+    const buyCreditsButton = screen.getByRole('button', {
+      name: /Buy Credits for AI/i,
+    })
+
+    // Button should have buy credits title when user has no credits
+    expect(buyCreditsButton).toHaveAttribute(
+      'title',
+      expect.stringContaining('Buy credits')
+    )
+
+    // Click the Buy Credits button
+    fireEvent.click(buyCreditsButton)
+
+    // Wait for credit modal to appear
+    await waitFor(() => {
+      expect(
+        screen.getByText('Enable AI Enhanced Analysis')
+      ).toBeInTheDocument()
+      // Look for the specific modal content
+      expect(
+        screen.getByText(
+          'Get complete access to advanced price analysis, technical indicators, and AI insights for Bitcoin'
+        )
+      ).toBeInTheDocument()
     })
   })
 })

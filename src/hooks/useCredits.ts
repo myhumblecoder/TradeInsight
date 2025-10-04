@@ -45,7 +45,7 @@ export function useCredits() {
       setCredits({
         balance: 0, // Start with 0 credits to show paywall
         totalPurchased: 0,
-        totalUsed: 0
+        totalUsed: 0,
       })
       setIsLoading(false)
     }, 500)
@@ -55,18 +55,22 @@ export function useCredits() {
     return credits ? credits.balance >= requiredCredits : false
   }
 
-  const useCredit = async (_coinSymbol: string, _featureType = 'analysis'): Promise<boolean> => {
+  const useCredit = async (): Promise<boolean> => {
     if (!credits || credits.balance < 1) {
       throw new Error('Insufficient credits')
     }
 
     // Simulate API call to use credit
     try {
-      setCredits(prev => prev ? {
-        ...prev,
-        balance: prev.balance - 1,
-        totalUsed: prev.totalUsed + 1
-      } : null)
+      setCredits((prev) =>
+        prev
+          ? {
+              ...prev,
+              balance: prev.balance - 1,
+              totalUsed: prev.totalUsed + 1,
+            }
+          : null
+      )
       return true
     } catch {
       setError('Failed to use credit')
@@ -82,20 +86,25 @@ export function useCredits() {
         starter: 20,
         popular: 50,
         premium: 100,
-        whale: 250
+        whale: 250,
       }
 
-      const creditsToAdd = creditAmounts[packageType as keyof typeof creditAmounts] || 20
+      const creditsToAdd =
+        creditAmounts[packageType as keyof typeof creditAmounts] || 20
 
-      setCredits(prev => prev ? {
-        ...prev,
-        balance: prev.balance + creditsToAdd,
-        totalPurchased: prev.totalPurchased + creditsToAdd
-      } : {
-        balance: creditsToAdd,
-        totalPurchased: creditsToAdd,
-        totalUsed: 0
-      })
+      setCredits((prev) =>
+        prev
+          ? {
+              ...prev,
+              balance: prev.balance + creditsToAdd,
+              totalPurchased: prev.totalPurchased + creditsToAdd,
+            }
+          : {
+              balance: creditsToAdd,
+              totalPurchased: creditsToAdd,
+              totalUsed: 0,
+            }
+      )
 
       return true
     } catch {
@@ -126,6 +135,6 @@ export function useCredits() {
     hasCredits,
     useCredit,
     purchaseCredits,
-    refreshCredits
+    refreshCredits,
   }
 }
