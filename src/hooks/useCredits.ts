@@ -1,28 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from './useAuth'
-
-export interface UserCredits {
-  balance: number
-  totalPurchased: number
-  totalUsed: number
-}
-
-export interface CreditUsage {
-  coinSymbol: string
-  featureType: string
-  creditsUsed: number
-  createdAt: string
-}
-
-export interface CreditPurchase {
-  id: string
-  packageType: string
-  totalCredits: number
-  usdAmount: number
-  cryptoCurrency: string
-  paymentStatus: string
-  createdAt: string
-}
+import { creditService } from '../services/credits'
+import { nowPaymentsService } from '../services/nowpayments'
+import type { UserCredits } from '../types/credits'
+import type { PaymentResponse } from '../types/credits'
 
 export function useCredits() {
   const { user, isAuthenticated } = useAuth()
@@ -30,102 +11,96 @@ export function useCredits() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // For now, we'll simulate credit data
-  // Later this will integrate with the actual credit service
-  useEffect(() => {
+  // Load user credits when authenticated
+  const loadCredits = useCallback(async () => {
     if (!isAuthenticated || !user) {
       setCredits(null)
+      setIsLoading(false)
       return
     }
 
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      // Simulate user with no credits initially
-      setCredits({
-        balance: 0, // Start with 0 credits to show paywall
-        totalPurchased: 0,
-        totalUsed: 0,
-      })
+    setError(null)
+
+    try {
+      const userCredits = await creditService.getUserCredits(user.id)
+      setCredits(userCredits)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(`Failed to load credits: ${message}`)
+      setCredits(null)
+    } finally {
       setIsLoading(false)
-    }, 500)
+    }
   }, [isAuthenticated, user])
+
+  useEffect(() => {
+    loadCredits()
+  }, [loadCredits])
 
   const hasCredits = (requiredCredits: number = 1): boolean => {
     return credits ? credits.balance >= requiredCredits : false
   }
 
-  const useCredit = async (): Promise<boolean> => {
-    if (!credits || credits.balance < 1) {
-      throw new Error('Insufficient credits')
+  const useCredit = async (
+    coinSymbol: string,
+    featureType: string = 'analysis',
+    creditsToUse: number = 1
+  ): Promise<boolean> => {
+    if (!isAuthenticated || !user) {
+      setError('User not authenticated')
+      return false
     }
 
-    // Simulate API call to use credit
     try {
-      setCredits((prev) =>
-        prev
-          ? {
-              ...prev,
-              balance: prev.balance - 1,
-              totalUsed: prev.totalUsed + 1,
-            }
-          : null
-      )
+      await creditService.useCredits(user.id, coinSymbol, featureType, creditsToUse)
+      // Refresh credits after using
+      await loadCredits()
       return true
-    } catch {
-      setError('Failed to use credit')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(`Failed to use credit: ${message}`)
       return false
     }
   }
 
-  const purchaseCredits = async (packageType: string): Promise<boolean> => {
-    // This will later integrate with NOWPayments
-    // For now, simulate successful purchase
+  const purchaseCredits = async (
+    packageType: string,
+    payCurrency: string = 'btc'
+  ): Promise<PaymentResponse | null> => {
+    if (!isAuthenticated || !user) {
+      setError('User not authenticated')
+      return null
+    }
+
     try {
-      const creditAmounts = {
-        starter: 20,
-        popular: 50,
-        premium: 100,
-        whale: 250,
-      }
-
-      const creditsToAdd =
-        creditAmounts[packageType as keyof typeof creditAmounts] || 20
-
-      setCredits((prev) =>
-        prev
-          ? {
-              ...prev,
-              balance: prev.balance + creditsToAdd,
-              totalPurchased: prev.totalPurchased + creditsToAdd,
-            }
-          : {
-              balance: creditsToAdd,
-              totalPurchased: creditsToAdd,
-              totalUsed: 0,
-            }
+      const paymentResponse = await nowPaymentsService.createCreditPurchase(
+        user.id,
+        packageType,
+        payCurrency
       )
-
-      return true
-    } catch {
-      setError('Failed to purchase credits')
-      return false
+      return paymentResponse
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(`Failed to create payment: ${message}`)
+      return null
     }
   }
 
   const refreshCredits = async (): Promise<void> => {
     if (!isAuthenticated || !user) return
 
-    setIsLoading(true)
     try {
-      // Simulate refetch
-      setTimeout(() => {
-        setIsLoading(false)
-      }, 300)
-    } catch {
-      setError('Failed to refresh credits')
-      setIsLoading(false)
+      const userCredits = await creditService.getUserCredits(user.id)
+      setCredits(userCredits)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(`Failed to refresh credits: ${message}`)
     }
+  }
+
+  const clearError = (): void => {
+    setError(null)
   }
 
   return {
@@ -136,5 +111,6 @@ export function useCredits() {
     useCredit,
     purchaseCredits,
     refreshCredits,
+    clearError,
   }
 }
