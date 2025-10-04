@@ -121,13 +121,14 @@ export const FirebaseAppProvider = ({ children }: { children: ReactNode }) => {
         }
       },
     }),
-    [user, isLoading, service, transformFirebaseUser]
+    [user, isLoading, service]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 // Helper to access shared AuthContext directly if needed
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFirebaseAuth = () => useContext(AuthContext)
 
 export default FirebaseAppProvider

@@ -149,6 +149,8 @@ const Auth0Provider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   const signInWithEmail = async (_email: string, _password: string) => {
+    void _email
+    void _password
     throw new Error(
       'Email/password sign-in is not supported in the Auth0 fallback. Use the Auth0 login flow.'
     )
@@ -159,6 +161,9 @@ const Auth0Provider: React.FC<AuthProviderProps> = ({ children }) => {
     _password: string,
     _displayName?: string
   ) => {
+    void _email
+    void _password
+    void _displayName
     throw new Error(
       'Email/password sign-up is not supported in the Auth0 fallback. Create accounts via your Auth0 dashboard or implement a custom flow.'
     )

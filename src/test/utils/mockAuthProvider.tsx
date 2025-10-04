@@ -10,6 +10,7 @@ const mockUser: User = {
   updatedAt: new Date().toISOString(),
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const defaultAuthValue: AuthContextType = {
   user: mockUser,
   isAuthenticated: true,
