@@ -15,15 +15,15 @@ describe('PriceAnalysisDisplay', () => {
       aggressive: 101,
       methods: {
         conservative: 'Support + 2%',
-        moderate: 'Fibonacci 61.8%', 
-        aggressive: 'Current price - 2%'
-      }
+        moderate: 'Fibonacci 61.8%',
+        aggressive: 'Current price - 2%',
+      },
     },
     stopLoss: {
       price: 95,
       percentage: 5,
       method: 'atr',
-      explanation: '2x ATR below entry'
+      explanation: '2x ATR below entry',
     },
     profitTargets: {
       target1: 110,
@@ -33,12 +33,12 @@ describe('PriceAnalysisDisplay', () => {
       methods: {
         target1: '1:2 risk-reward',
         target2: '1:3 risk-reward',
-        target3: 'Resistance level'
-      }
+        target3: 'Resistance level',
+      },
     },
     timeHorizon: '1h',
     riskAssessment: 'Medium - Balanced timeframe suitable for swing trading',
-    confidence: 0.75
+    confidence: 0.75,
   }
 
   it('should render analysis data correctly', () => {
@@ -81,7 +81,9 @@ describe('PriceAnalysisDisplay', () => {
   it('should display risk assessment', () => {
     render(<PriceAnalysisDisplay analysis={mockAnalysis} />)
 
-    expect(screen.getByText('Medium - Balanced timeframe suitable for swing trading')).toBeInTheDocument()
+    expect(
+      screen.getByText('Medium - Balanced timeframe suitable for swing trading')
+    ).toBeInTheDocument()
   })
 
   it('should render loading state', () => {
@@ -115,12 +117,12 @@ describe('PriceAnalysisDisplay', () => {
       ...mockAnalysis,
       entryPoints: {
         ...mockAnalysis.entryPoints,
-        conservative: 105.5678
+        conservative: 105.5678,
       },
       stopLoss: {
         ...mockAnalysis.stopLoss,
-        price: 95.1234
-      }
+        price: 95.1234,
+      },
     }
 
     render(<PriceAnalysisDisplay analysis={analysisWithDecimals} />)
@@ -134,9 +136,11 @@ describe('PriceAnalysisDisplay', () => {
 
     // Check that tooltip triggers (info icons) are present
     // Looking for SVG elements with the question mark icon
-    const tooltipTriggers = screen.getByTestId('price-analysis-display').querySelectorAll('svg')
+    const tooltipTriggers = screen
+      .getByTestId('price-analysis-display')
+      .querySelectorAll('svg')
     expect(tooltipTriggers.length).toBeGreaterThan(0)
-    
+
     // Tooltip content won't be visible by default, but we can verify
     // the component structure includes tooltip-enabled elements
     expect(screen.getByText('Conservative: $105.00')).toBeInTheDocument()

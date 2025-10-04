@@ -32,7 +32,9 @@ describe('Overview', () => {
       </ThemeProvider>
     )
 
-    expect(screen.getByText('Loading top cryptocurrencies...')).toBeInTheDocument()
+    expect(
+      screen.getByText('Loading top cryptocurrencies...')
+    ).toBeInTheDocument()
   })
 
   it('renders error state', () => {

@@ -44,9 +44,12 @@ describe('useTopCryptos', () => {
       vi.advanceTimersByTime(1000)
     })
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false)
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false)
+      },
+      { timeout: 3000 }
+    )
 
     expect(result.current.data).toEqual(mockData)
     expect(result.current.error).toBe(null)
@@ -65,9 +68,12 @@ describe('useTopCryptos', () => {
       vi.advanceTimersByTime(1000)
     })
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false)
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false)
+      },
+      { timeout: 3000 }
+    )
 
     expect(result.current.data).toEqual([])
     expect(result.current.error).toBe('Network error')

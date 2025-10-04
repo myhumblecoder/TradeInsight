@@ -5,6 +5,7 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 ## Features
 
 ### 🚀 Core Features
+
 - **Real-time Data**: Live cryptocurrency prices from multiple APIs
 - **Technical Analysis**: RSI, EMA, MACD indicators with visualizations
 - **AI-Enhanced Summaries**: OpenAI GPT-4 and Ollama powered article generation
@@ -13,18 +14,21 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 - **Responsive Design**: Clean grid layout with dark/light themes
 
 ### 💰 Monetization (Phase 4)
+
 - **User Authentication**: Secure Auth0 integration with JWT tokens
 - **Premium Subscriptions**: $9.99/month Stripe-powered billing
 - **Paywall System**: Feature gating for premium AI analysis
 - **User Dashboard**: Subscription management and billing portal
 
 ### 🛡️ Security & Compliance
+
 - **GDPR Compliance**: Cookie consent and privacy controls
 - **Data Protection**: Encrypted user data with Supabase
 - **Payment Security**: PCI-compliant Stripe integration
 - **Monitoring**: Error tracking and performance analytics
 
 ### 🔧 DevOps & Quality
+
 - **CI/CD Pipeline**: Automated testing, security scanning, and deployment
 - **Multi-Environment**: Staging and production deployments
 - **TDD Approach**: Comprehensive test coverage with Vitest
@@ -33,24 +37,28 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 ## Tech Stack
 
 ### Frontend & Core
+
 - **Frontend:** React 19, TypeScript, Vite
 - **Styling:** Tailwind CSS with dark/light themes
 - **Routing:** React Router v7 with protected routes
 - **State Management:** React Context with custom hooks
 
 ### AI & Data
+
 - **AI Integration:** OpenAI GPT-4 API + Ollama (local LLMs)
 - **Caching:** In-memory LLM response cache (5-minute TTL)
 - **APIs:** CoinGecko, Coinbase Pro for real-time data
 - **Technical Indicators:** Custom RSI, EMA, MACD calculations
 
 ### Monetization & Auth
+
 - **Authentication:** Auth0 with React SDK
 - **Database:** Supabase (PostgreSQL) for users and subscriptions
 - **Payments:** Stripe Checkout and subscription management
 - **Monitoring:** Pino logging with structured analytics
 
 ### DevOps & Testing
+
 - **Testing:** Vitest with @testing-library (TDD approach)
 - **Linting:** ESLint, Prettier with TypeScript rules
 - **CI/CD:** GitHub Actions with security scanning
@@ -62,6 +70,7 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 ### Quick Start (Basic Features)
 
 1. **Clone and Install**:
+
    ```bash
    git clone <repo-url>
    cd tradeinsight
@@ -69,6 +78,7 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
    ```
 
 2. **Basic Configuration**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your API keys (see Configuration section below)
@@ -82,6 +92,7 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 ### Full Production Setup (Phase 4)
 
 1. **Database Setup** (Supabase):
+
    ```sql
    -- Create users table
    CREATE TABLE users (
@@ -111,6 +122,7 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
    ```
 
 2. **Environment Configuration**:
+
    ```bash
    # Copy and configure all environment variables
    cp .env.example .env
@@ -126,13 +138,16 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 ## Scripts
 
 ### Development
+
 - `npm run dev` - Start development server with hot reload
 - `npm run preview` - Preview production build locally
 
 ### Building
+
 - `npm run build` - Build for production with TypeScript compilation
 
 ### Testing & Quality
+
 - `npm run test` - Run complete test suite with Vitest
 - `npm run test:ui` - Run tests with interactive UI
 - `npm run lint` - Run ESLint with TypeScript rules
@@ -140,6 +155,7 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 - `npm run format` - Format code with Prettier
 
 ### Production Commands
+
 - `npm ci` - Clean install for production deployments
 - `npm run build && npm run preview` - Full production test
 
@@ -217,18 +233,21 @@ VITE_ERROR_TRACKING_ENDPOINT=https://your-errors-endpoint
 ### Feature Tiers
 
 #### Free Tier (No Configuration)
+
 - Basic cryptocurrency data and charts
 - Template-based market analysis
 - Technical indicators (RSI, EMA, MACD)
 - Dark/light theme toggle
 
 #### Enhanced Tier (AI Configuration)
+
 - All free features +
 - AI-powered market analysis (OpenAI/Ollama)
 - Smart fallback chain with caching
 - Provider selection and performance monitoring
 
 #### Premium Tier (Full Configuration)
+
 - All enhanced features +
 - User authentication and profiles
 - Premium AI analysis with advanced prompts
@@ -239,18 +258,21 @@ VITE_ERROR_TRACKING_ENDPOINT=https://your-errors-endpoint
 ## Architecture
 
 ### Phase Implementation
+
 - **Phase 1**: Core cryptocurrency dashboard with real-time data
 - **Phase 2**: Technical indicators and chart visualizations
 - **Phase 3**: AI-enhanced analysis with multi-LLM support
 - **Phase 4**: Monetization, authentication, and production deployment
 
 ### LLM Integration
+
 - **Multi-Provider Support**: Ollama (local) and OpenAI (cloud)
 - **Smart Fallback**: Ollama → OpenAI → Template with automatic recovery
 - **Caching Strategy**: 5-minute in-memory cache with provider-specific keys
 - **Error Handling**: Graceful degradation with user feedback
 
 ### Subscription Model
+
 - **Free**: Template analysis, basic indicators
 - **Premium ($9.99/month)**: AI-enhanced analysis, advanced features
 - **Enterprise**: Custom pricing, dedicated support
@@ -324,6 +346,7 @@ npm test src/utils/__tests__/article.test.ts
 ### Common Issues
 
 **Auth0 Configuration**:
+
 ```bash
 # If authentication isn't working
 - Check VITE_AUTH0_DOMAIN and VITE_AUTH0_CLIENT_ID
@@ -332,6 +355,7 @@ npm test src/utils/__tests__/article.test.ts
 ```
 
 **Supabase Connection**:
+
 ```bash
 # If database features aren't working
 - Verify VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
@@ -340,6 +364,7 @@ npm test src/utils/__tests__/article.test.ts
 ```
 
 **Stripe Integration**:
+
 ```bash
 # If payments aren't working
 - Check VITE_STRIPE_PUBLISHABLE_KEY matches environment
@@ -348,6 +373,7 @@ npm test src/utils/__tests__/article.test.ts
 ```
 
 **AI Providers**:
+
 ```bash
 # If AI features aren't working
 - Ollama: Check service is running on localhost:11434

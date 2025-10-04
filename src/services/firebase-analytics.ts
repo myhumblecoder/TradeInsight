@@ -4,7 +4,7 @@ import {
   setUserId,
   setUserProperties,
   setCurrentScreen,
-  type Analytics
+  type Analytics,
 } from 'firebase/analytics'
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { z } from 'zod'
@@ -18,19 +18,19 @@ export const AnalyticsConfigSchema = z.object({
   messagingSenderId: z.string().min(1, 'Messaging sender ID is required'),
   appId: z.string().min(1, 'App ID is required'),
   measurementId: z.string().optional(), // GA4 measurement ID
-  enableDebugMode: z.boolean().default(false)
+  enableDebugMode: z.boolean().default(false),
 })
 
 export const UserPropertiesSchema = z.object({
   subscription_status: z.string().min(1).optional(),
   user_role: z.string().min(1).optional(),
   signup_method: z.string().min(1).optional(),
-  custom_properties: z.record(z.string(), z.any()).optional()
+  custom_properties: z.record(z.string(), z.any()).optional(),
 })
 
 export const TrackEventDataSchema = z.object({
   event_name: z.string().min(1, 'Event name is required'),
-  parameters: z.record(z.string(), z.any()).default({})
+  parameters: z.record(z.string(), z.any()).default({}),
 })
 
 export const ConversionEventSchema = z.object({
@@ -38,7 +38,7 @@ export const ConversionEventSchema = z.object({
   value: z.number().min(0).optional(),
   currency: z.string().length(3).optional(), // ISO 4217 currency codes
   transaction_id: z.string().optional(),
-  parameters: z.record(z.string(), z.any()).default({})
+  parameters: z.record(z.string(), z.any()).default({}),
 })
 
 export type AnalyticsConfig = z.infer<typeof AnalyticsConfigSchema>
@@ -90,7 +90,9 @@ export class FirebaseAnalyticsService {
       this.config = AnalyticsConfigSchema.parse(config)
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid Analytics configuration: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid Analytics configuration: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       throw error
     }
@@ -100,7 +102,11 @@ export class FirebaseAnalyticsService {
       this.analytics = getAnalytics(this.app)
 
       // Set up GA4 if measurement ID is provided
-      if (this.config.measurementId && typeof window !== 'undefined' && window.gtag) {
+      if (
+        this.config.measurementId &&
+        typeof window !== 'undefined' &&
+        window.gtag
+      ) {
         this.setupGA4()
       }
 
@@ -115,13 +121,17 @@ export class FirebaseAnalyticsService {
   }
 
   private setupGA4(): void {
-    if (!this.config.measurementId || typeof window === 'undefined' || !window.gtag) {
+    if (
+      !this.config.measurementId ||
+      typeof window === 'undefined' ||
+      !window.gtag
+    ) {
       return
     }
 
     // Configure GA4
     window.gtag('config', this.config.measurementId, {
-      debug_mode: this.config.enableDebugMode
+      debug_mode: this.config.enableDebugMode,
     })
   }
 
@@ -133,7 +143,7 @@ export class FirebaseAnalyticsService {
     this.eventQueue.push({
       type,
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // Limit queue size
@@ -144,13 +154,13 @@ export class FirebaseAnalyticsService {
 
   private sanitizeParameters(params: Record<string, any>): Record<string, any> {
     const sanitized: Record<string, any> = {}
-    
+
     for (const [key, value] of Object.entries(params)) {
       // Skip null, undefined, and empty string values
       if (value === null || value === undefined) {
         continue
       }
-      
+
       // Allow empty strings for some specific cases but skip most
       if (value === '' && !['currency', 'method'].includes(key)) {
         continue
@@ -162,16 +172,23 @@ export class FirebaseAnalyticsService {
     return sanitized
   }
 
-  private validateEventParameters(eventName: string, parameters: Record<string, any>): void {
+  private validateEventParameters(
+    eventName: string,
+    parameters: Record<string, any>
+  ): void {
     // GA4 limits
     const parameterCount = Object.keys(parameters).length
     if (parameterCount > 25) {
-      throw new Error('Too many parameters: GA4 allows maximum 25 custom parameters per event')
+      throw new Error(
+        'Too many parameters: GA4 allows maximum 25 custom parameters per event'
+      )
     }
 
     for (const [key, value] of Object.entries(parameters)) {
       if (typeof value === 'string' && value.length > 100) {
-        throw new Error(`Parameter value too long: "${key}" exceeds 100 characters`)
+        throw new Error(
+          `Parameter value too long: "${key}" exceeds 100 characters`
+        )
       }
     }
   }
@@ -180,7 +197,7 @@ export class FirebaseAnalyticsService {
     if (!this.isAnonymized) {
       return userId
     }
-    
+
     return crypto.createHash('sha256').update(userId).digest('hex')
   }
 
@@ -193,10 +210,14 @@ export class FirebaseAnalyticsService {
 
       if (this.isOnline()) {
         setUserId(this.analytics, processedUserId)
-        
-        if (this.config.measurementId && typeof window !== 'undefined' && window.gtag) {
+
+        if (
+          this.config.measurementId &&
+          typeof window !== 'undefined' &&
+          window.gtag
+        ) {
           window.gtag('config', this.config.measurementId, {
-            user_id: processedUserId
+            user_id: processedUserId,
           })
         }
       } else {
@@ -216,16 +237,20 @@ export class FirebaseAnalyticsService {
 
       const flattenedProps = {
         ...properties,
-        ...(properties.custom_properties || {})
+        ...(properties.custom_properties || {}),
       }
       delete flattenedProps.custom_properties
 
       if (this.isOnline()) {
         setUserProperties(this.analytics, flattenedProps)
-        
-        if (this.config.measurementId && typeof window !== 'undefined' && window.gtag) {
+
+        if (
+          this.config.measurementId &&
+          typeof window !== 'undefined' &&
+          window.gtag
+        ) {
           window.gtag('config', this.config.measurementId, {
-            custom_map: flattenedProps
+            custom_map: flattenedProps,
           })
         }
       } else {
@@ -233,7 +258,9 @@ export class FirebaseAnalyticsService {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid user properties: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid user properties: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       this.lastError = error instanceof Error ? error.message : 'Unknown error'
       console.error('Failed to set user properties:', error)
@@ -247,30 +274,43 @@ export class FirebaseAnalyticsService {
     try {
       const validatedData = TrackEventDataSchema.parse(eventData)
       const sanitizedParams = this.sanitizeParameters(validatedData.parameters)
-      
+
       this.validateEventParameters(validatedData.event_name, sanitizedParams)
 
       if (this.isOnline()) {
         logEvent(this.analytics, validatedData.event_name, sanitizedParams)
-        
-        if (this.config.measurementId && typeof window !== 'undefined' && window.gtag) {
+
+        if (
+          this.config.measurementId &&
+          typeof window !== 'undefined' &&
+          window.gtag
+        ) {
           window.gtag('event', validatedData.event_name, sanitizedParams)
         }
-        
+
         this.eventsTracked++
       } else {
-        this.queueEvent('event', { name: validatedData.event_name, parameters: sanitizedParams })
+        this.queueEvent('event', {
+          name: validatedData.event_name,
+          parameters: sanitizedParams,
+        })
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid event data: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid event data: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       this.lastError = error instanceof Error ? error.message : 'Unknown error'
       console.error('Failed to track event:', error)
     }
   }
 
-  trackUserEngagement(userId: string, action: string, additionalData?: Record<string, any>): void {
+  trackUserEngagement(
+    userId: string,
+    action: string,
+    additionalData?: Record<string, any>
+  ): void {
     this.trackEvent({
       event_name: 'user_engagement',
       parameters: {
@@ -278,29 +318,32 @@ export class FirebaseAnalyticsService {
         user_id: userId,
         page: typeof window !== 'undefined' ? window.location.pathname : '',
         referrer: typeof document !== 'undefined' ? document.referrer : '',
-        ...additionalData
-      }
+        ...additionalData,
+      },
     })
   }
 
   trackSubscriptionEvent(
-    userId: string, 
-    eventType: 'subscription_started' | 'subscription_canceled' | 'payment_failed', 
+    userId: string,
+    eventType:
+      | 'subscription_started'
+      | 'subscription_canceled'
+      | 'payment_failed',
     data?: Record<string, any>
   ): void {
     this.trackEvent({
       event_name: eventType,
       parameters: {
         user_id: userId,
-        ...data
-      }
+        ...data,
+      },
     })
   }
 
   trackFeatureUsage(
-    userId: string, 
-    feature: string, 
-    isSuccessful: boolean = true, 
+    userId: string,
+    feature: string,
+    isSuccessful: boolean = true,
     data?: Record<string, any>
   ): void {
     this.trackEvent({
@@ -309,8 +352,8 @@ export class FirebaseAnalyticsService {
         user_id: userId,
         feature,
         successful: isSuccessful,
-        ...data
-      }
+        ...data,
+      },
     })
   }
 
@@ -325,41 +368,50 @@ export class FirebaseAnalyticsService {
           value: conversionEvent.value,
           currency: conversionEvent.currency,
           transaction_id: conversionEvent.transaction_id,
-          ...conversionEvent.parameters
-        }
+          ...conversionEvent.parameters,
+        },
       })
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid conversion event: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid conversion event: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       throw error
     }
   }
 
-  trackSignup(userId: string, method: string, additionalData?: Record<string, any>): void {
+  trackSignup(
+    userId: string,
+    method: string,
+    additionalData?: Record<string, any>
+  ): void {
     this.trackEvent({
       event_name: 'sign_up',
       parameters: {
         user_id: userId,
         method,
-        ...additionalData
-      }
+        ...additionalData,
+      },
     })
   }
 
-  trackPurchase(userId: string, purchaseData: {
-    transaction_id: string
-    value: number
-    currency: string
-    items?: Array<{
-      item_id: string
-      item_name: string
-      category: string
-      quantity: number
-      price: number
-    }>
-    coupon?: string
-  }): void {
+  trackPurchase(
+    userId: string,
+    purchaseData: {
+      transaction_id: string
+      value: number
+      currency: string
+      items?: Array<{
+        item_id: string
+        item_name: string
+        category: string
+        quantity: number
+        price: number
+      }>
+      coupon?: string
+    }
+  ): void {
     this.trackEvent({
       event_name: 'purchase',
       parameters: {
@@ -368,46 +420,56 @@ export class FirebaseAnalyticsService {
         value: purchaseData.value,
         currency: purchaseData.currency,
         items: purchaseData.items,
-        coupon: purchaseData.coupon
-      }
+        coupon: purchaseData.coupon,
+      },
     })
   }
 
   // Performance tracking
-  trackPerformance(metricType: string, performanceData: Record<string, number>): void {
+  trackPerformance(
+    metricType: string,
+    performanceData: Record<string, number>
+  ): void {
     this.trackEvent({
       event_name: 'page_performance',
       parameters: {
         metric_type: metricType,
-        ...performanceData
-      }
+        ...performanceData,
+      },
     })
   }
 
-  trackAPIPerformance(endpoint: string, performanceData: {
-    response_time: number
-    status_code: number
-    cache_hit?: boolean
-  }): void {
+  trackAPIPerformance(
+    endpoint: string,
+    performanceData: {
+      response_time: number
+      status_code: number
+      cache_hit?: boolean
+    }
+  ): void {
     this.trackEvent({
       event_name: 'api_performance',
       parameters: {
         endpoint,
         response_time: performanceData.response_time,
         status_code: performanceData.status_code,
-        cache_hit: performanceData.cache_hit || false
-      }
+        cache_hit: performanceData.cache_hit || false,
+      },
     })
   }
 
-  trackCustomMetric(metricName: string, metricValue: number, additionalData?: Record<string, any>): void {
+  trackCustomMetric(
+    metricName: string,
+    metricValue: number,
+    additionalData?: Record<string, any>
+  ): void {
     this.trackEvent({
       event_name: 'custom_metric',
       parameters: {
         metric_name: metricName,
         metric_value: metricValue,
-        ...additionalData
-      }
+        ...additionalData,
+      },
     })
   }
 
@@ -419,8 +481,8 @@ export class FirebaseAnalyticsService {
         error_message: error.message,
         error_name: error.name,
         error_stack: error.stack?.substring(0, 500), // Limit stack trace length
-        ...context
-      }
+        ...context,
+      },
     })
   }
 
@@ -438,34 +500,42 @@ export class FirebaseAnalyticsService {
         filename: errorInfo.filename,
         line: errorInfo.line,
         column: errorInfo.column,
-        stack: errorInfo.stack?.substring(0, 500)
-      }
+        stack: errorInfo.stack?.substring(0, 500),
+      },
     })
   }
 
-  trackHandledException(exceptionType: string, message: string, context?: Record<string, any>): void {
+  trackHandledException(
+    exceptionType: string,
+    message: string,
+    context?: Record<string, any>
+  ): void {
     this.trackEvent({
       event_name: 'handled_exception',
       parameters: {
         exception_type: exceptionType,
         exception_message: message,
-        ...context
-      }
+        ...context,
+      },
     })
   }
 
   // Screen and navigation tracking
-  trackScreenView(screenPath: string, screenName: string, additionalData?: Record<string, any>): void {
+  trackScreenView(
+    screenPath: string,
+    screenName: string,
+    additionalData?: Record<string, any>
+  ): void {
     try {
       setCurrentScreen(this.analytics, screenName)
-      
+
       this.trackEvent({
         event_name: 'screen_view',
         parameters: {
           screen_name: screenName,
           screen_path: screenPath,
-          ...additionalData
-        }
+          ...additionalData,
+        },
       })
     } catch (error) {
       this.lastError = error instanceof Error ? error.message : 'Unknown error'
@@ -473,14 +543,18 @@ export class FirebaseAnalyticsService {
     }
   }
 
-  trackNavigation(fromPath: string, toPath: string, additionalData?: Record<string, any>): void {
+  trackNavigation(
+    fromPath: string,
+    toPath: string,
+    additionalData?: Record<string, any>
+  ): void {
     this.trackEvent({
       event_name: 'navigation',
       parameters: {
         from_path: fromPath,
         to_path: toPath,
-        ...additionalData
-      }
+        ...additionalData,
+      },
     })
   }
 
@@ -492,7 +566,7 @@ export class FirebaseAnalyticsService {
   trackCustomEvent(eventName: string, parameters: Record<string, any>): void {
     this.trackEvent({
       event_name: eventName,
-      parameters
+      parameters,
     })
   }
 
@@ -503,30 +577,37 @@ export class FirebaseAnalyticsService {
       parameters: {
         user_id: userId,
         session_id: sessionData?.session_id || `session_${Date.now()}`,
-        ...sessionData
-      }
+        ...sessionData,
+      },
     })
   }
 
-  endSession(userId: string, sessionData?: {
-    session_duration?: number
-    pages_viewed?: number
-    actions_taken?: number
-  }): void {
+  endSession(
+    userId: string,
+    sessionData?: {
+      session_duration?: number
+      pages_viewed?: number
+      actions_taken?: number
+    }
+  ): void {
     this.trackEvent({
       event_name: 'session_end',
       parameters: {
         user_id: userId,
         session_duration: sessionData?.session_duration,
         pages_viewed: sessionData?.pages_viewed,
-        actions_taken: sessionData?.actions_taken
-      }
+        actions_taken: sessionData?.actions_taken,
+      },
     })
   }
 
   // GA4 configuration
   configureGA4(config: GA4Config): void {
-    if (!this.config.measurementId || typeof window === 'undefined' || !window.gtag) {
+    if (
+      !this.config.measurementId ||
+      typeof window === 'undefined' ||
+      !window.gtag
+    ) {
       return
     }
 
@@ -535,7 +616,11 @@ export class FirebaseAnalyticsService {
 
   // Consent and privacy
   setConsentSettings(consent: ConsentSettings): void {
-    if (this.config.measurementId && typeof window !== 'undefined' && window.gtag) {
+    if (
+      this.config.measurementId &&
+      typeof window !== 'undefined' &&
+      window.gtag
+    ) {
       window.gtag('consent', 'update', consent)
     }
   }
@@ -561,7 +646,11 @@ export class FirebaseAnalyticsService {
       try {
         switch (queuedEvent.type) {
           case 'event':
-            logEvent(this.analytics, queuedEvent.data.name, queuedEvent.data.parameters)
+            logEvent(
+              this.analytics,
+              queuedEvent.data.name,
+              queuedEvent.data.parameters
+            )
             this.eventsTracked++
             break
           case 'user_property':
@@ -585,7 +674,7 @@ export class FirebaseAnalyticsService {
       measurementId: this.config.measurementId,
       debugMode: this.config.enableDebugMode,
       eventsTracked: this.eventsTracked,
-      lastError: this.lastError
+      lastError: this.lastError,
     }
   }
 

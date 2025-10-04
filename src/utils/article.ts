@@ -1,11 +1,11 @@
 import OpenAI from 'openai'
-import { 
-  validateOrThrow, 
-  ArticleDataSchema, 
-  OllamaResponseSchema, 
+import {
+  validateOrThrow,
+  ArticleDataSchema,
+  OllamaResponseSchema,
   OpenAIResponseSchema,
   type ArticleData,
-  type LLMResponse
+  type LLMResponse,
 } from './validation'
 
 // LLM Provider Types
@@ -32,7 +32,11 @@ const responseCache = new Map<string, CacheEntry>()
 const CACHE_DURATION = 20 * 60 * 1000 // 20 minutes in milliseconds
 
 // Generate cache key from article data and provider
-const generateCacheKey = (data: ArticleData, provider: LLMProvider, analysisType?: AnalysisType): string => {
+const generateCacheKey = (
+  data: ArticleData,
+  provider: LLMProvider,
+  analysisType?: AnalysisType
+): string => {
   return JSON.stringify({
     provider,
     analysisType: analysisType || 'technical-report',
@@ -40,12 +44,14 @@ const generateCacheKey = (data: ArticleData, provider: LLMProvider, analysisType
     rsi: Math.round(data.rsi || 0),
     ema12: Math.round(data.ema12 || 0),
     ema26: Math.round(data.ema26 || 0),
-    macd: data.macd ? {
-      MACD: Math.round(data.macd.MACD),
-      signal: Math.round(data.macd.signal),
-      histogram: Math.round(data.macd.histogram)
-    } : null,
-    cryptoName: data.cryptoName || 'Bitcoin'
+    macd: data.macd
+      ? {
+          MACD: Math.round(data.macd.MACD),
+          signal: Math.round(data.macd.signal),
+          histogram: Math.round(data.macd.histogram),
+        }
+      : null,
+    cryptoName: data.cryptoName || 'Bitcoin',
   })
 }
 
@@ -65,9 +71,12 @@ const cleanExpiredCache = () => {
 }
 
 // Ollama client function
-const callOllama = async (prompt: string, model: string = 'llama3.1:8b'): Promise<string> => {
+const callOllama = async (
+  prompt: string,
+  model: string = 'llama3.1:8b'
+): Promise<string> => {
   const ollamaUrl = import.meta.env.VITE_OLLAMA_URL || 'http://localhost:11434'
-  
+
   const response = await fetch(`${ollamaUrl}/api/generate`, {
     method: 'POST',
     headers: {
@@ -81,20 +90,26 @@ const callOllama = async (prompt: string, model: string = 'llama3.1:8b'): Promis
   })
 
   if (!response.ok) {
-    throw new Error(`Ollama API failed: ${response.status} ${response.statusText}`)
+    throw new Error(
+      `Ollama API failed: ${response.status} ${response.statusText}`
+    )
   }
 
   const rawData = await response.json()
-  const data = validateOrThrow(OllamaResponseSchema, rawData, 'Ollama API response')
+  const data = validateOrThrow(
+    OllamaResponseSchema,
+    rawData,
+    'Ollama API response'
+  )
   return data.response?.trim() || ''
 }
 
-// OpenAI client function  
+// OpenAI client function
 const callOpenAI = async (prompt: string): Promise<string> => {
   if (!import.meta.env.VITE_OPENAI_API_KEY) {
     throw new Error('No OpenAI API key available')
   }
-  
+
   const openai = new OpenAI({
     apiKey: import.meta.env.VITE_OPENAI_API_KEY,
     dangerouslyAllowBrowser: true,
@@ -107,9 +122,13 @@ const callOpenAI = async (prompt: string): Promise<string> => {
     temperature: 0.7,
   })
 
-  const validatedResponse = validateOrThrow(OpenAIResponseSchema, completion, 'OpenAI API response')
+  const validatedResponse = validateOrThrow(
+    OpenAIResponseSchema,
+    completion,
+    'OpenAI API response'
+  )
   const text = validatedResponse.choices[0]?.message?.content?.trim()
-  
+
   if (!text) {
     throw new Error('No response from OpenAI')
   }
@@ -118,7 +137,10 @@ const callOpenAI = async (prompt: string): Promise<string> => {
 }
 
 // Smart LLM caller with fallback chain
-const callLLM = async (prompt: string, preferredProvider: LLMProvider = 'ollama'): Promise<LLMResponse> => {
+const callLLM = async (
+  prompt: string,
+  preferredProvider: LLMProvider = 'ollama'
+): Promise<LLMResponse> => {
   // Try preferred provider first
   if (preferredProvider === 'ollama') {
     try {
@@ -126,7 +148,7 @@ const callLLM = async (prompt: string, preferredProvider: LLMProvider = 'ollama'
       return { text, provider: 'ollama' }
     } catch (error) {
       console.warn('Ollama failed, trying OpenAI fallback:', error)
-      
+
       // Fallback to OpenAI
       try {
         const text = await callOpenAI(prompt)
@@ -137,14 +159,14 @@ const callLLM = async (prompt: string, preferredProvider: LLMProvider = 'ollama'
       }
     }
   }
-  
+
   if (preferredProvider === 'openai') {
     try {
       const text = await callOpenAI(prompt)
       return { text, provider: 'openai' }
     } catch (error) {
       console.warn('OpenAI failed, trying Ollama fallback:', error)
-      
+
       // Fallback to Ollama
       try {
         const text = await callOllama(prompt)
@@ -182,7 +204,11 @@ const calculateConfidence = (data: ArticleData): number => {
 }
 
 export const generateArticle = (data: unknown): ArticleResult => {
-  const validatedData = validateOrThrow(ArticleDataSchema, data, 'article generation data')
+  const validatedData = validateOrThrow(
+    ArticleDataSchema,
+    data,
+    'article generation data'
+  )
   if (!validatedData.price) {
     return {
       text: 'Data unavailable. Please try again later.',
@@ -198,10 +224,12 @@ export const generateArticle = (data: unknown): ArticleResult => {
 
   if (validatedData.rsi) {
     if (validatedData.rsi > 70) {
-      text += 'The RSI indicates overbought conditions, suggesting a potential sell signal. '
+      text +=
+        'The RSI indicates overbought conditions, suggesting a potential sell signal. '
       confidence += 10
     } else if (validatedData.rsi < 30) {
-      text += 'The RSI indicates oversold conditions, suggesting a potential buy signal. '
+      text +=
+        'The RSI indicates oversold conditions, suggesting a potential buy signal. '
       confidence += 10
     } else {
       text += 'The RSI is in a neutral range. '
@@ -210,10 +238,12 @@ export const generateArticle = (data: unknown): ArticleResult => {
 
   if (validatedData.ema12 && validatedData.ema26) {
     if (validatedData.ema12 > validatedData.ema26) {
-      text += 'The short-term EMA is above the long-term EMA, indicating bullish momentum. '
+      text +=
+        'The short-term EMA is above the long-term EMA, indicating bullish momentum. '
       confidence += 15
     } else {
-      text += 'The short-term EMA is below the long-term EMA, indicating bearish momentum. '
+      text +=
+        'The short-term EMA is below the long-term EMA, indicating bearish momentum. '
       confidence -= 15
     }
   }
@@ -228,7 +258,8 @@ export const generateArticle = (data: unknown): ArticleResult => {
     }
   }
 
-  text += 'Consider stop loss at 5% below current price for risk management. Bid and sell based on market conditions.'
+  text +=
+    'Consider stop loss at 5% below current price for risk management. Bid and sell based on market conditions.'
 
   confidence = Math.max(0, Math.min(100, confidence))
 
@@ -236,16 +267,21 @@ export const generateArticle = (data: unknown): ArticleResult => {
 }
 
 // Create prompts for different analysis types
-const createPrompt = (data: ArticleData, analysisType: AnalysisType): string => {
+const createPrompt = (
+  data: ArticleData,
+  analysisType: AnalysisType
+): string => {
   const cryptoName = data.cryptoName || 'Bitcoin'
-  const priceAnalysisText = data.priceAnalysis ? `
+  const priceAnalysisText = data.priceAnalysis
+    ? `
 Price Analysis:
 - Entry Points: Conservative: $${data.priceAnalysis.entryPoints.conservative}, Moderate: $${data.priceAnalysis.entryPoints.moderate}, Aggressive: $${data.priceAnalysis.entryPoints.aggressive}
 - Stop Loss: $${data.priceAnalysis.stopLoss.price} (${data.priceAnalysis.stopLoss.method})
 - Profit Targets: T1: $${data.priceAnalysis.profitTargets.target1}, T2: $${data.priceAnalysis.profitTargets.target2}
 - Risk Assessment: ${data.priceAnalysis.riskAssessment}
-- Analysis Confidence: ${Math.round(data.priceAnalysis.confidence * 100)}%` : ''
-  
+- Analysis Confidence: ${Math.round(data.priceAnalysis.confidence * 100)}%`
+    : ''
+
   const baseData = `
 Current Data for ${cryptoName}:
 Price: $${data.price}
@@ -314,23 +350,33 @@ Focus on education and comprehensive understanding rather than immediate actions
 }
 
 export const generateLLMArticle = async (
-  data: unknown, 
-  useEnhanced: boolean = false, 
+  data: unknown,
+  useEnhanced: boolean = false,
   preferredProvider: LLMProvider = 'ollama',
   analysisType: AnalysisType = 'technical-report'
 ): Promise<ArticleResult> => {
-  const validatedData = validateOrThrow(ArticleDataSchema, data, 'LLM article generation data')
+  const validatedData = validateOrThrow(
+    ArticleDataSchema,
+    data,
+    'LLM article generation data'
+  )
   // Fallback to template if not using enhanced mode
   if (!useEnhanced) {
     return generateArticle(validatedData)
   }
 
   // Check cache first
-  const cacheKey = generateCacheKey(validatedData, preferredProvider, analysisType)
+  const cacheKey = generateCacheKey(
+    validatedData,
+    preferredProvider,
+    analysisType
+  )
   const cachedEntry = responseCache.get(cacheKey)
-  
+
   if (cachedEntry && isCacheValid(cachedEntry)) {
-    console.log(`Using cached LLM response (${preferredProvider}, ${analysisType})`)
+    console.log(
+      `Using cached LLM response (${preferredProvider}, ${analysisType})`
+    )
     return cachedEntry.result
   }
 
@@ -348,10 +394,12 @@ export const generateLLMArticle = async (
     // Cache the successful result
     responseCache.set(cacheKey, {
       result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
-    console.log(`Cached new LLM response (${llmResponse.provider}, ${analysisType})`)
+    console.log(
+      `Cached new LLM response (${llmResponse.provider}, ${analysisType})`
+    )
     return result
   } catch (error) {
     console.warn('All LLM providers failed, falling back to template:', error)
@@ -363,7 +411,7 @@ export const generateLLMArticle = async (
 export const getCacheInfo = () => ({
   size: responseCache.size,
   entries: Array.from(responseCache.keys()),
-  duration: CACHE_DURATION
+  duration: CACHE_DURATION,
 })
 
 export const clearCache = () => {

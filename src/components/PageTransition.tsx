@@ -7,7 +7,9 @@ interface PageTransitionProps {
 
 export function PageTransition({ children }: PageTransitionProps) {
   const [displayLocation, setDisplayLocation] = useState(useLocation())
-  const [transitionStage, setTransitionStage] = useState<'fade-in' | 'fade-out' | 'visible'>('visible')
+  const [transitionStage, setTransitionStage] = useState<
+    'fade-in' | 'fade-out' | 'visible'
+  >('visible')
   const location = useLocation()
 
   useEffect(() => {

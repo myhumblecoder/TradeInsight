@@ -1,4 +1,8 @@
-import { getIntervalsByCategory, formatTimeInterval, type TimeInterval } from '../utils/timeIntervals'
+import {
+  getIntervalsByCategory,
+  formatTimeInterval,
+  type TimeInterval,
+} from '../utils/timeIntervals'
 
 interface TimeIntervalSelectorProps {
   selectedInterval: TimeInterval
@@ -7,11 +11,11 @@ interface TimeIntervalSelectorProps {
   disabled?: boolean
 }
 
-export function TimeIntervalSelector({ 
-  selectedInterval, 
-  onIntervalChange, 
+export function TimeIntervalSelector({
+  selectedInterval,
+  onIntervalChange,
   className = '',
-  disabled = false 
+  disabled = false,
 }: TimeIntervalSelectorProps) {
   const intervalsByCategory = getIntervalsByCategory()
 
@@ -19,7 +23,8 @@ export function TimeIntervalSelector({
     onIntervalChange(event.target.value as TimeInterval)
   }
 
-  const baseClassName = "px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+  const baseClassName =
+    'px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
 
   return (
     <select
@@ -30,7 +35,7 @@ export function TimeIntervalSelector({
     >
       {Object.entries(intervalsByCategory).map(([category, intervals]) => (
         <optgroup key={category} label={category}>
-          {intervals.map(interval => (
+          {intervals.map((interval) => (
             <option key={interval} value={interval}>
               {formatTimeInterval(interval)}
             </option>

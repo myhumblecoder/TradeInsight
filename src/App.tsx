@@ -6,11 +6,22 @@ function App() {
   const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID
   const hasAuth0Config = domain && clientId
 
-  if (!hasAuth0Config) {
-    return <AppContentWithoutAuth />
+  const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY
+  const firebaseAuthDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN
+  const hasFirebaseConfig = firebaseApiKey && firebaseAuthDomain
+
+  // If Firebase config is present, use AppContent with Firebase auth
+  if (hasFirebaseConfig) {
+    return <AppContent />
   }
 
-  return <AppWithAuth0 />
+  // If Auth0 config is present, use Auth0 flow
+  if (hasAuth0Config) {
+    return <AppWithAuth0 />
+  }
+
+  // No auth config, use app without auth
+  return <AppContentWithoutAuth />
 }
 
 function AppWithAuth0() {

@@ -9,7 +9,7 @@ export function convertCandlesToOHLCV(candleData: CandleData[]): OHLCV[] {
     return []
   }
 
-  const ohlcvData: OHLCV[] = candleData.map(candle => {
+  const ohlcvData: OHLCV[] = candleData.map((candle) => {
     // Handle different data formats
     if (candle.length >= 6) {
       // Full OHLCV format: [timestamp, open, high, low, close, volume]
@@ -19,7 +19,8 @@ export function convertCandlesToOHLCV(candleData: CandleData[]): OHLCV[] {
         high: candle[2],
         low: candle[3],
         close: candle[4],
-        volume: typeof candle[5] === 'number' && !isNaN(candle[5]) ? candle[5] : 0
+        volume:
+          typeof candle[5] === 'number' && !isNaN(candle[5]) ? candle[5] : 0,
       }
     } else if (candle.length >= 2) {
       // Price only format: [timestamp, price] - convert to OHLC with same price
@@ -30,7 +31,8 @@ export function convertCandlesToOHLCV(candleData: CandleData[]): OHLCV[] {
         high: price,
         low: price,
         close: price,
-        volume: typeof candle[2] === 'number' && !isNaN(candle[2]) ? candle[2] : 0 // Use third element as volume if available
+        volume:
+          typeof candle[2] === 'number' && !isNaN(candle[2]) ? candle[2] : 0, // Use third element as volume if available
       }
     } else {
       // Malformed data - use first element as price
@@ -41,7 +43,7 @@ export function convertCandlesToOHLCV(candleData: CandleData[]): OHLCV[] {
         high: price,
         low: price,
         close: price,
-        volume: 0
+        volume: 0,
       }
     }
   })
@@ -55,7 +57,7 @@ export function validateOHLCVData(data: OHLCV[]): boolean {
     return false
   }
 
-  return data.every(item => {
+  return data.every((item) => {
     return (
       typeof item.timestamp === 'number' &&
       typeof item.open === 'number' &&
@@ -80,19 +82,20 @@ export function getDataQualityScore(data: OHLCV[]): number {
   score += lengthScore
 
   // Consistency score (0-30 points)
-  const hasValidOHLC = data.every(item => 
-    item.high >= Math.max(item.open, item.close) &&
-    item.low <= Math.min(item.open, item.close)
+  const hasValidOHLC = data.every(
+    (item) =>
+      item.high >= Math.max(item.open, item.close) &&
+      item.low <= Math.min(item.open, item.close)
   )
   if (hasValidOHLC) score += 30
 
   // Volume data availability (0-20 points)
-  const hasVolumeData = data.some(item => item.volume > 0)
+  const hasVolumeData = data.some((item) => item.volume > 0)
   if (hasVolumeData) score += 20
 
   // Chronological order (0-20 points)
-  const isChronological = data.every((item, index) => 
-    index === 0 || item.timestamp >= data[index - 1].timestamp
+  const isChronological = data.every(
+    (item, index) => index === 0 || item.timestamp >= data[index - 1].timestamp
   )
   if (isChronological) score += 20
 

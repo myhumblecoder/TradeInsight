@@ -1,6 +1,6 @@
-import { vi } from 'vitest';
+import { vi } from 'vitest'
 
-const mockCreate = vi.fn();
+const mockCreate = vi.fn()
 
 const OpenAI = vi.fn().mockImplementation(() => ({
   chat: {
@@ -8,7 +8,7 @@ const OpenAI = vi.fn().mockImplementation(() => ({
       create: mockCreate,
     },
   },
-}));
+}))
 
-export default OpenAI;
-export { mockCreate };
+export default OpenAI
+export { mockCreate }

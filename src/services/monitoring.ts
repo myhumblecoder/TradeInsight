@@ -32,13 +32,13 @@ export const logger = pino({
               ...logEvent,
               level,
               timestamp: new Date().toISOString(),
-              source: 'tradeinsight-frontend'
-            })
+              source: 'tradeinsight-frontend',
+            }),
           }).catch(console.error)
         }
-      }
-    }
-  }
+      },
+    },
+  },
 })
 
 export const trackEvent = (metric: MetricData): void => {
@@ -52,7 +52,7 @@ export const trackEvent = (metric: MetricData): void => {
   if (!isDevelopment && typeof gtag === 'function') {
     gtag('event', metric.event, {
       user_id: metric.userId,
-      custom_parameters: metric.data
+      custom_parameters: metric.data,
     })
   }
 
@@ -62,21 +62,22 @@ export const trackEvent = (metric: MetricData): void => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(eventData)
-    }).catch(err => logger.error(err, 'Failed to send analytics event'))
+      body: JSON.stringify(eventData),
+    }).catch((err) => logger.error(err, 'Failed to send analytics event'))
   }
 }
 
 export const trackError = (errorData: ErrorData): void => {
-  const error = typeof errorData.error === 'string' 
-    ? new Error(errorData.error) 
-    : errorData.error
+  const error =
+    typeof errorData.error === 'string'
+      ? new Error(errorData.error)
+      : errorData.error
 
   const logData = {
     error: {
       message: error.message,
       stack: error.stack,
-      name: error.name
+      name: error.name,
     },
     userId: errorData.userId,
     context: errorData.context,
@@ -92,12 +93,16 @@ export const trackError = (errorData: ErrorData): void => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(logData)
+      body: JSON.stringify(logData),
     }).catch(console.error)
   }
 }
 
-export const trackUserEngagement = (userId: string, action: string, data?: Record<string, unknown>): void => {
+export const trackUserEngagement = (
+  userId: string,
+  action: string,
+  data?: Record<string, unknown>
+): void => {
   trackEvent({
     event: 'user_engagement',
     userId,
@@ -105,28 +110,37 @@ export const trackUserEngagement = (userId: string, action: string, data?: Recor
       action,
       ...data,
       page: window.location.pathname,
-      referrer: document.referrer
-    }
+      referrer: document.referrer,
+    },
   })
 }
 
-export const trackSubscriptionEvent = (userId: string, event: 'subscription_started' | 'subscription_canceled' | 'payment_failed', data?: Record<string, unknown>): void => {
+export const trackSubscriptionEvent = (
+  userId: string,
+  event: 'subscription_started' | 'subscription_canceled' | 'payment_failed',
+  data?: Record<string, unknown>
+): void => {
   trackEvent({
     event,
     userId,
-    data
+    data,
   })
 }
 
-export const trackFeatureUsage = (userId: string, feature: string, isSuccessful: boolean = true, data?: Record<string, unknown>): void => {
+export const trackFeatureUsage = (
+  userId: string,
+  feature: string,
+  isSuccessful: boolean = true,
+  data?: Record<string, unknown>
+): void => {
   trackEvent({
     event: 'feature_usage',
     userId,
     data: {
       feature,
       successful: isSuccessful,
-      ...data
-    }
+      ...data,
+    },
   })
 }
 
@@ -140,15 +154,17 @@ export const startPerformanceMonitoring = (): void => {
             event: 'page_performance',
             data: {
               loadTime: navEntry.loadEventEnd - navEntry.loadEventStart,
-              domContentLoaded: navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
+              domContentLoaded:
+                navEntry.domContentLoadedEventEnd -
+                navEntry.domContentLoadedEventStart,
               firstPaint: navEntry.loadEventEnd - navEntry.fetchStart,
-              page: window.location.pathname
-            }
+              page: window.location.pathname,
+            },
           })
         }
       }
     })
-    
+
     observer.observe({ entryTypes: ['navigation'] })
   }
 }

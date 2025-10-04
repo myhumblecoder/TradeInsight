@@ -21,7 +21,7 @@ import {
   type Unsubscribe,
   type Query,
   type CollectionReference,
-  type DocumentReference
+  type DocumentReference,
 } from 'firebase/firestore'
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { z } from 'zod'
@@ -32,25 +32,39 @@ export const FirestoreConfigSchema = z.object({
   projectId: z.string().min(1, 'Project ID is required'),
   storageBucket: z.string().min(1, 'Storage bucket is required'),
   messagingSenderId: z.string().min(1, 'Messaging sender ID is required'),
-  appId: z.string().min(1, 'App ID is required')
+  appId: z.string().min(1, 'App ID is required'),
 })
 
-export const FirestoreUserRoleSchema = z.enum(['user', 'admin', 'owner', 'member'])
-export const SubscriptionStatusSchema = z.enum(['active', 'canceled', 'past_due', 'incomplete'])
-export const SubscriptionPlanSchema = z.enum(['monthly', 'annual', 'enterprise'])
+export const FirestoreUserRoleSchema = z.enum([
+  'user',
+  'admin',
+  'owner',
+  'member',
+])
+export const SubscriptionStatusSchema = z.enum([
+  'active',
+  'canceled',
+  'past_due',
+  'incomplete',
+])
+export const SubscriptionPlanSchema = z.enum([
+  'monthly',
+  'annual',
+  'enterprise',
+])
 export const OrganizationPlanSchema = z.enum(['team', 'enterprise'])
 
 export const FirestoreSubscriptionSchema = z.object({
   stripeId: z.string().min(1),
   status: SubscriptionStatusSchema,
   plan: SubscriptionPlanSchema,
-  currentPeriodEnd: z.date()
+  currentPeriodEnd: z.date(),
 })
 
 export const CustomBrandingSchema = z.object({
   logo: z.string().url(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
-  name: z.string().min(1)
+  name: z.string().min(1),
 })
 
 export const FirestoreUserSchema = z.object({
@@ -62,7 +76,7 @@ export const FirestoreUserSchema = z.object({
   role: FirestoreUserRoleSchema,
   subscription: FirestoreSubscriptionSchema.nullable(),
   createdAt: z.date(),
-  updatedAt: z.date()
+  updatedAt: z.date(),
 })
 
 export const FirestoreOrganizationSchema = z.object({
@@ -73,7 +87,7 @@ export const FirestoreOrganizationSchema = z.object({
   apiAccess: z.boolean(),
   customBranding: CustomBrandingSchema.nullable(),
   createdAt: z.date(),
-  updatedAt: z.date()
+  updatedAt: z.date(),
 })
 
 export type FirestoreConfig = z.infer<typeof FirestoreConfigSchema>
@@ -94,7 +108,9 @@ export type CreateUserInput = {
   role: FirestoreUserRole
 }
 
-export type UpdateUserInput = Partial<Omit<FirestoreUser, 'id' | 'createdAt' | 'updatedAt'>>
+export type UpdateUserInput = Partial<
+  Omit<FirestoreUser, 'id' | 'createdAt' | 'updatedAt'>
+>
 
 export type CreateOrganizationInput = {
   name: string
@@ -104,7 +120,9 @@ export type CreateOrganizationInput = {
   customBranding?: CustomBranding | null
 }
 
-export type UpdateOrganizationInput = Partial<Omit<FirestoreOrganization, 'id' | 'createdAt' | 'updatedAt'>>
+export type UpdateOrganizationInput = Partial<
+  Omit<FirestoreOrganization, 'id' | 'createdAt' | 'updatedAt'>
+>
 
 export type PaginationOptions = {
   limit?: number
@@ -128,7 +146,9 @@ export class FirebaseFirestoreService {
       FirestoreConfigSchema.parse(config)
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid Firestore configuration: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid Firestore configuration: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       throw error
     }
@@ -150,7 +170,7 @@ export class FirebaseFirestoreService {
 
   private transformDocumentData<T>(data: any, id: string): T {
     const transformed = { ...data, id }
-    
+
     // Transform Firestore timestamps to Date objects
     if (transformed.createdAt) {
       transformed.createdAt = this.transformTimestamp(transformed.createdAt)
@@ -159,7 +179,9 @@ export class FirebaseFirestoreService {
       transformed.updatedAt = this.transformTimestamp(transformed.updatedAt)
     }
     if (transformed.subscription?.currentPeriodEnd) {
-      transformed.subscription.currentPeriodEnd = this.transformTimestamp(transformed.subscription.currentPeriodEnd)
+      transformed.subscription.currentPeriodEnd = this.transformTimestamp(
+        transformed.subscription.currentPeriodEnd
+      )
     }
 
     return transformed as T
@@ -171,7 +193,9 @@ export class FirebaseFirestoreService {
       FirestoreUserSchema.parse(user)
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid user data: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid user data: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       throw error
     }
@@ -182,7 +206,9 @@ export class FirebaseFirestoreService {
       FirestoreSubscriptionSchema.parse(subscription)
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid subscription data: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid subscription data: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       throw error
     }
@@ -193,7 +219,9 @@ export class FirebaseFirestoreService {
       FirestoreOrganizationSchema.parse(organization)
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid organization data: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid organization data: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       throw error
     }
@@ -209,7 +237,7 @@ export class FirebaseFirestoreService {
         organizationId: null,
         subscription: null,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
 
       this.validateUser(userToCreate)
@@ -218,7 +246,7 @@ export class FirebaseFirestoreService {
       await setDoc(userRef, {
         ...userToCreate,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       })
     } catch (error) {
       if (error instanceof Error) {
@@ -237,7 +265,10 @@ export class FirebaseFirestoreService {
         return null
       }
 
-      return this.transformDocumentData<FirestoreUser>(userSnap.data(), userSnap.id)
+      return this.transformDocumentData<FirestoreUser>(
+        userSnap.data(),
+        userSnap.id
+      )
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to get user: ${error.message}`)
@@ -251,7 +282,7 @@ export class FirebaseFirestoreService {
       const userRef = doc(this.db, 'users', userId)
       await updateDoc(userRef, {
         ...updates,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       })
     } catch (error) {
       if (error instanceof Error) {
@@ -282,7 +313,10 @@ export class FirebaseFirestoreService {
   }
 
   // Subscription operations
-  async updateUserSubscription(userId: string, subscription: FirestoreSubscription): Promise<void> {
+  async updateUserSubscription(
+    userId: string,
+    subscription: FirestoreSubscription
+  ): Promise<void> {
     try {
       this.validateSubscription(subscription)
 
@@ -290,9 +324,9 @@ export class FirebaseFirestoreService {
       await updateDoc(userRef, {
         subscription: {
           ...subscription,
-          currentPeriodEnd: Timestamp.fromDate(subscription.currentPeriodEnd)
+          currentPeriodEnd: Timestamp.fromDate(subscription.currentPeriodEnd),
         },
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       })
     } catch (error) {
       if (error instanceof Error) {
@@ -307,7 +341,7 @@ export class FirebaseFirestoreService {
       const userRef = doc(this.db, 'users', userId)
       await updateDoc(userRef, {
         subscription: null,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       })
     } catch (error) {
       if (error instanceof Error) {
@@ -317,20 +351,26 @@ export class FirebaseFirestoreService {
     }
   }
 
-  async getUsersBySubscriptionStatus(status: SubscriptionStatus): Promise<FirestoreUser[]> {
+  async getUsersBySubscriptionStatus(
+    status: SubscriptionStatus
+  ): Promise<FirestoreUser[]> {
     try {
       const usersRef = collection(this.db, 'users')
       const q = query(usersRef, where('subscription.status', '==', status))
       const querySnapshot = await getDocs(q)
 
-      return querySnapshot.docs.map(doc => 
+      return querySnapshot.docs.map((doc) =>
         this.transformDocumentData<FirestoreUser>(doc.data(), doc.id)
       )
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Failed to get users by subscription status: ${error.message}`)
+        throw new Error(
+          `Failed to get users by subscription status: ${error.message}`
+        )
       }
-      throw new Error('Failed to get users by subscription status: Unknown error')
+      throw new Error(
+        'Failed to get users by subscription status: Unknown error'
+      )
     }
   }
 
@@ -341,7 +381,7 @@ export class FirebaseFirestoreService {
         ...orgData,
         customBranding: orgData.customBranding || null,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
 
       this.validateOrganization({ ...orgToCreate, id: 'temp' })
@@ -350,7 +390,7 @@ export class FirebaseFirestoreService {
       const docRef = await addDoc(orgsRef, {
         ...orgToCreate,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       })
 
       return docRef.id
@@ -371,7 +411,10 @@ export class FirebaseFirestoreService {
         return null
       }
 
-      return this.transformDocumentData<FirestoreOrganization>(orgSnap.data(), orgSnap.id)
+      return this.transformDocumentData<FirestoreOrganization>(
+        orgSnap.data(),
+        orgSnap.id
+      )
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to get organization: ${error.message}`)
@@ -380,12 +423,15 @@ export class FirebaseFirestoreService {
     }
   }
 
-  async updateOrganization(orgId: string, updates: UpdateOrganizationInput): Promise<void> {
+  async updateOrganization(
+    orgId: string,
+    updates: UpdateOrganizationInput
+  ): Promise<void> {
     try {
       const orgRef = doc(this.db, 'organizations', orgId)
       await updateDoc(orgRef, {
         ...updates,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       })
     } catch (error) {
       if (error instanceof Error) {
@@ -395,13 +441,17 @@ export class FirebaseFirestoreService {
     }
   }
 
-  async addUserToOrganization(userId: string, orgId: string, role: FirestoreUserRole): Promise<void> {
+  async addUserToOrganization(
+    userId: string,
+    orgId: string,
+    role: FirestoreUserRole
+  ): Promise<void> {
     try {
       const userRef = doc(this.db, 'users', userId)
       await updateDoc(userRef, {
         organizationId: orgId,
         role,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       })
 
       // Update organization member count
@@ -411,7 +461,7 @@ export class FirebaseFirestoreService {
         const orgData = orgSnap.data() as FirestoreOrganization
         await updateDoc(orgRef, {
           memberCount: orgData.memberCount + 1,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         })
       }
     } catch (error) {
@@ -428,7 +478,7 @@ export class FirebaseFirestoreService {
       const q = query(usersRef, where('organizationId', '==', orgId))
       const querySnapshot = await getDocs(q)
 
-      return querySnapshot.docs.map(doc => 
+      return querySnapshot.docs.map((doc) =>
         this.transformDocumentData<FirestoreUser>(doc.data(), doc.id)
       )
     } catch (error) {
@@ -440,12 +490,18 @@ export class FirebaseFirestoreService {
   }
 
   // Real-time subscriptions
-  subscribeToUser(userId: string, callback: (user: FirestoreUser | null) => void): Unsubscribe {
+  subscribeToUser(
+    userId: string,
+    callback: (user: FirestoreUser | null) => void
+  ): Unsubscribe {
     const userRef = doc(this.db, 'users', userId)
-    
+
     return onSnapshot(userRef, (doc) => {
       if (doc.exists()) {
-        const user = this.transformDocumentData<FirestoreUser>(doc.data(), doc.id)
+        const user = this.transformDocumentData<FirestoreUser>(
+          doc.data(),
+          doc.id
+        )
         callback(user)
       } else {
         callback(null)
@@ -453,12 +509,15 @@ export class FirebaseFirestoreService {
     })
   }
 
-  subscribeToOrganizationMembers(orgId: string, callback: (members: FirestoreUser[]) => void): Unsubscribe {
+  subscribeToOrganizationMembers(
+    orgId: string,
+    callback: (members: FirestoreUser[]) => void
+  ): Unsubscribe {
     const usersRef = collection(this.db, 'users')
     const q = query(usersRef, where('organizationId', '==', orgId))
-    
+
     return onSnapshot(q, (querySnapshot) => {
-      const members = querySnapshot.docs.map(doc => 
+      const members = querySnapshot.docs.map((doc) =>
         this.transformDocumentData<FirestoreUser>(doc.data(), doc.id)
       )
       callback(members)
@@ -485,17 +544,19 @@ export class FirebaseFirestoreService {
 
       const querySnapshot = await getDocs(q)
       const docs = querySnapshot.docs
-      
+
       let users: FirestoreUser[]
       let hasMore = false
 
       if (options.limit && docs.length > options.limit) {
-        users = docs.slice(0, options.limit).map(doc => 
-          this.transformDocumentData<FirestoreUser>(doc.data(), doc.id)
-        )
+        users = docs
+          .slice(0, options.limit)
+          .map((doc) =>
+            this.transformDocumentData<FirestoreUser>(doc.data(), doc.id)
+          )
         hasMore = true
       } else {
-        users = docs.map(doc => 
+        users = docs.map((doc) =>
           this.transformDocumentData<FirestoreUser>(doc.data(), doc.id)
         )
         hasMore = false
@@ -504,7 +565,7 @@ export class FirebaseFirestoreService {
       return {
         users,
         hasMore,
-        lastDoc: users.length > 0 ? docs[users.length - 1] : undefined
+        lastDoc: users.length > 0 ? docs[users.length - 1] : undefined,
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -525,7 +586,7 @@ export class FirebaseFirestoreService {
       )
       const querySnapshot = await getDocs(q)
 
-      return querySnapshot.docs.map(doc => 
+      return querySnapshot.docs.map((doc) =>
         this.transformDocumentData<FirestoreUser>(doc.data(), doc.id)
       )
     } catch (error) {
@@ -536,7 +597,9 @@ export class FirebaseFirestoreService {
     }
   }
 
-  async getOrganizations(filters: { plan?: OrganizationPlan } = {}): Promise<FirestoreOrganization[]> {
+  async getOrganizations(
+    filters: { plan?: OrganizationPlan } = {}
+  ): Promise<FirestoreOrganization[]> {
     try {
       const orgsRef = collection(this.db, 'organizations')
       let q: Query = orgsRef
@@ -546,7 +609,7 @@ export class FirebaseFirestoreService {
       }
 
       const querySnapshot = await getDocs(q)
-      return querySnapshot.docs.map(doc => 
+      return querySnapshot.docs.map((doc) =>
         this.transformDocumentData<FirestoreOrganization>(doc.data(), doc.id)
       )
     } catch (error) {
@@ -558,12 +621,14 @@ export class FirebaseFirestoreService {
   }
 
   // Batch operations
-  async batchUpdateUsers(updates: Array<{ id: string; updates: UpdateUserInput }>): Promise<void> {
+  async batchUpdateUsers(
+    updates: Array<{ id: string; updates: UpdateUserInput }>
+  ): Promise<void> {
     try {
-      const promises = updates.map(({ id, updates: userUpdates }) => 
+      const promises = updates.map(({ id, updates: userUpdates }) =>
         this.updateUser(id, userUpdates)
       )
-      
+
       await Promise.all(promises)
     } catch (error) {
       if (error instanceof Error) {

@@ -6,22 +6,22 @@ import { type OHLCV } from '../../utils/priceAnalysis'
 vi.mock('../../utils/indicators', () => ({
   analyzeIndicators: vi.fn(() => ({
     rsi: 65.5,
-    ema12: 45000.50,
+    ema12: 45000.5,
     ema26: 44800.25,
     macd: {
       MACD: 0.0025,
       signal: 0.0018,
-      histogram: 0.0007
+      histogram: 0.0007,
     },
     bollingerBands: {
       upper: 46500,
       middle: 45000,
       lower: 43500,
-      bandwidth: 0.15
+      bandwidth: 0.15,
     },
     stochasticRSI: {
       k: 75.2,
-      d: 72.8
+      d: 72.8,
     },
     volumeProfile: {
       poc: 45200,
@@ -29,17 +29,17 @@ vi.mock('../../utils/indicators', () => ({
       valueAreaLow: 44600,
       levels: [
         { price: 45200, volume: 1000000 },
-        { price: 45800, volume: 800000 }
-      ]
+        { price: 45800, volume: 800000 },
+      ],
     },
     signals: {
       rsi: 'neutral',
       macd: 'bullish',
       bollinger: 'normal',
       stochRSI: 'bullish',
-      overall: 'bullish'
-    }
-  }))
+      overall: 'bullish',
+    },
+  })),
 }))
 
 vi.mock('../../utils/advancedIndicators', () => ({
@@ -49,9 +49,9 @@ vi.mock('../../utils/advancedIndicators', () => ({
       { level: '127.2%', price: 47500 },
       { level: '161.8%', price: 48900 },
       { level: '200%', price: 50000 },
-      { level: '261.8%', price: 52100 }
-    ]
-  }))
+      { level: '261.8%', price: 52100 },
+    ],
+  })),
 }))
 
 const mockOHLCVData: OHLCV[] = Array.from({ length: 50 }, (_, i) => ({
@@ -60,7 +60,7 @@ const mockOHLCVData: OHLCV[] = Array.from({ length: 50 }, (_, i) => ({
   high: 45000 + Math.random() * 2000,
   low: 43000 + Math.random() * 2000,
   close: 44500 + Math.random() * 2000,
-  volume: 1000000 + Math.random() * 500000
+  volume: 1000000 + Math.random() * 500000,
 }))
 
 describe('TechnicalIndicatorsDisplay', () => {
@@ -78,17 +78,17 @@ describe('TechnicalIndicatorsDisplay', () => {
 
     expect(screen.getByText('Technical Indicators')).toBeInTheDocument()
     expect(screen.getByText('Basic Indicators')).toBeInTheDocument()
-    
+
     // Check for RSI
     expect(screen.getByText('RSI (14)')).toBeInTheDocument()
     expect(screen.getByText('65.50')).toBeInTheDocument()
-    
+
     // Check for EMAs
     expect(screen.getByText('EMA 12')).toBeInTheDocument()
     expect(screen.getByText('$45000.50')).toBeInTheDocument()
     expect(screen.getByText('EMA 26')).toBeInTheDocument()
     expect(screen.getByText('$44800.25')).toBeInTheDocument()
-    
+
     // Check for MACD
     expect(screen.getByText('MACD')).toBeInTheDocument()
     expect(screen.getByText('0.0025')).toBeInTheDocument()
@@ -105,7 +105,7 @@ describe('TechnicalIndicatorsDisplay', () => {
     )
 
     expect(screen.getByText('Advanced Indicators')).toBeInTheDocument()
-    
+
     // Check for Bollinger Bands
     expect(screen.getByText('Bollinger Upper')).toBeInTheDocument()
     expect(screen.getByText('$46500.00')).toBeInTheDocument()
@@ -113,13 +113,13 @@ describe('TechnicalIndicatorsDisplay', () => {
     expect(screen.getByText('$45000.00')).toBeInTheDocument()
     expect(screen.getByText('Bollinger Lower')).toBeInTheDocument()
     expect(screen.getByText('$43500.00')).toBeInTheDocument()
-    
+
     // Check for Stochastic RSI
     expect(screen.getByText('Stoch RSI K')).toBeInTheDocument()
     expect(screen.getByText('75.20')).toBeInTheDocument()
     expect(screen.getByText('Stoch RSI D')).toBeInTheDocument()
     expect(screen.getByText('72.80')).toBeInTheDocument()
-    
+
     // Check for Volume Profile
     expect(screen.getByText('Volume POC')).toBeInTheDocument()
     expect(screen.getByText('$45200.00')).toBeInTheDocument()
@@ -153,8 +153,10 @@ describe('TechnicalIndicatorsDisplay', () => {
     const bullishBadges = screen.getAllByText('📈 Bullish')
     expect(bullishBadges.length).toBeGreaterThan(0)
     // Check that the main header badge exists
-    const headerBadge = bullishBadges.find(badge => 
-      badge.className.includes('px-3') && badge.className.includes('rounded-full')
+    const headerBadge = bullishBadges.find(
+      (badge) =>
+        badge.className.includes('px-3') &&
+        badge.className.includes('rounded-full')
     )
     expect(headerBadge).toBeInTheDocument()
   })
@@ -174,15 +176,12 @@ describe('TechnicalIndicatorsDisplay', () => {
   })
 
   it('should handle empty data gracefully', () => {
-    render(
-      <TechnicalIndicatorsDisplay
-        ohlcvData={[]}
-        currentPrice={45000}
-      />
-    )
+    render(<TechnicalIndicatorsDisplay ohlcvData={[]} currentPrice={45000} />)
 
     expect(screen.getByText('Technical Indicators')).toBeInTheDocument()
-    expect(screen.getByText('Insufficient data for technical analysis')).toBeInTheDocument()
+    expect(
+      screen.getByText('Insufficient data for technical analysis')
+    ).toBeInTheDocument()
   })
 
   it('should display signal badges with correct colors', () => {
@@ -195,9 +194,9 @@ describe('TechnicalIndicatorsDisplay', () => {
 
     const bullishBadges = screen.getAllByText('📈 Bullish')
     expect(bullishBadges.length).toBeGreaterThan(0)
-    
+
     // Check that signal badges are rendered (they should have color classes)
-    bullishBadges.forEach(badge => {
+    bullishBadges.forEach((badge) => {
       expect(badge.className).toContain('text-green-600')
     })
   })
@@ -213,7 +212,7 @@ describe('TechnicalIndicatorsDisplay', () => {
     // Check that prices are formatted with $
     expect(screen.getByText('$45000.50')).toBeInTheDocument()
     expect(screen.getByText('$44800.25')).toBeInTheDocument()
-    
+
     // Check that decimal values are formatted correctly
     expect(screen.getByText('65.50')).toBeInTheDocument()
     expect(screen.getByText('0.0025')).toBeInTheDocument()

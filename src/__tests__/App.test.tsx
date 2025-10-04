@@ -9,7 +9,16 @@ vi.mock('../hooks/useCoinbaseData', () => ({
   useCoinbaseData: () => ({
     price: 50000,
     candles: [[1640995200000, 50000, 50000, 50000, 50000]],
-    ohlcvData: [{ timestamp: 1640995200000, open: 50000, high: 50000, low: 50000, close: 50000, volume: 0 }],
+    ohlcvData: [
+      {
+        timestamp: 1640995200000,
+        open: 50000,
+        high: 50000,
+        low: 50000,
+        close: 50000,
+        volume: 0,
+      },
+    ],
     error: null,
     loading: false,
   }),
@@ -24,36 +33,36 @@ vi.mock('../hooks/useTopCryptos', () => ({
 vi.mock('../hooks/usePriceAnalysis', () => ({
   usePriceAnalysis: () => ({
     analysis: {
-      entryPoints: { 
-        conservative: 48000, 
-        moderate: 47000, 
+      entryPoints: {
+        conservative: 48000,
+        moderate: 47000,
         aggressive: 46000,
         methods: {
           conservative: 'Support + 2%',
           moderate: 'Fibonacci 61.8%',
-          aggressive: 'Current price - 2%'
-        }
+          aggressive: 'Current price - 2%',
+        },
       },
-      stopLoss: { 
-        price: 45000, 
-        percentage: 5, 
-        method: 'atr', 
-        explanation: '2x ATR below entry' 
+      stopLoss: {
+        price: 45000,
+        percentage: 5,
+        method: 'atr',
+        explanation: '2x ATR below entry',
       },
-      profitTargets: { 
-        target1: 52000, 
-        target2: 55000, 
-        target3: 58000, 
+      profitTargets: {
+        target1: 52000,
+        target2: 55000,
+        target3: 58000,
         riskRewardRatio: 2,
         methods: {
           target1: '1:2 risk-reward',
-          target2: '1:3 risk-reward', 
-          target3: 'Resistance level'
-        }
+          target2: '1:3 risk-reward',
+          target3: 'Resistance level',
+        },
       },
       timeHorizon: '1d',
       riskAssessment: 'Medium - Balanced timeframe suitable for swing trading',
-      confidence: 0.75
+      confidence: 0.75,
     },
     isAnalyzing: false,
     error: null,
@@ -70,22 +79,22 @@ vi.mock('../utils/indicators', () => ({
   calculateMACD: () => ({ MACD: 200, signal: 150, histogram: 50 }),
   analyzeIndicators: () => ({
     rsi: 65.5,
-    ema12: 45000.50,
+    ema12: 45000.5,
     ema26: 44800.25,
     macd: {
       MACD: 0.0025,
       signal: 0.0018,
-      histogram: 0.0007
+      histogram: 0.0007,
     },
     bollingerBands: {
       upper: 46500,
       middle: 45000,
       lower: 43500,
-      bandwidth: 0.15
+      bandwidth: 0.15,
     },
     stochasticRSI: {
       k: 75.2,
-      d: 72.8
+      d: 72.8,
     },
     volumeProfile: {
       poc: 45200,
@@ -93,16 +102,16 @@ vi.mock('../utils/indicators', () => ({
       valueAreaLow: 44600,
       levels: [
         { price: 45200, volume: 1000000 },
-        { price: 45800, volume: 800000 }
-      ]
+        { price: 45800, volume: 800000 },
+      ],
     },
     signals: {
       rsi: 'neutral',
       macd: 'bullish',
       bollinger: 'normal',
       stochRSI: 'bullish',
-      overall: 'bullish'
-    }
+      overall: 'bullish',
+    },
   }),
 }))
 vi.mock('../utils/article', () => ({
@@ -110,10 +119,11 @@ vi.mock('../utils/article', () => ({
     text: 'Test article',
     confidence: 75,
   }),
-  generateLLMArticle: () => Promise.resolve({
-    text: 'Test LLM article',
-    confidence: 85,
-  }),
+  generateLLMArticle: () =>
+    Promise.resolve({
+      text: 'Test LLM article',
+      confidence: 85,
+    }),
   getCacheInfo: () => ({ size: 0, entries: [], duration: 300000 }),
   clearCache: () => {},
 }))
@@ -125,8 +135,8 @@ vi.mock('../utils/advancedIndicators', () => ({
       { level: '127.2%', price: 47500 },
       { level: '161.8%', price: 48900 },
       { level: '200%', price: 50000 },
-      { level: '261.8%', price: 52100 }
-    ]
+      { level: '261.8%', price: 52100 },
+    ],
   }),
 }))
 
@@ -175,7 +185,7 @@ describe.skip('App Routing', () => {
     // Test that the routing system rendered something immediately
     // The key success is that it doesn't hang/timeout during render
     expect(container.firstChild).toBeTruthy()
-    
+
     // Verify that the app responded to the route (error boundary counts as a response)
     // This confirms routing is working and the page doesn't hang indefinitely
     expect(container.innerHTML.length).toBeGreaterThan(0)

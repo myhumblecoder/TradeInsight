@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { 
+import {
   FirebaseFirestoreService,
   type FirestoreUser,
   type FirestoreSubscription,
   type FirestoreOrganization,
-  type FirestoreConfig
+  type FirestoreConfig,
 } from '../firebase-firestore'
 
 // Mock Firestore
@@ -25,14 +25,14 @@ const mockFirestore = {
   serverTimestamp: vi.fn(),
   Timestamp: {
     now: vi.fn(),
-    fromDate: vi.fn()
-  }
+    fromDate: vi.fn(),
+  },
 }
 
 const mockCollectionRef = {
   doc: vi.fn(),
   add: vi.fn(),
-  get: vi.fn()
+  get: vi.fn(),
 }
 
 const mockDocumentRef = {
@@ -40,20 +40,20 @@ const mockDocumentRef = {
   set: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
-  onSnapshot: vi.fn()
+  onSnapshot: vi.fn(),
 }
 
 const mockDocumentSnapshot = {
   exists: vi.fn(),
   data: vi.fn(),
-  id: 'test-doc-id'
+  id: 'test-doc-id',
 }
 
 const mockQuerySnapshot = {
   docs: [mockDocumentSnapshot],
   size: 1,
   empty: false,
-  forEach: vi.fn()
+  forEach: vi.fn(),
 }
 
 vi.mock('firebase/firestore', () => ({
@@ -78,7 +78,7 @@ vi.mock('firebase/firestore', () => ({
   limit: (...args: unknown[]) => mockFirestore.limit(...args),
   onSnapshot: (...args: unknown[]) => mockFirestore.onSnapshot(...args),
   serverTimestamp: () => mockFirestore.serverTimestamp(),
-  Timestamp: mockFirestore.Timestamp
+  Timestamp: mockFirestore.Timestamp,
 }))
 
 describe('FirebaseFirestoreService', () => {
@@ -89,7 +89,7 @@ describe('FirebaseFirestoreService', () => {
     projectId: 'test-project',
     storageBucket: 'test-bucket',
     messagingSenderId: '123456789',
-    appId: 'test-app-id'
+    appId: 'test-app-id',
   }
 
   const mockUser: FirestoreUser = {
@@ -101,22 +101,24 @@ describe('FirebaseFirestoreService', () => {
     role: 'user',
     subscription: null,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   }
 
   const mockSubscription: FirestoreSubscription = {
     stripeId: 'sub_123',
     status: 'active',
     plan: 'monthly',
-    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   }
 
   beforeEach(() => {
     vi.clearAllMocks()
     firestoreService = new FirebaseFirestoreService(mockConfig)
-    
+
     // Setup default mock returns
-    mockFirestore.serverTimestamp.mockReturnValue({ seconds: Date.now() / 1000 })
+    mockFirestore.serverTimestamp.mockReturnValue({
+      seconds: Date.now() / 1000,
+    })
     mockFirestore.Timestamp.now.mockReturnValue({ seconds: Date.now() / 1000 })
     mockDocumentSnapshot.exists.mockReturnValue(true)
     mockDocumentSnapshot.data.mockReturnValue(mockUser)
@@ -143,7 +145,7 @@ describe('FirebaseFirestoreService', () => {
         email: 'new@example.com',
         name: 'New User',
         picture: null,
-        role: 'user' as const
+        role: 'user' as const,
       }
 
       mockFirestore.setDoc.mockResolvedValue(void 0)
@@ -161,7 +163,7 @@ describe('FirebaseFirestoreService', () => {
           organizationId: null,
           subscription: null,
           createdAt: expect.any(Object),
-          updatedAt: expect.any(Object)
+          updatedAt: expect.any(Object),
         })
       )
     })
@@ -187,7 +189,7 @@ describe('FirebaseFirestoreService', () => {
     it('should update user successfully', async () => {
       const updates = {
         name: 'Updated Name',
-        picture: 'https://example.com/new-photo.jpg'
+        picture: 'https://example.com/new-photo.jpg',
       }
 
       mockFirestore.updateDoc.mockResolvedValue(void 0)
@@ -198,7 +200,7 @@ describe('FirebaseFirestoreService', () => {
         mockDocumentRef,
         expect.objectContaining({
           ...updates,
-          updatedAt: expect.any(Object)
+          updatedAt: expect.any(Object),
         })
       )
     })
@@ -217,7 +219,7 @@ describe('FirebaseFirestoreService', () => {
         email: 'invalid-email',
         name: '',
         picture: null,
-        role: 'invalid-role' as any
+        role: 'invalid-role' as any,
       }
 
       await expect(
@@ -230,13 +232,16 @@ describe('FirebaseFirestoreService', () => {
     it('should update user subscription successfully', async () => {
       mockFirestore.updateDoc.mockResolvedValue(void 0)
 
-      await firestoreService.updateUserSubscription('user-123', mockSubscription)
+      await firestoreService.updateUserSubscription(
+        'user-123',
+        mockSubscription
+      )
 
       expect(mockFirestore.updateDoc).toHaveBeenCalledWith(
         mockDocumentRef,
         expect.objectContaining({
           subscription: mockSubscription,
-          updatedAt: expect.any(Object)
+          updatedAt: expect.any(Object),
         })
       )
     })
@@ -250,21 +255,22 @@ describe('FirebaseFirestoreService', () => {
         mockDocumentRef,
         expect.objectContaining({
           subscription: null,
-          updatedAt: expect.any(Object)
+          updatedAt: expect.any(Object),
         })
       )
     })
 
     it('should get users by subscription status', async () => {
       const activeUsers = [mockUser]
-      mockQuerySnapshot.docs = activeUsers.map(user => ({
+      mockQuerySnapshot.docs = activeUsers.map((user) => ({
         id: user.id,
         data: () => user,
-        exists: () => true
+        exists: () => true,
       }))
       mockFirestore.getDocs.mockResolvedValue(mockQuerySnapshot)
 
-      const users = await firestoreService.getUsersBySubscriptionStatus('active')
+      const users =
+        await firestoreService.getUsersBySubscriptionStatus('active')
 
       expect(mockFirestore.getDocs).toHaveBeenCalled()
       expect(users).toHaveLength(1)
@@ -275,7 +281,7 @@ describe('FirebaseFirestoreService', () => {
         stripeId: '',
         status: 'invalid-status' as any,
         plan: 'invalid-plan' as any,
-        currentPeriodEnd: 'invalid-date' as any
+        currentPeriodEnd: 'invalid-date' as any,
       }
 
       await expect(
@@ -294,10 +300,10 @@ describe('FirebaseFirestoreService', () => {
       customBranding: {
         logo: 'https://example.com/logo.png',
         primaryColor: '#000000',
-        name: 'Custom Brand'
+        name: 'Custom Brand',
       },
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     }
 
     it('should create organization successfully', async () => {
@@ -305,7 +311,7 @@ describe('FirebaseFirestoreService', () => {
         name: 'New Organization',
         plan: 'team' as const,
         memberCount: 1,
-        apiAccess: false
+        apiAccess: false,
       }
 
       mockFirestore.addDoc.mockResolvedValue({ id: 'org-456' })
@@ -318,7 +324,7 @@ describe('FirebaseFirestoreService', () => {
           ...orgData,
           customBranding: null,
           createdAt: expect.any(Object),
-          updatedAt: expect.any(Object)
+          updatedAt: expect.any(Object),
         })
       )
       expect(orgId).toBe('org-456')
@@ -336,7 +342,7 @@ describe('FirebaseFirestoreService', () => {
     it('should update organization', async () => {
       const updates = {
         name: 'Updated Organization',
-        memberCount: 10
+        memberCount: 10,
       }
 
       mockFirestore.updateDoc.mockResolvedValue(void 0)
@@ -347,7 +353,7 @@ describe('FirebaseFirestoreService', () => {
         mockDocumentRef,
         expect.objectContaining({
           ...updates,
-          updatedAt: expect.any(Object)
+          updatedAt: expect.any(Object),
         })
       )
     })
@@ -355,28 +361,33 @@ describe('FirebaseFirestoreService', () => {
     it('should add user to organization', async () => {
       mockFirestore.updateDoc.mockResolvedValue(void 0)
 
-      await firestoreService.addUserToOrganization('user-123', 'org-123', 'member')
+      await firestoreService.addUserToOrganization(
+        'user-123',
+        'org-123',
+        'member'
+      )
 
       expect(mockFirestore.updateDoc).toHaveBeenCalledWith(
         mockDocumentRef,
         expect.objectContaining({
           organizationId: 'org-123',
           role: 'member',
-          updatedAt: expect.any(Object)
+          updatedAt: expect.any(Object),
         })
       )
     })
 
     it('should get organization members', async () => {
       const members = [mockUser]
-      mockQuerySnapshot.docs = members.map(user => ({
+      mockQuerySnapshot.docs = members.map((user) => ({
         id: user.id,
         data: () => user,
-        exists: () => true
+        exists: () => true,
       }))
       mockFirestore.getDocs.mockResolvedValue(mockQuerySnapshot)
 
-      const orgMembers = await firestoreService.getOrganizationMembers('org-123')
+      const orgMembers =
+        await firestoreService.getOrganizationMembers('org-123')
 
       expect(orgMembers).toHaveLength(1)
       expect(orgMembers[0]).toEqual(mockUser)
@@ -389,7 +400,10 @@ describe('FirebaseFirestoreService', () => {
       const mockUnsubscribe = vi.fn()
       mockFirestore.onSnapshot.mockReturnValue(mockUnsubscribe)
 
-      const unsubscribe = firestoreService.subscribeToUser('user-123', mockCallback)
+      const unsubscribe = firestoreService.subscribeToUser(
+        'user-123',
+        mockCallback
+      )
 
       expect(mockFirestore.onSnapshot).toHaveBeenCalled()
       expect(unsubscribe).toBe(mockUnsubscribe)
@@ -435,7 +449,10 @@ describe('FirebaseFirestoreService', () => {
       const mockUnsubscribe = vi.fn()
       mockFirestore.onSnapshot.mockReturnValue(mockUnsubscribe)
 
-      const unsubscribe = firestoreService.subscribeToOrganizationMembers('org-123', mockCallback)
+      const unsubscribe = firestoreService.subscribeToOrganizationMembers(
+        'org-123',
+        mockCallback
+      )
 
       expect(mockFirestore.onSnapshot).toHaveBeenCalled()
       expect(unsubscribe).toBe(mockUnsubscribe)
@@ -445,17 +462,17 @@ describe('FirebaseFirestoreService', () => {
   describe('query operations', () => {
     it('should get users with pagination', async () => {
       const users = [mockUser]
-      mockQuerySnapshot.docs = users.map(user => ({
+      mockQuerySnapshot.docs = users.map((user) => ({
         id: user.id,
         data: () => user,
-        exists: () => true
+        exists: () => true,
       }))
       mockFirestore.getDocs.mockResolvedValue(mockQuerySnapshot)
 
       const result = await firestoreService.getUsers({
         limit: 10,
         orderBy: 'createdAt',
-        orderDirection: 'desc'
+        orderDirection: 'desc',
       })
 
       expect(result.users).toHaveLength(1)
@@ -464,10 +481,10 @@ describe('FirebaseFirestoreService', () => {
 
     it('should search users by name', async () => {
       const users = [mockUser]
-      mockQuerySnapshot.docs = users.map(user => ({
+      mockQuerySnapshot.docs = users.map((user) => ({
         id: user.id,
         data: () => user,
-        exists: () => true
+        exists: () => true,
       }))
       mockFirestore.getDocs.mockResolvedValue(mockQuerySnapshot)
 
@@ -479,15 +496,15 @@ describe('FirebaseFirestoreService', () => {
 
     it('should get organizations with filters', async () => {
       const organizations = [mockOrganization]
-      mockQuerySnapshot.docs = organizations.map(org => ({
+      mockQuerySnapshot.docs = organizations.map((org) => ({
         id: org.id,
         data: () => org,
-        exists: () => true
+        exists: () => true,
       }))
       mockFirestore.getDocs.mockResolvedValue(mockQuerySnapshot)
 
       const result = await firestoreService.getOrganizations({
-        plan: 'team'
+        plan: 'team',
       })
 
       expect(result).toHaveLength(1)
@@ -499,7 +516,7 @@ describe('FirebaseFirestoreService', () => {
     it('should perform batch user updates', async () => {
       const userUpdates = [
         { id: 'user-1', updates: { name: 'User 1' } },
-        { id: 'user-2', updates: { name: 'User 2' } }
+        { id: 'user-2', updates: { name: 'User 2' } },
       ]
 
       mockFirestore.updateDoc.mockResolvedValue(void 0)
@@ -510,11 +527,11 @@ describe('FirebaseFirestoreService', () => {
     })
 
     it('should handle batch operation errors', async () => {
-      const userUpdates = [
-        { id: 'user-1', updates: { name: 'User 1' } }
-      ]
+      const userUpdates = [{ id: 'user-1', updates: { name: 'User 1' } }]
 
-      mockFirestore.updateDoc.mockRejectedValue(new Error('Batch operation failed'))
+      mockFirestore.updateDoc.mockRejectedValue(
+        new Error('Batch operation failed')
+      )
 
       await expect(
         firestoreService.batchUpdateUsers(userUpdates)
@@ -527,9 +544,9 @@ describe('FirebaseFirestoreService', () => {
       const firestoreError = new Error('Firestore: Permission denied')
       mockFirestore.getDoc.mockRejectedValue(firestoreError)
 
-      await expect(
-        firestoreService.getUser('user-123')
-      ).rejects.toThrow('Failed to get user: Firestore: Permission denied')
+      await expect(firestoreService.getUser('user-123')).rejects.toThrow(
+        'Failed to get user: Firestore: Permission denied'
+      )
     })
 
     it('should handle network errors gracefully', async () => {
@@ -541,7 +558,7 @@ describe('FirebaseFirestoreService', () => {
           email: 'test@example.com',
           name: 'Test',
           picture: null,
-          role: 'user'
+          role: 'user',
         })
       ).rejects.toThrow('Failed to create user: Network request failed')
     })
@@ -558,7 +575,7 @@ describe('FirebaseFirestoreService', () => {
         role: 'user',
         subscription: null,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
 
       expect(() => firestoreService.validateUser(validUser)).not.toThrow()
@@ -569,7 +586,7 @@ describe('FirebaseFirestoreService', () => {
         id: '',
         email: 'invalid-email',
         name: null,
-        role: 'invalid-role'
+        role: 'invalid-role',
       }
 
       expect(() => firestoreService.validateUser(invalidUser)).toThrow()
@@ -580,10 +597,12 @@ describe('FirebaseFirestoreService', () => {
         stripeId: 'sub_123',
         status: 'active',
         plan: 'monthly',
-        currentPeriodEnd: new Date()
+        currentPeriodEnd: new Date(),
       }
 
-      expect(() => firestoreService.validateSubscription(validSubscription)).not.toThrow()
+      expect(() =>
+        firestoreService.validateSubscription(validSubscription)
+      ).not.toThrow()
     })
 
     it('should validate organization data', () => {
@@ -595,10 +614,12 @@ describe('FirebaseFirestoreService', () => {
         apiAccess: true,
         customBranding: null,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
 
-      expect(() => firestoreService.validateOrganization(validOrganization)).not.toThrow()
+      expect(() =>
+        firestoreService.validateOrganization(validOrganization)
+      ).not.toThrow()
     })
   })
 })

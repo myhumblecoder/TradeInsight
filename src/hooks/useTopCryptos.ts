@@ -11,7 +11,7 @@ interface TopCrypto {
 }
 
 // Simple in-memory cache
-const cache = new Map<string, { data: TopCrypto[], timestamp: number }>()
+const cache = new Map<string, { data: TopCrypto[]; timestamp: number }>()
 const CACHE_DURATION = 15 * 60 * 1000 // 15 minutes (reduce API calls)
 
 export function useTopCryptos() {
@@ -24,7 +24,7 @@ export function useTopCryptos() {
     const now = Date.now()
     const cached = cache.get(cacheKey)
 
-    if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+    if (cached && now - cached.timestamp < CACHE_DURATION) {
       setData(cached.data)
       setLoading(false)
       setError(null)
@@ -36,9 +36,23 @@ export function useTopCryptos() {
         setLoading(true)
         console.log('Fetching top cryptos...')
         // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        // Use configured API base if provided. During development and tests we keep an empty
+        // base so relative '/api/...' paths still work (Vite dev proxy and tests rely on that).
+        const configuredBase = import.meta.env.VITE_API_BASE_URL as
+          | string
+          | undefined
+        const isDevOrTest =
+          import.meta.env.MODE === 'development' ||
+          import.meta.env.MODE === 'test'
+        const API_BASE =
+          configuredBase ??
+          (isDevOrTest ? '' : 'https://api.coingecko.com/api/v3')
+        // If API_BASE is empty (dev/test), use the '/api' prefix so existing Vite proxy and tests
+        // that expect '/api/...' continue to work. In production, API_BASE will be an absolute URL.
+        const pathPrefix = API_BASE ? API_BASE : '/api'
         const response = await fetch(
-          '/api/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1'
+          `${pathPrefix}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1`
         )
         console.log('Response status:', response.status)
         if (!response.ok) {
@@ -72,7 +86,11 @@ export function useTopCryptos() {
           setError(null)
           logger.warn('Using expired cached top cryptos due to API failure')
         } else {
-          setError(err instanceof Error ? err.message : 'Failed to load top cryptocurrencies')
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Failed to load top cryptocurrencies'
+          )
         }
       } finally {
         setLoading(false)

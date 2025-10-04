@@ -57,7 +57,9 @@ describe('Loading Overlay - Phase 2', () => {
         </ThemeProvider>
       )
 
-      const overlay = screen.getByText('Loading...').closest('div[class*="fixed"]')
+      const overlay = screen
+        .getByText('Loading...')
+        .closest('div[class*="fixed"]')
       expect(overlay).toHaveClass('bg-gray-100/80')
       // In light mode, the dark classes are present but not active
       expect(document.documentElement.classList.contains('dark')).toBe(false)
@@ -73,10 +75,14 @@ describe('Loading Overlay - Phase 2', () => {
         </ThemeProvider>
       )
 
-      const overlay = screen.getByText('Loading...').closest('div[class*="fixed"]')
+      const overlay = screen
+        .getByText('Loading...')
+        .closest('div[class*="fixed"]')
       expect(overlay).toHaveClass('dark:bg-gray-900/80')
-      
-      const content = screen.getByText('Loading...').closest('div[class*="bg-white"]')
+
+      const content = screen
+        .getByText('Loading...')
+        .closest('div[class*="bg-white"]')
       expect(content).toHaveClass('dark:bg-gray-800')
     })
 
@@ -88,7 +94,9 @@ describe('Loading Overlay - Phase 2', () => {
       )
 
       // Verify light theme classes are present
-      let overlay = screen.getByText('Loading...').closest('div[class*="fixed"]')
+      let overlay = screen
+        .getByText('Loading...')
+        .closest('div[class*="fixed"]')
       expect(overlay).toHaveClass('bg-gray-100/80', 'dark:bg-gray-900/80')
 
       // Switch to dark mode manually
@@ -103,7 +111,7 @@ describe('Loading Overlay - Phase 2', () => {
 
       // Verify dark theme is applied
       expect(document.documentElement).toHaveClass('dark')
-      
+
       // Loading overlay should still have both theme classes (Tailwind CSS handles the switching)
       overlay = screen.getByText('Loading...').closest('div[class*="fixed"]')
       expect(overlay).toHaveClass('bg-gray-100/80', 'dark:bg-gray-900/80')
@@ -118,7 +126,9 @@ describe('Loading Overlay - Phase 2', () => {
         </ThemeProvider>
       )
 
-      const overlay = screen.getByText('Loading...').closest('div[class*="fixed"]')
+      const overlay = screen
+        .getByText('Loading...')
+        .closest('div[class*="fixed"]')
       expect(overlay).toHaveClass('z-50')
     })
 
@@ -129,7 +139,9 @@ describe('Loading Overlay - Phase 2', () => {
         </ThemeProvider>
       )
 
-      const overlay = screen.getByText('Loading...').closest('div[class*="fixed"]')
+      const overlay = screen
+        .getByText('Loading...')
+        .closest('div[class*="fixed"]')
       expect(overlay).toHaveClass('backdrop-blur-sm')
     })
 
@@ -140,7 +152,9 @@ describe('Loading Overlay - Phase 2', () => {
         </ThemeProvider>
       )
 
-      const overlay = screen.getByText('Loading...').closest('div[class*="fixed"]')
+      const overlay = screen
+        .getByText('Loading...')
+        .closest('div[class*="fixed"]')
       expect(overlay).toHaveClass('flex', 'items-center', 'justify-center')
     })
   })
@@ -153,7 +167,9 @@ describe('Loading Overlay - Phase 2', () => {
         </ThemeProvider>
       )
 
-      const overlay = screen.getByText('Loading...').closest('div[class*="fixed"]')
+      const overlay = screen
+        .getByText('Loading...')
+        .closest('div[class*="fixed"]')
       expect(overlay).toHaveClass('transition-all', 'duration-300')
     })
 
@@ -165,7 +181,9 @@ describe('Loading Overlay - Phase 2', () => {
       )
 
       // Look for spinning element
-      const spinner = screen.getByText('Loading...').parentElement?.querySelector('.animate-spin')
+      const spinner = screen
+        .getByText('Loading...')
+        .parentElement?.querySelector('.animate-spin')
       expect(spinner).toBeInTheDocument()
       expect(spinner).toHaveClass('animate-spin')
     })
@@ -177,7 +195,9 @@ describe('Loading Overlay - Phase 2', () => {
         </ThemeProvider>
       )
 
-      const content = screen.getByText('Loading...').closest('div[class*="animate-pulse"]')
+      const content = screen
+        .getByText('Loading...')
+        .closest('div[class*="animate-pulse"]')
       expect(content).toHaveClass('animate-pulse')
     })
   })
@@ -185,7 +205,7 @@ describe('Loading Overlay - Phase 2', () => {
   describe('Performance', () => {
     it('should render quickly', () => {
       const startTime = performance.now()
-      
+
       render(
         <ThemeProvider>
           <LoadingOverlay isVisible={true} message="Loading..." />
@@ -193,7 +213,7 @@ describe('Loading Overlay - Phase 2', () => {
       )
 
       expect(screen.getByText('Loading...')).toBeInTheDocument()
-      
+
       const endTime = performance.now()
       const renderTime = endTime - startTime
 
@@ -224,7 +244,6 @@ describe('Loading Overlay - Phase 2', () => {
 
   describe('Integration with navigation', () => {
     it('should work correctly during route changes', async () => {
-
       const TestApp = ({ showLoading }: { showLoading: boolean }) => (
         <ThemeProvider>
           <MemoryRouter>

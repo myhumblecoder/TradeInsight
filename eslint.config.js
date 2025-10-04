@@ -7,7 +7,11 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'src/services/firebase-*.ts', 'src/services/__tests__/firebase-*.test.ts']),
+  globalIgnores([
+    'dist',
+    'src/services/firebase-*.ts',
+    'src/services/__tests__/firebase-*.test.ts',
+  ]),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

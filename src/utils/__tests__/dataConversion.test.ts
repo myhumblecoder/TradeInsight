@@ -7,7 +7,7 @@ describe('Data Conversion Utils', () => {
       const candleData: CandleData[] = [
         [1000, 100, 105, 95, 102, 1000],
         [2000, 102, 108, 100, 106, 1200],
-        [3000, 106, 110, 104, 108, 800]
+        [3000, 106, 110, 104, 108, 800],
       ]
 
       const result = convertCandlesToOHLCV(candleData)
@@ -19,7 +19,7 @@ describe('Data Conversion Utils', () => {
         high: 105,
         low: 95,
         close: 102,
-        volume: 1000
+        volume: 1000,
       })
       expect(result[2]).toEqual({
         timestamp: 3000,
@@ -27,7 +27,7 @@ describe('Data Conversion Utils', () => {
         high: 110,
         low: 104,
         close: 108,
-        volume: 800
+        volume: 800,
       })
     })
 
@@ -39,7 +39,7 @@ describe('Data Conversion Utils', () => {
     it('should handle malformed candle data', () => {
       const candleData: CandleData[] = [
         [1000, 100], // Incomplete data
-        [2000, 102, 108, 100, 106, 1200] // Complete data
+        [2000, 102, 108, 100, 106, 1200], // Complete data
       ]
 
       const result = convertCandlesToOHLCV(candleData)
@@ -51,7 +51,7 @@ describe('Data Conversion Utils', () => {
         high: 100,
         low: 100,
         close: 100,
-        volume: 0
+        volume: 0,
       })
       expect(result[1]).toEqual({
         timestamp: 2000,
@@ -59,7 +59,7 @@ describe('Data Conversion Utils', () => {
         high: 108,
         low: 100,
         close: 106,
-        volume: 1200
+        volume: 1200,
       })
     })
 
@@ -67,7 +67,7 @@ describe('Data Conversion Utils', () => {
       const candleData: CandleData[] = [
         [3000, 106, 110, 104, 108, 800],
         [1000, 100, 105, 95, 102, 1000],
-        [2000, 102, 108, 100, 106, 1200]
+        [2000, 102, 108, 100, 106, 1200],
       ]
 
       const result = convertCandlesToOHLCV(candleData)
@@ -83,7 +83,7 @@ describe('Data Conversion Utils', () => {
       const priceData = [
         [1000, 102],
         [2000, 106],
-        [3000, 108]
+        [3000, 108],
       ]
 
       const result = convertCandlesToOHLCV(priceData)
@@ -95,7 +95,7 @@ describe('Data Conversion Utils', () => {
         high: 102,
         low: 102,
         close: 102,
-        volume: 0
+        volume: 0,
       })
     })
   })

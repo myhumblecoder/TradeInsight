@@ -8,7 +8,7 @@ export function usePageTransition() {
   useEffect(() => {
     // Start transition when location changes
     setIsTransitioning(true)
-    
+
     // Complete transition after a brief moment to allow CSS animations
     const timer = setTimeout(() => {
       setIsTransitioning(false)

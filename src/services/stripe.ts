@@ -1,15 +1,16 @@
 import { loadStripe } from '@stripe/stripe-js'
 import { supabase } from '../config/supabase'
-import { 
-  validateOrThrow, 
+import {
+  validateOrThrow,
   StripeWebhookEventSchema,
-  StripeSubscriptionSchema, 
+  StripeSubscriptionSchema,
   CheckoutSessionParamsSchema,
-  ValidationError
+  ValidationError,
 } from '../utils/validation'
 
 // Create a function to get the stripe promise lazily
-const getStripePromise = () => loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+const getStripePromise = () =>
+  loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 // Re-export the validated type for backwards compatibility
 export type { CheckoutSessionParams } from '../utils/validation'
@@ -19,12 +20,20 @@ export interface WebhookResult {
   message: string
 }
 
-export const createCheckoutSession = async (params: unknown): Promise<string> => {
-  const validatedParams = validateOrThrow(CheckoutSessionParamsSchema, params, 'checkout session parameters')
+export const createCheckoutSession = async (
+  params: unknown
+): Promise<string> => {
+  const validatedParams = validateOrThrow(
+    CheckoutSessionParamsSchema,
+    params,
+    'checkout session parameters'
+  )
   const { priceId, userId, userEmail, successUrl, cancelUrl } = validatedParams
 
   const apiEndpoint = import.meta.env.VITE_API_BASE_URL
-  const endpoint = apiEndpoint ? `${apiEndpoint}/api/create-checkout-session` : '/api/create-checkout-session'
+  const endpoint = apiEndpoint
+    ? `${apiEndpoint}/api/create-checkout-session`
+    : '/api/create-checkout-session'
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -40,7 +49,9 @@ export const createCheckoutSession = async (params: unknown): Promise<string> =>
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to create checkout session: ${response.status} ${response.statusText}`)
+    throw new Error(
+      `Failed to create checkout session: ${response.status} ${response.statusText}`
+    )
   }
 
   const { sessionId } = await response.json()
@@ -63,10 +74,16 @@ export const redirectToCheckout = async (sessionId: string): Promise<void> => {
   }
 }
 
-export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<WebhookResult> => {
+export const handleSubscriptionWebhook = async (
+  webhookData: unknown
+): Promise<WebhookResult> => {
   try {
     // Validate the webhook payload structure
-    const payload = validateOrThrow(StripeWebhookEventSchema, webhookData, 'Stripe webhook event')
+    const payload = validateOrThrow(
+      StripeWebhookEventSchema,
+      webhookData,
+      'Stripe webhook event'
+    )
     const { type, data } = payload
     const subscription = data.object
 
@@ -78,16 +95,24 @@ export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<W
         }
 
         // Type guard to ensure we have a full subscription object
-        if (!('status' in subscription) || !('items' in subscription) || !('current_period_start' in subscription)) {
-          return { success: false, message: 'Invalid subscription data - missing required fields' }
+        if (
+          !('status' in subscription) ||
+          !('items' in subscription) ||
+          !('current_period_start' in subscription)
+        ) {
+          return {
+            success: false,
+            message: 'Invalid subscription data - missing required fields',
+          }
         }
-        
+
         // Validate that the subscription matches our expected schema
-        const validationResult = StripeSubscriptionSchema.safeParse(subscription)
+        const validationResult =
+          StripeSubscriptionSchema.safeParse(subscription)
         if (!validationResult.success) {
           return { success: false, message: 'Invalid subscription schema' }
         }
-        
+
         const validatedSubscription = validationResult.data
 
         const subscriptionData = {
@@ -95,8 +120,12 @@ export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<W
           stripe_subscription_id: validatedSubscription.id,
           status: validatedSubscription.status,
           price_id: validatedSubscription.items.data[0]?.price.id || null,
-          current_period_start: new Date(validatedSubscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(validatedSubscription.current_period_end * 1000).toISOString(),
+          current_period_start: new Date(
+            validatedSubscription.current_period_start * 1000
+          ).toISOString(),
+          current_period_end: new Date(
+            validatedSubscription.current_period_end * 1000
+          ).toISOString(),
           cancel_at_period_end: validatedSubscription.cancel_at_period_end,
           updated_at: new Date().toISOString(),
         }
@@ -114,9 +143,10 @@ export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<W
 
         return {
           success: true,
-          message: type === 'customer.subscription.created'
-            ? 'Subscription created successfully'
-            : 'Subscription updated successfully',
+          message:
+            type === 'customer.subscription.created'
+              ? 'Subscription created successfully'
+              : 'Subscription updated successfully',
         }
       }
 
@@ -146,14 +176,14 @@ export const handleSubscriptionWebhook = async (webhookData: unknown): Promise<W
     }
   } catch (error) {
     console.error('Webhook processing error:', error)
-    
+
     if (error instanceof ValidationError) {
       return {
         success: false,
-        message: `Validation error: ${error.message}. Errors: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`
+        message: `Validation error: ${error.message}. Errors: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
       }
     }
-    
+
     return {
       success: false,
       message: `Error processing webhook: ${error instanceof Error ? error.message : 'Unknown error'}`,

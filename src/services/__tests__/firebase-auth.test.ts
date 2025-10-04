@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { 
-  FirebaseAuthService, 
+import {
+  FirebaseAuthService,
   type FirebaseUser,
-  type FirebaseAuthConfig 
+  type FirebaseAuthConfig,
 } from '../firebase-auth'
 import { z } from 'zod'
 
@@ -16,7 +16,7 @@ const mockAuth = {
   GoogleAuthProvider: vi.fn(),
   signInWithPopup: vi.fn(),
   getIdToken: vi.fn(),
-  updateProfile: vi.fn()
+  updateProfile: vi.fn(),
 }
 
 const mockFirebaseUser = {
@@ -26,22 +26,25 @@ const mockFirebaseUser = {
   photoURL: 'https://example.com/photo.jpg',
   emailVerified: true,
   getIdToken: vi.fn().mockResolvedValue('mock-token'),
-  updateProfile: vi.fn()
+  updateProfile: vi.fn(),
 }
 
 vi.mock('firebase/auth', () => ({
   getAuth: () => mockAuth,
-  signInWithEmailAndPassword: (...args: unknown[]) => mockAuth.signInWithEmailAndPassword(...args),
-  createUserWithEmailAndPassword: (...args: unknown[]) => mockAuth.createUserWithEmailAndPassword(...args),
+  signInWithEmailAndPassword: (...args: unknown[]) =>
+    mockAuth.signInWithEmailAndPassword(...args),
+  createUserWithEmailAndPassword: (...args: unknown[]) =>
+    mockAuth.createUserWithEmailAndPassword(...args),
   signOut: (...args: unknown[]) => mockAuth.signOut(...args),
-  onAuthStateChanged: (...args: unknown[]) => mockAuth.onAuthStateChanged(...args),
+  onAuthStateChanged: (...args: unknown[]) =>
+    mockAuth.onAuthStateChanged(...args),
   GoogleAuthProvider: class {
     constructor() {
       return mockAuth.GoogleAuthProvider()
     }
   },
   signInWithPopup: (...args: unknown[]) => mockAuth.signInWithPopup(...args),
-  updateProfile: (...args: unknown[]) => mockAuth.updateProfile(...args)
+  updateProfile: (...args: unknown[]) => mockAuth.updateProfile(...args),
 }))
 
 describe('FirebaseAuthService', () => {
@@ -52,7 +55,7 @@ describe('FirebaseAuthService', () => {
     projectId: 'test-project',
     storageBucket: 'test-bucket',
     messagingSenderId: '123456789',
-    appId: 'test-app-id'
+    appId: 'test-app-id',
   }
 
   beforeEach(() => {
@@ -78,10 +81,13 @@ describe('FirebaseAuthService', () => {
   describe('email/password authentication', () => {
     it('should sign in with email and password successfully', async () => {
       mockAuth.signInWithEmailAndPassword.mockResolvedValue({
-        user: mockFirebaseUser
+        user: mockFirebaseUser,
       })
 
-      const result = await authService.signInWithEmail('test@example.com', 'password')
+      const result = await authService.signInWithEmail(
+        'test@example.com',
+        'password'
+      )
 
       expect(mockAuth.signInWithEmailAndPassword).toHaveBeenCalledWith(
         mockAuth,
@@ -93,7 +99,7 @@ describe('FirebaseAuthService', () => {
         email: mockFirebaseUser.email,
         name: mockFirebaseUser.displayName,
         picture: mockFirebaseUser.photoURL,
-        emailVerified: mockFirebaseUser.emailVerified
+        emailVerified: mockFirebaseUser.emailVerified,
       })
     })
 
@@ -108,10 +114,14 @@ describe('FirebaseAuthService', () => {
 
     it('should create user with email and password', async () => {
       mockAuth.createUserWithEmailAndPassword.mockResolvedValue({
-        user: mockFirebaseUser
+        user: mockFirebaseUser,
       })
 
-      const result = await authService.signUpWithEmail('new@example.com', 'password', 'New User')
+      const result = await authService.signUpWithEmail(
+        'new@example.com',
+        'password',
+        'New User'
+      )
 
       expect(mockAuth.createUserWithEmailAndPassword).toHaveBeenCalledWith(
         mockAuth,
@@ -123,7 +133,7 @@ describe('FirebaseAuthService', () => {
         email: mockFirebaseUser.email,
         name: mockFirebaseUser.displayName,
         picture: mockFirebaseUser.photoURL,
-        emailVerified: mockFirebaseUser.emailVerified
+        emailVerified: mockFirebaseUser.emailVerified,
       })
     })
 
@@ -143,7 +153,7 @@ describe('FirebaseAuthService', () => {
   describe('social authentication', () => {
     it('should sign in with Google successfully', async () => {
       mockAuth.signInWithPopup.mockResolvedValue({
-        user: mockFirebaseUser
+        user: mockFirebaseUser,
       })
 
       const result = await authService.signInWithGoogle()
@@ -157,7 +167,7 @@ describe('FirebaseAuthService', () => {
         email: mockFirebaseUser.email,
         name: mockFirebaseUser.displayName,
         picture: mockFirebaseUser.photoURL,
-        emailVerified: mockFirebaseUser.emailVerified
+        emailVerified: mockFirebaseUser.emailVerified,
       })
     })
 
@@ -182,7 +192,7 @@ describe('FirebaseAuthService', () => {
         email: mockFirebaseUser.email,
         name: mockFirebaseUser.displayName,
         picture: mockFirebaseUser.photoURL,
-        emailVerified: mockFirebaseUser.emailVerified
+        emailVerified: mockFirebaseUser.emailVerified,
       })
     })
 
@@ -275,7 +285,7 @@ describe('FirebaseAuthService', () => {
         email: mockFirebaseUser.email,
         name: mockFirebaseUser.displayName,
         picture: mockFirebaseUser.photoURL,
-        emailVerified: mockFirebaseUser.emailVerified
+        emailVerified: mockFirebaseUser.emailVerified,
       })
     })
 
@@ -304,12 +314,12 @@ describe('FirebaseAuthService', () => {
 
       await authService.updateProfile({
         displayName: 'Updated Name',
-        photoURL: 'https://example.com/new-photo.jpg'
+        photoURL: 'https://example.com/new-photo.jpg',
       })
 
       expect(mockFirebaseUser.updateProfile).toHaveBeenCalledWith({
         displayName: 'Updated Name',
-        photoURL: 'https://example.com/new-photo.jpg'
+        photoURL: 'https://example.com/new-photo.jpg',
       })
     })
 
@@ -357,12 +367,10 @@ describe('FirebaseAuthService', () => {
         email: 'user@example.com',
         displayName: 'User Name',
         photoURL: 'https://example.com/photo.jpg',
-        emailVerified: true
+        emailVerified: true,
       }
 
-      expect(() => 
-        authService.validateFirebaseUser(validUser)
-      ).not.toThrow()
+      expect(() => authService.validateFirebaseUser(validUser)).not.toThrow()
     })
 
     it('should reject invalid user data', () => {
@@ -371,12 +379,10 @@ describe('FirebaseAuthService', () => {
         email: 'invalid-email',
         displayName: null,
         photoURL: null,
-        emailVerified: false
+        emailVerified: false,
       }
 
-      expect(() => 
-        authService.validateFirebaseUser(invalidUser)
-      ).toThrow()
+      expect(() => authService.validateFirebaseUser(invalidUser)).toThrow()
     })
   })
 })

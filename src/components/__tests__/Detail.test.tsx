@@ -1,10 +1,17 @@
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  cleanup,
+} from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { Detail } from '../Detail'
 import { useCoinbaseData } from '../../hooks/useCoinbaseData'
 import { usePriceAnalysis } from '../../hooks/usePriceAnalysis'
 import { ThemeProvider } from '../../contexts/ThemeContext'
+import MockAuthProvider from '../../test/utils/mockAuthProvider'
 
 vi.mock('../../hooks/useCoinbaseData')
 vi.mock('../../hooks/usePriceAnalysis', () => ({
@@ -12,7 +19,8 @@ vi.mock('../../hooks/usePriceAnalysis', () => ({
 }))
 vi.mock('../../utils/article', () => ({
   generateArticle: () => ({ text: 'Test article', confidence: 75 }),
-  generateLLMArticle: () => Promise.resolve({ text: 'Test LLM article', confidence: 85 }),
+  generateLLMArticle: () =>
+    Promise.resolve({ text: 'Test LLM article', confidence: 85 }),
   getCacheInfo: () => ({ size: 0, entries: [], duration: 300000 }),
   clearCache: () => {},
 }))
@@ -23,12 +31,13 @@ const mockUsePriceAnalysis = vi.mocked(usePriceAnalysis)
 describe('Detail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Setup default mock for usePriceAnalysis
     mockUsePriceAnalysis.mockReturnValue({
       analysis: null,
       isAnalyzing: false,
       error: null,
+      refresh: () => {},
     })
   })
 
@@ -47,9 +56,11 @@ describe('Detail', () => {
 
     render(
       <ThemeProvider>
-        <MemoryRouter initialEntries={['/crypto/btc']}>
-          <Detail />
-        </MemoryRouter>
+        <MockAuthProvider>
+          <MemoryRouter initialEntries={['/crypto/btc']}>
+            <Detail />
+          </MemoryRouter>
+        </MockAuthProvider>
       </ThemeProvider>
     )
 
@@ -70,9 +81,11 @@ describe('Detail', () => {
 
     render(
       <ThemeProvider>
-        <MemoryRouter initialEntries={['/crypto/btc']}>
-          <Detail />
-        </MemoryRouter>
+        <MockAuthProvider>
+          <MemoryRouter initialEntries={['/crypto/btc']}>
+            <Detail />
+          </MemoryRouter>
+        </MockAuthProvider>
       </ThemeProvider>
     )
 
@@ -83,16 +96,27 @@ describe('Detail', () => {
     mockUseCoinbaseData.mockReturnValue({
       price: 50000,
       candles: [[1640995200000, 50000, 50000, 50000, 50000]],
-      ohlcvData: [{ timestamp: 1640995200000, open: 50000, high: 50000, low: 50000, close: 50000, volume: 0 }],
+      ohlcvData: [
+        {
+          timestamp: 1640995200000,
+          open: 50000,
+          high: 50000,
+          low: 50000,
+          close: 50000,
+          volume: 0,
+        },
+      ],
       error: null,
       loading: false,
     })
 
     render(
       <ThemeProvider>
-        <MemoryRouter initialEntries={['/crypto/bitcoin']}>
-          <Detail />
-        </MemoryRouter>
+        <MockAuthProvider>
+          <MemoryRouter initialEntries={['/crypto/bitcoin']}>
+            <Detail />
+          </MemoryRouter>
+        </MockAuthProvider>
       </ThemeProvider>
     )
 
@@ -106,16 +130,27 @@ describe('Detail', () => {
     mockUseCoinbaseData.mockReturnValue({
       price: 50000,
       candles: [[1640995200000, 50000, 50000, 50000, 50000]],
-      ohlcvData: [{ timestamp: 1640995200000, open: 50000, high: 50000, low: 50000, close: 50000, volume: 0 }],
+      ohlcvData: [
+        {
+          timestamp: 1640995200000,
+          open: 50000,
+          high: 50000,
+          low: 50000,
+          close: 50000,
+          volume: 0,
+        },
+      ],
       error: null,
       loading: false,
     })
 
     render(
       <ThemeProvider>
-        <MemoryRouter initialEntries={['/crypto/bitcoin']}>
-          <Detail />
-        </MemoryRouter>
+        <MockAuthProvider>
+          <MemoryRouter initialEntries={['/crypto/bitcoin']}>
+            <Detail />
+          </MemoryRouter>
+        </MockAuthProvider>
       </ThemeProvider>
     )
 
@@ -123,7 +158,7 @@ describe('Detail', () => {
     expect(screen.getByText('AI Enhanced')).toBeInTheDocument()
     const aiButton = screen.getByRole('button', { name: /AI Enhanced/i })
     expect(aiButton).toBeInTheDocument()
-    
+
     // When enhanced mode is off, provider dropdown should not be visible
     expect(screen.queryByText('Ollama (Local)')).not.toBeInTheDocument()
   })
@@ -132,16 +167,27 @@ describe('Detail', () => {
     mockUseCoinbaseData.mockReturnValue({
       price: 50000,
       candles: [[1640995200000, 50000, 50000, 50000, 50000]],
-      ohlcvData: [{ timestamp: 1640995200000, open: 50000, high: 50000, low: 50000, close: 50000, volume: 0 }],
+      ohlcvData: [
+        {
+          timestamp: 1640995200000,
+          open: 50000,
+          high: 50000,
+          low: 50000,
+          close: 50000,
+          volume: 0,
+        },
+      ],
       error: null,
       loading: false,
     })
 
     render(
       <ThemeProvider>
-        <MemoryRouter initialEntries={['/crypto/bitcoin']}>
-          <Detail />
-        </MemoryRouter>
+        <MockAuthProvider>
+          <MemoryRouter initialEntries={['/crypto/bitcoin']}>
+            <Detail />
+          </MemoryRouter>
+        </MockAuthProvider>
       </ThemeProvider>
     )
 
@@ -153,7 +199,10 @@ describe('Detail', () => {
     await waitFor(() => {
       // Check that the button shows the enhanced state with provider badge
       expect(screen.getByText('Local')).toBeInTheDocument() // Provider badge appears when enhanced
-      expect(aiButton).toHaveAttribute('title', expect.stringContaining('Disable AI Enhanced'))
+      expect(aiButton).toHaveAttribute(
+        'title',
+        expect.stringContaining('Disable AI Enhanced')
+      )
     })
   })
 
@@ -161,24 +210,38 @@ describe('Detail', () => {
     mockUseCoinbaseData.mockReturnValue({
       price: 50000,
       candles: [[1640995200000, 50000, 50000, 50000, 50000]],
-      ohlcvData: [{ timestamp: 1640995200000, open: 50000, high: 50000, low: 50000, close: 50000, volume: 0 }],
+      ohlcvData: [
+        {
+          timestamp: 1640995200000,
+          open: 50000,
+          high: 50000,
+          low: 50000,
+          close: 50000,
+          volume: 0,
+        },
+      ],
       error: null,
       loading: false,
     })
 
     render(
       <ThemeProvider>
-        <MemoryRouter initialEntries={['/crypto/bitcoin']}>
-          <Detail />
-        </MemoryRouter>
+        <MockAuthProvider>
+          <MemoryRouter initialEntries={['/crypto/bitcoin']}>
+            <Detail />
+          </MemoryRouter>
+        </MockAuthProvider>
       </ThemeProvider>
     )
 
     const aiButton = screen.getByRole('button', { name: /AI Enhanced/i })
-    
+
     // Initially AI enhanced should be off (no Local badge)
     expect(screen.queryByText('Local')).not.toBeInTheDocument()
-    expect(aiButton).toHaveAttribute('title', expect.stringContaining('Enable AI Enhanced'))
+    expect(aiButton).toHaveAttribute(
+      'title',
+      expect.stringContaining('Enable AI Enhanced')
+    )
 
     // Enable AI enhanced mode
     fireEvent.click(aiButton)
@@ -186,7 +249,10 @@ describe('Detail', () => {
     // Wait for AI enhanced state and check the toggle worked
     await waitFor(() => {
       expect(screen.getByText('Local')).toBeInTheDocument() // Provider badge appears
-      expect(aiButton).toHaveAttribute('title', expect.stringContaining('Disable AI Enhanced'))
+      expect(aiButton).toHaveAttribute(
+        'title',
+        expect.stringContaining('Disable AI Enhanced')
+      )
     })
 
     // Disable AI enhanced mode
@@ -194,7 +260,10 @@ describe('Detail', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('Local')).not.toBeInTheDocument() // Provider badge disappears
-      expect(aiButton).toHaveAttribute('title', expect.stringContaining('Enable AI Enhanced'))
+      expect(aiButton).toHaveAttribute(
+        'title',
+        expect.stringContaining('Enable AI Enhanced')
+      )
     })
   })
 })
