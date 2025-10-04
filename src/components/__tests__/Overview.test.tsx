@@ -3,11 +3,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { Overview } from '../Overview'
 import { useTopCryptos } from '../../hooks/useTopCryptos'
+import { useAuth } from '../../hooks/useAuth'
 import { ThemeProvider } from '../../contexts/ThemeContext'
+import { MockAuthProvider } from '../../test/utils/mockAuthProvider'
 
 vi.mock('../../hooks/useTopCryptos')
+vi.mock('../../hooks/useAuth')
 
 const mockUseTopCryptos = vi.mocked(useTopCryptos)
+const mockUseAuth = vi.mocked(useAuth)
 
 describe('Overview', () => {
   afterEach(() => {
@@ -15,6 +19,25 @@ describe('Overview', () => {
   })
   beforeEach(() => {
     vi.clearAllMocks()
+
+    // Mock useAuth to return default authenticated user
+    mockUseAuth.mockReturnValue({
+      user: {
+        id: 'test-user',
+        email: 'test@example.com',
+        name: 'Test User',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      getAccessToken: vi.fn(),
+      signInWithGoogle: vi.fn(),
+      signInWithEmail: vi.fn(),
+      signUpWithEmail: vi.fn(),
+    })
   })
 
   it('renders loading state', () => {
