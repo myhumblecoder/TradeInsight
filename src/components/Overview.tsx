@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { DarkModeToggle } from './DarkModeToggle'
+import { UserDropdown } from './UserDropdown'
 import { useTopCryptos } from '../hooks/useTopCryptos'
 import { useTheme } from '../contexts/ThemeContext'
 import { usePageTransition } from '../hooks/usePageTransition'
+import { useAuth } from '../hooks/useAuth'
 
 // Map crypto IDs to display names for consistency
 const cryptoDisplayNames: Record<string, string> = {
@@ -17,6 +19,7 @@ export function Overview() {
   const { isDark, toggleDarkMode } = useTheme()
   const { data: cryptos, loading, error } = useTopCryptos()
   const { isTransitioning } = usePageTransition()
+  const { isAuthenticated, user } = useAuth()
 
   if (loading)
     return (
@@ -42,7 +45,10 @@ export function Overview() {
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">
           MyHumbleCrypto
         </h1>
-        <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
+        <div className="flex items-center gap-4">
+          {isAuthenticated && user && <UserDropdown />}
+          <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
+        </div>
       </header>
       <main className="px-2 py-4 sm:px-4 lg:px-6 xl:px-8 transition-opacity duration-150 ease-in-out">
         <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
