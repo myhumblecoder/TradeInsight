@@ -5,6 +5,7 @@ import { calculateRSI, calculateEMA, calculateMACD } from '../utils/indicators'
 import { generateArticle, generateLLMArticle } from '../utils/article'
 import { Article } from './Article'
 import { DarkModeToggle } from './DarkModeToggle'
+import { UserDropdown } from './UserDropdown'
 import { TimeIntervalSelector } from './TimeIntervalSelector'
 import { PriceAnalysisDisplay } from './PriceAnalysisDisplay'
 import { TechnicalIndicatorsDisplay } from './TechnicalIndicatorsDisplay'
@@ -60,7 +61,7 @@ export function Detail() {
     cryptoId.charAt(0).toUpperCase() + cryptoId.slice(1)
 
   // Auth
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth()
   const [showAuthFlow, setShowAuthFlow] = useState(false)
 
   // Price analysis for enhanced analysis
@@ -304,7 +305,10 @@ export function Detail() {
         <h1 className="text-xl font-bold text-gray-900 dark:text-white flex-1 text-center">
           {cryptoName}
         </h1>
-        <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
+        <div className="flex items-center gap-4">
+          {isAuthenticated && user && <UserDropdown />}
+          <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
+        </div>
       </header>
       <main className="px-2 py-4 sm:px-4 lg:px-6 xl:px-8 transition-opacity duration-150 ease-in-out">
         {/* Controls */}
