@@ -13,12 +13,12 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 - **Enhanced Mode Toggle**: Users can choose between AI and template modes
 - **Responsive Design**: Clean grid layout with dark/light themes
 
-### 💰 Monetization (Phase 4)
+### 💰 Monetization (Current Implementation)
 
 - **User Authentication**: Secure Auth0 integration with JWT tokens
-- **Premium Subscriptions**: $9.99/month Stripe-powered billing
-- **Paywall System**: Feature gating for premium AI analysis
-- **User Dashboard**: Subscription management and billing portal
+- **Freemium Model**: Pay-per-analysis micro-transactions ($0.25 each)
+- **Credit System**: NOWPayments crypto payments with credit packages
+- **PaywallGuard**: Single overlay protection for premium content
 
 ### 🛡️ Security & Compliance
 
@@ -54,7 +54,7 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 
 - **Authentication:** Auth0 with React SDK
 - **Database:** Supabase (PostgreSQL) for users and subscriptions
-- **Payments:** Stripe Checkout and subscription management
+- **Payments:** NOWPayments crypto micro-transactions with credit system
 - **Monitoring:** Pino logging with structured analytics
 
 ### DevOps & Testing
@@ -165,10 +165,11 @@ A professional cryptocurrency analysis platform with AI-enhanced insights, premi
 src/
 ├── components/          # React components
 │   ├── Overview.tsx     # Main cryptocurrency grid
-│   ├── Detail.tsx       # Individual crypto details
+│   ├── Detail.tsx       # Individual crypto details with freemium overlay
 │   ├── Article.tsx      # AI-enhanced summaries
-│   ├── PaywallGuard.tsx # Premium feature protection
-│   ├── UpgradeButton.tsx # Subscription management
+│   ├── PaywallGuard.tsx # Premium content protection with blur effects
+│   ├── CreditBalance.tsx # Header credit display
+│   ├── BuyCreditButton.tsx # Credit purchase with NOWPayments
 │   ├── CookieBanner.tsx # GDPR compliance
 │   └── __tests__/       # Component tests
 ├── contexts/            # React contexts
@@ -178,7 +179,8 @@ src/
 ├── hooks/               # Custom React hooks
 │   ├── useCoinbaseData.ts
 │   ├── useTopCryptos.ts
-│   └── useAuth.ts       # Authentication hook
+│   ├── useAuth.ts       # Authentication hook
+│   └── useCredits.ts    # Credit management system
 ├── services/            # External integrations
 │   ├── stripe.ts        # Payment processing
 │   ├── monitoring.ts    # Analytics and logging
@@ -216,9 +218,9 @@ VITE_AUTH0_AUDIENCE=your_auth0_api_audience
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Payments (Stripe) - Required for subscriptions
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_key
-VITE_STRIPE_PRICE_ID_MONTHLY=price_your_monthly_price_id
+# Payments (NOWPayments) - Required for crypto transactions
+VITE_NOWPAYMENTS_API_KEY=your_nowpayments_api_key
+VITE_NOWPAYMENTS_SANDBOX=false  # Set to true for testing
 
 # AI Providers - Optional but recommended
 VITE_OPENAI_API_KEY=your_openai_api_key        # For cloud AI
@@ -251,7 +253,8 @@ VITE_ERROR_TRACKING_ENDPOINT=https://your-errors-endpoint
 - All enhanced features +
 - User authentication and profiles
 - Premium AI analysis with advanced prompts
-- Subscription management and billing
+- Credit-based micro-transactions ($0.25 per analysis)
+- NOWPayments crypto billing integration
 - Export capabilities and advanced features
 - Priority support and monitoring
 
@@ -271,11 +274,11 @@ VITE_ERROR_TRACKING_ENDPOINT=https://your-errors-endpoint
 - **Caching Strategy**: 5-minute in-memory cache with provider-specific keys
 - **Error Handling**: Graceful degradation with user feedback
 
-### Subscription Model
+### Freemium Model
 
-- **Free**: Template analysis, basic indicators
-- **Premium ($9.99/month)**: AI-enhanced analysis, advanced features
-- **Enterprise**: Custom pricing, dedicated support
+- **Free**: Template analysis, basic indicators, blurred premium content preview
+- **Pay-per-analysis ($0.25)**: AI-enhanced analysis, technical indicators, full content access
+- **Credit Packages**: Bulk purchases with volume discounts (20-250 credits)
 
 ## Deployment
 
@@ -363,13 +366,14 @@ npm test src/utils/__tests__/article.test.ts
 - Ensure tables are created with proper schema
 ```
 
-**Stripe Integration**:
+**NOWPayments Integration**:
 
 ```bash
-# If payments aren't working
-- Check VITE_STRIPE_PUBLISHABLE_KEY matches environment
-- Verify price IDs in Stripe dashboard
-- Test with Stripe test cards
+# If crypto payments aren't working
+- Check VITE_NOWPAYMENTS_API_KEY is valid
+- Verify wallet addresses in NOWPayments dashboard
+- Test with sandbox mode enabled
+- Ensure minimum payment amounts are met
 ```
 
 **AI Providers**:
