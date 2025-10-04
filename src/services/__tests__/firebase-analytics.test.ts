@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { 
+import {
   FirebaseAnalyticsService,
   type AnalyticsConfig,
   type TrackEventData,
   type UserProperties,
-  type ConversionEvent
+  type ConversionEvent,
 } from '../firebase-analytics'
 
 // Mock Firebase Analytics
@@ -12,7 +12,7 @@ const mockAnalytics = {
   logEvent: vi.fn(),
   setUserId: vi.fn(),
   setUserProperties: vi.fn(),
-  setCurrentScreen: vi.fn()
+  setCurrentScreen: vi.fn(),
 }
 
 const mockGtag = vi.fn()
@@ -21,21 +21,23 @@ vi.mock('firebase/analytics', () => ({
   getAnalytics: () => mockAnalytics,
   logEvent: (...args: unknown[]) => mockAnalytics.logEvent(...args),
   setUserId: (...args: unknown[]) => mockAnalytics.setUserId(...args),
-  setUserProperties: (...args: unknown[]) => mockAnalytics.setUserProperties(...args),
-  setCurrentScreen: (...args: unknown[]) => mockAnalytics.setCurrentScreen(...args)
+  setUserProperties: (...args: unknown[]) =>
+    mockAnalytics.setUserProperties(...args),
+  setCurrentScreen: (...args: unknown[]) =>
+    mockAnalytics.setCurrentScreen(...args),
 }))
 
 // Mock Firebase App
 const mockApp = { name: 'test-app' }
 
 vi.mock('firebase/app', () => ({
-  initializeApp: () => mockApp
+  initializeApp: () => mockApp,
 }))
 
 // Mock global gtag
 Object.defineProperty(window, 'gtag', {
   value: mockGtag,
-  writable: true
+  writable: true,
 })
 
 describe('FirebaseAnalyticsService', () => {
@@ -48,7 +50,7 @@ describe('FirebaseAnalyticsService', () => {
     messagingSenderId: '123456789',
     appId: 'test-app-id',
     measurementId: 'G-TEST123',
-    enableDebugMode: true
+    enableDebugMode: true,
   }
 
   beforeEach(() => {
@@ -73,14 +75,14 @@ describe('FirebaseAnalyticsService', () => {
     it('should initialize in debug mode when enabled', () => {
       const debugConfig = { ...mockConfig, enableDebugMode: true }
       const debugService = new FirebaseAnalyticsService(debugConfig)
-      
+
       expect(debugService).toBeInstanceOf(FirebaseAnalyticsService)
     })
 
     it('should work without measurement ID for Firebase-only analytics', () => {
       const configWithoutGA = { ...mockConfig }
       delete (configWithoutGA as any).measurementId
-      
+
       expect(() => new FirebaseAnalyticsService(configWithoutGA)).not.toThrow()
     })
   })
@@ -88,8 +90,11 @@ describe('FirebaseAnalyticsService', () => {
   describe('user identification', () => {
     it('should set user ID correctly', () => {
       analyticsService.setUserId('user-123')
-      
-      expect(mockAnalytics.setUserId).toHaveBeenCalledWith(mockAnalytics, 'user-123')
+
+      expect(mockAnalytics.setUserId).toHaveBeenCalledWith(
+        mockAnalytics,
+        'user-123'
+      )
     })
 
     it('should set user properties correctly', () => {
@@ -99,8 +104,8 @@ describe('FirebaseAnalyticsService', () => {
         signup_method: 'google',
         custom_properties: {
           favorite_crypto: 'bitcoin',
-          trading_experience: 'intermediate'
-        }
+          trading_experience: 'intermediate',
+        },
       }
 
       analyticsService.setUserProperties(userProps)
@@ -112,21 +117,21 @@ describe('FirebaseAnalyticsService', () => {
           user_role: 'premium',
           signup_method: 'google',
           favorite_crypto: 'bitcoin',
-          trading_experience: 'intermediate'
+          trading_experience: 'intermediate',
         })
       )
     })
 
     it('should clear user ID when provided null', () => {
       analyticsService.setUserId(null)
-      
+
       expect(mockAnalytics.setUserId).toHaveBeenCalledWith(mockAnalytics, null)
     })
 
     it('should validate user properties', () => {
       const invalidProps = {
         subscription_status: '', // Invalid empty string
-        user_role: 123 as any // Invalid type
+        user_role: 123 as any, // Invalid type
       }
 
       expect(() => analyticsService.setUserProperties(invalidProps)).toThrow()
@@ -139,8 +144,8 @@ describe('FirebaseAnalyticsService', () => {
         event_name: 'page_view',
         parameters: {
           page_title: 'Bitcoin Analysis',
-          page_location: '/analysis/bitcoin'
-        }
+          page_location: '/analysis/bitcoin',
+        },
       }
 
       analyticsService.trackEvent(eventData)
@@ -150,16 +155,20 @@ describe('FirebaseAnalyticsService', () => {
         'page_view',
         expect.objectContaining({
           page_title: 'Bitcoin Analysis',
-          page_location: '/analysis/bitcoin'
+          page_location: '/analysis/bitcoin',
         })
       )
     })
 
     it('should track user engagement events', () => {
-      analyticsService.trackUserEngagement('user-123', 'crypto_analysis_viewed', {
-        crypto_symbol: 'BTC',
-        analysis_type: 'technical'
-      })
+      analyticsService.trackUserEngagement(
+        'user-123',
+        'crypto_analysis_viewed',
+        {
+          crypto_symbol: 'BTC',
+          analysis_type: 'technical',
+        }
+      )
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
         mockAnalytics,
@@ -168,17 +177,21 @@ describe('FirebaseAnalyticsService', () => {
           action: 'crypto_analysis_viewed',
           user_id: 'user-123',
           crypto_symbol: 'BTC',
-          analysis_type: 'technical'
+          analysis_type: 'technical',
         })
       )
     })
 
     it('should track subscription events', () => {
-      analyticsService.trackSubscriptionEvent('user-123', 'subscription_started', {
-        plan: 'monthly',
-        amount: 9.99,
-        currency: 'USD'
-      })
+      analyticsService.trackSubscriptionEvent(
+        'user-123',
+        'subscription_started',
+        {
+          plan: 'monthly',
+          amount: 9.99,
+          currency: 'USD',
+        }
+      )
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
         mockAnalytics,
@@ -187,7 +200,7 @@ describe('FirebaseAnalyticsService', () => {
           user_id: 'user-123',
           plan: 'monthly',
           amount: 9.99,
-          currency: 'USD'
+          currency: 'USD',
         })
       )
     })
@@ -195,7 +208,7 @@ describe('FirebaseAnalyticsService', () => {
     it('should track feature usage events', () => {
       analyticsService.trackFeatureUsage('user-123', 'ai_analysis', true, {
         model_used: 'gemini-pro',
-        response_time: 2.5
+        response_time: 2.5,
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -206,7 +219,7 @@ describe('FirebaseAnalyticsService', () => {
           feature: 'ai_analysis',
           successful: true,
           model_used: 'gemini-pro',
-          response_time: 2.5
+          response_time: 2.5,
         })
       )
     })
@@ -215,8 +228,8 @@ describe('FirebaseAnalyticsService', () => {
       const invalidEventData = {
         event_name: '', // Invalid empty name
         parameters: {
-          invalid_param: undefined // Invalid undefined value
-        }
+          invalid_param: undefined, // Invalid undefined value
+        },
       } as any
 
       expect(() => analyticsService.trackEvent(invalidEventData)).toThrow()
@@ -230,8 +243,8 @@ describe('FirebaseAnalyticsService', () => {
           null_param: null,
           undefined_param: undefined,
           empty_string: '',
-          zero_number: 0
-        }
+          zero_number: 0,
+        },
       }
 
       analyticsService.trackEvent(eventData)
@@ -241,7 +254,7 @@ describe('FirebaseAnalyticsService', () => {
         'test_event',
         expect.objectContaining({
           valid_param: 'test',
-          zero_number: 0
+          zero_number: 0,
           // null and undefined should be filtered out
         })
       )
@@ -257,8 +270,8 @@ describe('FirebaseAnalyticsService', () => {
         transaction_id: 'txn_123',
         parameters: {
           item_category: 'subscription',
-          payment_method: 'stripe'
-        }
+          payment_method: 'stripe',
+        },
       }
 
       analyticsService.trackConversion(conversionEvent)
@@ -271,7 +284,7 @@ describe('FirebaseAnalyticsService', () => {
           currency: 'USD',
           transaction_id: 'txn_123',
           item_category: 'subscription',
-          payment_method: 'stripe'
+          payment_method: 'stripe',
         })
       )
     })
@@ -279,7 +292,7 @@ describe('FirebaseAnalyticsService', () => {
     it('should track signup conversions', () => {
       analyticsService.trackSignup('user-456', 'email', {
         campaign: 'crypto_newsletter',
-        source: 'organic'
+        source: 'organic',
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -289,7 +302,7 @@ describe('FirebaseAnalyticsService', () => {
           user_id: 'user-456',
           method: 'email',
           campaign: 'crypto_newsletter',
-          source: 'organic'
+          source: 'organic',
         })
       )
     })
@@ -299,14 +312,16 @@ describe('FirebaseAnalyticsService', () => {
         transaction_id: 'sub_789',
         value: 99.99,
         currency: 'USD',
-        items: [{
-          item_id: 'annual_plan',
-          item_name: 'Annual Subscription',
-          category: 'subscription',
-          quantity: 1,
-          price: 99.99
-        }],
-        coupon: 'SAVE20'
+        items: [
+          {
+            item_id: 'annual_plan',
+            item_name: 'Annual Subscription',
+            category: 'subscription',
+            quantity: 1,
+            price: 99.99,
+          },
+        ],
+        coupon: 'SAVE20',
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -323,10 +338,10 @@ describe('FirebaseAnalyticsService', () => {
               item_name: 'Annual Subscription',
               category: 'subscription',
               quantity: 1,
-              price: 99.99
-            })
+              price: 99.99,
+            }),
           ]),
-          coupon: 'SAVE20'
+          coupon: 'SAVE20',
         })
       )
     })
@@ -335,10 +350,12 @@ describe('FirebaseAnalyticsService', () => {
       const invalidConversion = {
         name: 'purchase',
         value: -10, // Invalid negative value
-        currency: 'INVALID' // Invalid currency code
+        currency: 'INVALID', // Invalid currency code
       } as ConversionEvent
 
-      expect(() => analyticsService.trackConversion(invalidConversion)).toThrow()
+      expect(() =>
+        analyticsService.trackConversion(invalidConversion)
+      ).toThrow()
     })
   })
 
@@ -349,7 +366,7 @@ describe('FirebaseAnalyticsService', () => {
         dom_content_loaded: 800,
         first_paint: 600,
         largest_contentful_paint: 1000,
-        cumulative_layout_shift: 0.05
+        cumulative_layout_shift: 0.05,
       }
 
       analyticsService.trackPerformance('page_load', performanceData)
@@ -363,7 +380,7 @@ describe('FirebaseAnalyticsService', () => {
           dom_content_loaded: 800,
           first_paint: 600,
           largest_contentful_paint: 1000,
-          cumulative_layout_shift: 0.05
+          cumulative_layout_shift: 0.05,
         })
       )
     })
@@ -372,7 +389,7 @@ describe('FirebaseAnalyticsService', () => {
       analyticsService.trackAPIPerformance('/api/analysis', {
         response_time: 2500,
         status_code: 200,
-        cache_hit: false
+        cache_hit: false,
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -382,7 +399,7 @@ describe('FirebaseAnalyticsService', () => {
           endpoint: '/api/analysis',
           response_time: 2500,
           status_code: 200,
-          cache_hit: false
+          cache_hit: false,
         })
       )
     })
@@ -390,7 +407,7 @@ describe('FirebaseAnalyticsService', () => {
     it('should track custom performance metrics', () => {
       analyticsService.trackCustomMetric('ai_analysis_time', 3200, {
         model: 'gemini-pro',
-        complexity: 'high'
+        complexity: 'high',
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -400,7 +417,7 @@ describe('FirebaseAnalyticsService', () => {
           metric_name: 'ai_analysis_time',
           metric_value: 3200,
           model: 'gemini-pro',
-          complexity: 'high'
+          complexity: 'high',
         })
       )
     })
@@ -412,7 +429,7 @@ describe('FirebaseAnalyticsService', () => {
       const context = {
         endpoint: '/api/crypto/bitcoin',
         user_id: 'user-123',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       analyticsService.trackError(error, context)
@@ -424,7 +441,7 @@ describe('FirebaseAnalyticsService', () => {
           error_message: 'API request failed',
           error_name: 'Error',
           endpoint: '/api/crypto/bitcoin',
-          user_id: 'user-123'
+          user_id: 'user-123',
         })
       )
     })
@@ -435,7 +452,7 @@ describe('FirebaseAnalyticsService', () => {
         filename: 'app.js',
         line: 42,
         column: 15,
-        stack: 'Error: Cannot read property of undefined\n    at app.js:42:15'
+        stack: 'Error: Cannot read property of undefined\n    at app.js:42:15',
       }
 
       analyticsService.trackJSError(jsError)
@@ -447,16 +464,20 @@ describe('FirebaseAnalyticsService', () => {
           error_message: 'Cannot read property of undefined',
           filename: 'app.js',
           line: 42,
-          column: 15
+          column: 15,
         })
       )
     })
 
     it('should track handled exceptions', () => {
-      analyticsService.trackHandledException('ValidationError', 'Invalid email format', {
-        input_value: 'invalid-email',
-        validation_rule: 'email'
-      })
+      analyticsService.trackHandledException(
+        'ValidationError',
+        'Invalid email format',
+        {
+          input_value: 'invalid-email',
+          validation_rule: 'email',
+        }
+      )
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
         mockAnalytics,
@@ -465,7 +486,7 @@ describe('FirebaseAnalyticsService', () => {
           exception_type: 'ValidationError',
           exception_message: 'Invalid email format',
           input_value: 'invalid-email',
-          validation_rule: 'email'
+          validation_rule: 'email',
         })
       )
     })
@@ -475,7 +496,7 @@ describe('FirebaseAnalyticsService', () => {
     it('should track screen views', () => {
       analyticsService.trackScreenView('/dashboard', 'Dashboard', {
         user_type: 'premium',
-        load_time: 1200
+        load_time: 1200,
       })
 
       expect(mockAnalytics.setCurrentScreen).toHaveBeenCalledWith(
@@ -490,7 +511,7 @@ describe('FirebaseAnalyticsService', () => {
           screen_name: 'Dashboard',
           screen_path: '/dashboard',
           user_type: 'premium',
-          load_time: 1200
+          load_time: 1200,
         })
       )
     })
@@ -498,7 +519,7 @@ describe('FirebaseAnalyticsService', () => {
     it('should track navigation events', () => {
       analyticsService.trackNavigation('/analysis/bitcoin', '/dashboard', {
         navigation_type: 'click',
-        element_id: 'nav_dashboard'
+        element_id: 'nav_dashboard',
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -508,7 +529,7 @@ describe('FirebaseAnalyticsService', () => {
           from_path: '/analysis/bitcoin',
           to_path: '/dashboard',
           navigation_type: 'click',
-          element_id: 'nav_dashboard'
+          element_id: 'nav_dashboard',
         })
       )
     })
@@ -519,7 +540,7 @@ describe('FirebaseAnalyticsService', () => {
       const customDimensions = {
         subscription_tier: 'premium',
         user_segment: 'active_trader',
-        feature_flags: 'new_ui,beta_analysis'
+        feature_flags: 'new_ui,beta_analysis',
       }
 
       analyticsService.setCustomDimensions(customDimensions)
@@ -534,7 +555,7 @@ describe('FirebaseAnalyticsService', () => {
       analyticsService.trackCustomEvent('crypto_watchlist_updated', {
         watchlist_size: 15,
         coins_added: 3,
-        user_tier: 'premium'
+        user_tier: 'premium',
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -543,7 +564,7 @@ describe('FirebaseAnalyticsService', () => {
         expect.objectContaining({
           watchlist_size: 15,
           coins_added: 3,
-          user_tier: 'premium'
+          user_tier: 'premium',
         })
       )
     })
@@ -554,7 +575,7 @@ describe('FirebaseAnalyticsService', () => {
       analyticsService.startSession('user-123', {
         session_id: 'session_456',
         utm_source: 'google',
-        utm_campaign: 'crypto_analysis'
+        utm_campaign: 'crypto_analysis',
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -564,7 +585,7 @@ describe('FirebaseAnalyticsService', () => {
           user_id: 'user-123',
           session_id: 'session_456',
           utm_source: 'google',
-          utm_campaign: 'crypto_analysis'
+          utm_campaign: 'crypto_analysis',
         })
       )
     })
@@ -573,7 +594,7 @@ describe('FirebaseAnalyticsService', () => {
       analyticsService.endSession('user-123', {
         session_duration: 1800, // 30 minutes
         pages_viewed: 5,
-        actions_taken: 12
+        actions_taken: 12,
       })
 
       expect(mockAnalytics.logEvent).toHaveBeenCalledWith(
@@ -583,7 +604,7 @@ describe('FirebaseAnalyticsService', () => {
           user_id: 'user-123',
           session_duration: 1800,
           pages_viewed: 5,
-          actions_taken: 12
+          actions_taken: 12,
         })
       )
     })
@@ -596,8 +617,8 @@ describe('FirebaseAnalyticsService', () => {
         parameters: {
           transaction_id: 'txn_123',
           value: 9.99,
-          currency: 'USD'
-        }
+          currency: 'USD',
+        },
       }
 
       analyticsService.trackEvent(eventData)
@@ -605,7 +626,7 @@ describe('FirebaseAnalyticsService', () => {
       expect(mockGtag).toHaveBeenCalledWith('event', 'purchase', {
         transaction_id: 'txn_123',
         value: 9.99,
-        currency: 'USD'
+        currency: 'USD',
       })
     })
 
@@ -613,17 +634,17 @@ describe('FirebaseAnalyticsService', () => {
       analyticsService.configureGA4({
         custom_map: {
           custom_parameter_1: 'subscription_tier',
-          custom_parameter_2: 'user_segment'
+          custom_parameter_2: 'user_segment',
         },
-        send_page_view: false
+        send_page_view: false,
       })
 
       expect(mockGtag).toHaveBeenCalledWith('config', 'G-TEST123', {
         custom_map: {
           custom_parameter_1: 'subscription_tier',
-          custom_parameter_2: 'user_segment'
+          custom_parameter_2: 'user_segment',
         },
-        send_page_view: false
+        send_page_view: false,
       })
     })
   })
@@ -635,7 +656,7 @@ describe('FirebaseAnalyticsService', () => {
         ad_storage: 'denied',
         functionality_storage: 'granted',
         personalization_storage: 'granted',
-        security_storage: 'granted'
+        security_storage: 'granted',
       })
 
       if (mockConfig.measurementId) {
@@ -644,18 +665,18 @@ describe('FirebaseAnalyticsService', () => {
           ad_storage: 'denied',
           functionality_storage: 'granted',
           personalization_storage: 'granted',
-          security_storage: 'granted'
+          security_storage: 'granted',
         })
       }
     })
 
     it('should enable/disable analytics based on consent', () => {
       analyticsService.setAnalyticsEnabled(false)
-      
+
       // Subsequent events should not be tracked
       analyticsService.trackEvent({
         event_name: 'test_event',
-        parameters: {}
+        parameters: {},
       })
 
       expect(mockAnalytics.logEvent).not.toHaveBeenCalled()
@@ -663,9 +684,9 @@ describe('FirebaseAnalyticsService', () => {
 
     it('should anonymize user data when required', () => {
       analyticsService.enableDataAnonymization(true)
-      
+
       analyticsService.setUserId('user-123')
-      
+
       // User ID should be hashed or anonymized
       expect(mockAnalytics.setUserId).toHaveBeenCalledWith(
         mockAnalytics,
@@ -677,21 +698,21 @@ describe('FirebaseAnalyticsService', () => {
   describe('debugging and validation', () => {
     it('should provide debug information in development', () => {
       const debugInfo = analyticsService.getDebugInfo()
-      
+
       expect(debugInfo).toEqual({
         isInitialized: true,
         isEnabled: true,
         measurementId: 'G-TEST123',
         debugMode: true,
         eventsTracked: expect.any(Number),
-        lastError: null
+        lastError: null,
       })
     })
 
     it('should validate event parameters against GA4 limits', () => {
       const oversizedEvent: TrackEventData = {
         event_name: 'test_event',
-        parameters: {}
+        parameters: {},
       }
 
       // Add 26 parameters (GA4 limit is 25)
@@ -708,8 +729,8 @@ describe('FirebaseAnalyticsService', () => {
       const longValueEvent: TrackEventData = {
         event_name: 'test_event',
         parameters: {
-          long_param: 'a'.repeat(101) // GA4 limit is 100 characters
-        }
+          long_param: 'a'.repeat(101), // GA4 limit is 100 characters
+        },
       }
 
       expect(() => analyticsService.trackEvent(longValueEvent)).toThrow(
@@ -723,12 +744,12 @@ describe('FirebaseAnalyticsService', () => {
       // Simulate offline state
       Object.defineProperty(navigator, 'onLine', {
         value: false,
-        writable: true
+        writable: true,
       })
 
       analyticsService.trackEvent({
         event_name: 'offline_event',
-        parameters: { test: 'value' }
+        parameters: { test: 'value' },
       })
 
       // Event should be queued, not sent immediately
@@ -737,7 +758,7 @@ describe('FirebaseAnalyticsService', () => {
       // Simulate going back online
       Object.defineProperty(navigator, 'onLine', {
         value: true,
-        writable: true
+        writable: true,
       })
 
       // Trigger queue processing
@@ -752,7 +773,7 @@ describe('FirebaseAnalyticsService', () => {
 
     it('should handle analytics initialization failures gracefully', () => {
       const failingConfig = { ...mockConfig, apiKey: 'invalid' }
-      
+
       expect(() => new FirebaseAnalyticsService(failingConfig)).not.toThrow()
     })
   })

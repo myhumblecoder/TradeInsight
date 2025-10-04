@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  cleanup,
+} from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { UpgradeButton } from '../UpgradeButton'
 import { useAuth } from '../../hooks/useAuth'
@@ -27,7 +33,7 @@ describe('UpgradeButton', () => {
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
-      getAccessToken: vi.fn()
+      getAccessToken: vi.fn(),
     })
 
     render(<UpgradeButton />)
@@ -44,7 +50,7 @@ describe('UpgradeButton', () => {
       isLoading: false,
       login: mockLogin,
       logout: vi.fn(),
-      getAccessToken: vi.fn()
+      getAccessToken: vi.fn(),
     })
 
     render(<UpgradeButton />)
@@ -60,13 +66,13 @@ describe('UpgradeButton', () => {
         email: 'test@example.com',
         subscription: null,
         createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z'
+        updatedAt: '2024-01-01T00:00:00Z',
       },
       isAuthenticated: true,
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
-      getAccessToken: vi.fn()
+      getAccessToken: vi.fn(),
     })
 
     render(<UpgradeButton />)
@@ -86,16 +92,16 @@ describe('UpgradeButton', () => {
           priceId: 'price_123',
           currentPeriodStart: '2024-01-01T00:00:00Z',
           currentPeriodEnd: '2024-02-01T00:00:00Z',
-          cancelAtPeriodEnd: false
+          cancelAtPeriodEnd: false,
         },
         createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z'
+        updatedAt: '2024-01-01T00:00:00Z',
       },
       isAuthenticated: true,
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
-      getAccessToken: vi.fn()
+      getAccessToken: vi.fn(),
     })
 
     render(<UpgradeButton />)
@@ -110,7 +116,7 @@ describe('UpgradeButton', () => {
       email: 'test@example.com',
       subscription: null,
       createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
+      updatedAt: '2024-01-01T00:00:00Z',
     }
 
     mockUseAuth.mockReturnValue({
@@ -119,7 +125,7 @@ describe('UpgradeButton', () => {
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
-      getAccessToken: vi.fn()
+      getAccessToken: vi.fn(),
     })
 
     mockCreateCheckoutSession.mockResolvedValue('cs_test_123')
@@ -133,7 +139,7 @@ describe('UpgradeButton', () => {
       expect(mockCreateCheckoutSession).toHaveBeenCalledWith({
         priceId: 'price_monthly',
         userId: 'user-1',
-        userEmail: 'test@example.com'
+        userEmail: 'test@example.com',
       })
     })
 
@@ -148,7 +154,7 @@ describe('UpgradeButton', () => {
       email: 'test@example.com',
       subscription: null,
       createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
+      updatedAt: '2024-01-01T00:00:00Z',
     }
 
     mockUseAuth.mockReturnValue({
@@ -157,10 +163,13 @@ describe('UpgradeButton', () => {
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
-      getAccessToken: vi.fn()
+      getAccessToken: vi.fn(),
     })
 
-    mockCreateCheckoutSession.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve('cs_test_123'), 100)))
+    mockCreateCheckoutSession.mockImplementation(
+      () =>
+        new Promise((resolve) => setTimeout(() => resolve('cs_test_123'), 100))
+    )
     mockRedirectToCheckout.mockResolvedValue()
 
     render(<UpgradeButton />)
@@ -176,7 +185,7 @@ describe('UpgradeButton', () => {
       email: 'test@example.com',
       subscription: null,
       createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
+      updatedAt: '2024-01-01T00:00:00Z',
     }
 
     mockUseAuth.mockReturnValue({
@@ -185,7 +194,7 @@ describe('UpgradeButton', () => {
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
-      getAccessToken: vi.fn()
+      getAccessToken: vi.fn(),
     })
 
     mockCreateCheckoutSession.mockRejectedValue(new Error('Network error'))

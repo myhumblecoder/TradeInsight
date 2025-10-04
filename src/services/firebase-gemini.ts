@@ -5,36 +5,41 @@ export const GeminiConfigSchema = z.object({
   projectId: z.string().min(1, 'Project ID is required'),
   location: z.string().default('us-central1'),
   apiKey: z.string().min(1, 'API key is required'),
-  cacheOptions: z.object({
-    ttl: z.number().default(20 * 60 * 1000), // 20 minutes
-    maxSize: z.number().default(100)
-  }).optional()
+  cacheOptions: z
+    .object({
+      ttl: z.number().default(20 * 60 * 1000), // 20 minutes
+      maxSize: z.number().default(100),
+    })
+    .optional(),
 })
 
 export const GeminiModelSchema = z.enum([
   'gemini-pro',
   'gemini-pro-vision',
-  'gemini-pro-experimental'
+  'gemini-pro-experimental',
 ])
 
-export const AnalysisTypeSchema = z.enum(['market-insights', 'technical-report'])
+export const AnalysisTypeSchema = z.enum([
+  'market-insights',
+  'technical-report',
+])
 
 export const PriceAnalysisSchema = z.object({
   entryPoints: z.object({
     conservative: z.number(),
     moderate: z.number(),
-    aggressive: z.number()
+    aggressive: z.number(),
   }),
   stopLoss: z.object({
     price: z.number(),
-    method: z.string()
+    method: z.string(),
   }),
   profitTargets: z.object({
     target1: z.number(),
-    target2: z.number()
+    target2: z.number(),
   }),
   riskAssessment: z.string(),
-  confidence: z.number().min(0).max(1)
+  confidence: z.number().min(0).max(1),
 })
 
 export const AnalysisRequestSchema = z.object({
@@ -44,20 +49,22 @@ export const AnalysisRequestSchema = z.object({
   rsi: z.number().optional(),
   ema12: z.number().optional(),
   ema26: z.number().optional(),
-  macd: z.object({
-    MACD: z.number(),
-    signal: z.number(),
-    histogram: z.number()
-  }).optional(),
+  macd: z
+    .object({
+      MACD: z.number(),
+      signal: z.number(),
+      histogram: z.number(),
+    })
+    .optional(),
   priceAnalysis: PriceAnalysisSchema.optional(),
-  analysisType: AnalysisTypeSchema
+  analysisType: AnalysisTypeSchema,
 })
 
 export const GenerationConfigSchema = z.object({
   temperature: z.number().min(0).max(2).default(0.7),
   maxOutputTokens: z.number().min(1).max(8192).default(1024),
   topP: z.number().min(0).max(1).default(0.8),
-  topK: z.number().min(1).max(40).default(40)
+  topK: z.number().min(1).max(40).default(40),
 })
 
 export type GeminiConfig = z.infer<typeof GeminiConfigSchema>
@@ -122,7 +129,7 @@ export class FirebaseGeminiService {
   private currentModel: GeminiModel = 'gemini-pro'
   private cache = new Map<string, CacheEntry>()
   private startTime = Date.now()
-  
+
   // Analytics
   private totalRequests = 0
   private cacheHits = 0
@@ -130,7 +137,7 @@ export class FirebaseGeminiService {
   private modelUsage: Record<GeminiModel, number> = {
     'gemini-pro': 0,
     'gemini-pro-vision': 0,
-    'gemini-pro-experimental': 0
+    'gemini-pro-experimental': 0,
   }
   private lastError: string | null = null
 
@@ -141,19 +148,21 @@ export class FirebaseGeminiService {
         cacheOptions: {
           ttl: 20 * 60 * 1000,
           maxSize: 100,
-          ...(config.cacheOptions || {})
-        }
+          ...(config.cacheOptions || {}),
+        },
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid Gemini configuration: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid Gemini configuration: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       throw error
     }
 
     this.vertexAI = new VertexAI({
       project: this.config.projectId,
-      location: this.config.location
+      location: this.config.location,
     })
   }
 
@@ -176,7 +185,10 @@ export class FirebaseGeminiService {
   }
 
   // Cache management
-  private generateCacheKey(request: AnalysisRequest, config?: GenerationConfig): string {
+  private generateCacheKey(
+    request: AnalysisRequest,
+    config?: GenerationConfig
+  ): string {
     return JSON.stringify({
       model: this.currentModel,
       request: {
@@ -187,13 +199,15 @@ export class FirebaseGeminiService {
         rsi: request.rsi ? Math.round(request.rsi) : null,
         ema12: request.ema12 ? Math.round(request.ema12) : null,
         ema26: request.ema26 ? Math.round(request.ema26) : null,
-        macd: request.macd ? {
-          MACD: Math.round(request.macd.MACD),
-          signal: Math.round(request.macd.signal),
-          histogram: Math.round(request.macd.histogram)
-        } : null
+        macd: request.macd
+          ? {
+              MACD: Math.round(request.macd.MACD),
+              signal: Math.round(request.macd.signal),
+              histogram: Math.round(request.macd.histogram),
+            }
+          : null,
       },
-      config: config || {}
+      config: config || {},
     })
   }
 
@@ -201,7 +215,8 @@ export class FirebaseGeminiService {
     const entry = this.cache.get(cacheKey)
     if (!entry) return null
 
-    const isExpired = Date.now() - entry.timestamp > this.config.cacheOptions.ttl
+    const isExpired =
+      Date.now() - entry.timestamp > this.config.cacheOptions.ttl
     if (isExpired) {
       this.cache.delete(cacheKey)
       return null
@@ -212,8 +227,8 @@ export class FirebaseGeminiService {
       ...entry.response,
       metadata: {
         ...entry.response.metadata,
-        fromCache: true
-      }
+        fromCache: true,
+      },
     }
   }
 
@@ -222,13 +237,16 @@ export class FirebaseGeminiService {
       // Remove oldest entries
       const entries = Array.from(this.cache.entries())
       entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
-      const toRemove = entries.slice(0, Math.floor(this.config.cacheOptions.maxSize * 0.2))
+      const toRemove = entries.slice(
+        0,
+        Math.floor(this.config.cacheOptions.maxSize * 0.2)
+      )
       toRemove.forEach(([key]) => this.cache.delete(key))
     }
 
     this.cache.set(cacheKey, {
       response,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -241,13 +259,23 @@ export class FirebaseGeminiService {
       size: this.cache.size,
       hitRate: this.totalRequests > 0 ? this.cacheHits / this.totalRequests : 0,
       totalRequests: this.totalRequests,
-      cacheHits: this.cacheHits
+      cacheHits: this.cacheHits,
     }
   }
 
   // Prompt engineering
   private createPrompt(request: AnalysisRequest): string {
-    const { cryptoName, price, rsi, ema12, ema26, macd, priceAnalysis, timeframe, analysisType } = request
+    const {
+      cryptoName,
+      price,
+      rsi,
+      ema12,
+      ema26,
+      macd,
+      priceAnalysis,
+      timeframe,
+      analysisType,
+    } = request
 
     const baseData = `
 Current Data for ${cryptoName}:
@@ -258,13 +286,15 @@ EMA 26: ${ema26 || 'N/A'}
 MACD: ${macd ? `MACD: ${macd.MACD}, Signal: ${macd.signal}, Histogram: ${macd.histogram}` : 'N/A'}
 Timeframe: ${timeframe || '1d'}`
 
-    const priceAnalysisText = priceAnalysis ? `
+    const priceAnalysisText = priceAnalysis
+      ? `
 Price Analysis:
 - Entry Points: Conservative: $${priceAnalysis.entryPoints.conservative}, Moderate: $${priceAnalysis.entryPoints.moderate}, Aggressive: $${priceAnalysis.entryPoints.aggressive}
 - Stop Loss: $${priceAnalysis.stopLoss.price} (${priceAnalysis.stopLoss.method})
 - Profit Targets: T1: $${priceAnalysis.profitTargets.target1}, T2: $${priceAnalysis.profitTargets.target2}
 - Risk Assessment: ${priceAnalysis.riskAssessment}
-- Analysis Confidence: ${Math.round(priceAnalysis.confidence * 100)}%` : ''
+- Analysis Confidence: ${Math.round(priceAnalysis.confidence * 100)}%`
+      : ''
 
     if (analysisType === 'market-insights') {
       return `You are a professional crypto trading analyst providing real-time market insights for immediate decision-making.
@@ -326,16 +356,16 @@ Focus on education and comprehensive understanding rather than immediate actions
 
   // Content generation
   async generateAnalysis(
-    request: AnalysisRequest, 
+    request: AnalysisRequest,
     generationConfig?: Partial<GenerationConfig>
   ): Promise<AnalysisResponse> {
     try {
       // Validate request
       AnalysisRequestSchema.parse(request)
-      
+
       const config = {
         ...GenerationConfigSchema.parse(generationConfig || {}),
-        ...generationConfig
+        ...generationConfig,
       }
 
       // Check cache
@@ -354,25 +384,25 @@ Focus on education and comprehensive understanding rather than immediate actions
         safetySettings: [
           {
             category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+            threshold: 'BLOCK_MEDIUM_AND_ABOVE',
           },
           {
             category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+            threshold: 'BLOCK_MEDIUM_AND_ABOVE',
           },
           {
             category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+            threshold: 'BLOCK_MEDIUM_AND_ABOVE',
           },
           {
             category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          }
-        ]
+            threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+          },
+        ],
       })
 
       const prompt = this.createPrompt(request)
-      
+
       // Retry logic
       let lastError: Error
       for (let attempt = 1; attempt <= 3; attempt++) {
@@ -381,9 +411,9 @@ Focus on education and comprehensive understanding rather than immediate actions
             contents: [
               {
                 role: 'user',
-                parts: [{ text: prompt }]
-              }
-            ]
+                parts: [{ text: prompt }],
+              },
+            ],
           })
 
           const response = result.response
@@ -399,7 +429,7 @@ Focus on education and comprehensive understanding rather than immediate actions
 
           // Count tokens for the generated response
           const tokenCount = await model.countTokens({
-            contents: [{ role: 'model', parts: [{ text }] }]
+            contents: [{ role: 'model', parts: [{ text }] }],
           })
 
           this.totalTokens += tokenCount.totalTokens || 0
@@ -414,8 +444,8 @@ Focus on education and comprehensive understanding rather than immediate actions
               analysisType: request.analysisType,
               cryptoName: request.cryptoName,
               timeframe: request.timeframe,
-              retryCount: attempt - 1
-            }
+              retryCount: attempt - 1,
+            },
           }
 
           // Cache the response
@@ -423,8 +453,9 @@ Focus on education and comprehensive understanding rather than immediate actions
 
           return analysisResponse
         } catch (error) {
-          lastError = error instanceof Error ? error : new Error('Unknown error')
-          
+          lastError =
+            error instanceof Error ? error : new Error('Unknown error')
+
           if (error instanceof Error) {
             if (error.message.includes('Quota exceeded')) {
               throw new Error('Quota exceeded')
@@ -434,19 +465,23 @@ Focus on education and comprehensive understanding rather than immediate actions
             }
             if (attempt === 3) {
               this.lastError = error.message
-              throw new Error(`Analysis generation failed after ${attempt} retries: ${error.message}`)
+              throw new Error(
+                `Analysis generation failed after ${attempt} retries: ${error.message}`
+              )
             }
           }
-          
+
           // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, attempt * 1000))
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1000))
         }
       }
 
       throw new Error(`Analysis generation failed: ${lastError!.message}`)
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid analysis request: ${error.errors.map(e => e.message).join(', ')}`)
+        throw new Error(
+          `Invalid analysis request: ${error.errors.map((e) => e.message).join(', ')}`
+        )
       }
       if (error instanceof Error) {
         throw new Error(`Analysis generation failed: ${error.message}`)
@@ -462,10 +497,10 @@ Focus on education and comprehensive understanding rather than immediate actions
   ): Promise<void> {
     try {
       AnalysisRequestSchema.parse(request)
-      
+
       const config = {
         ...GenerationConfigSchema.parse(generationConfig || {}),
-        ...generationConfig
+        ...generationConfig,
       }
 
       this.totalRequests++
@@ -473,18 +508,18 @@ Focus on education and comprehensive understanding rather than immediate actions
 
       const model = this.vertexAI.preview.getGenerativeModel({
         model: this.currentModel,
-        generationConfig: config
+        generationConfig: config,
       })
 
       const prompt = this.createPrompt(request)
-      
+
       const result = await model.generateContentStream({
         contents: [
           {
             role: 'user',
-            parts: [{ text: prompt }]
-          }
-        ]
+            parts: [{ text: prompt }],
+          },
+        ],
       })
 
       for await (const chunk of result.stream) {
@@ -512,9 +547,10 @@ Focus on education and comprehensive understanding rather than immediate actions
         const result = await this.generateAnalysis(request)
         results.push({ success: true, result })
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error'
         results.push({ success: false, error: errorMessage })
-        
+
         if (!options.continueOnError) {
           break
         }
@@ -555,10 +591,10 @@ Focus on education and comprehensive understanding rather than immediate actions
     // Simplified calculation assuming 50/50 input/output split
     const inputTokens = tokens * 0.5
     const outputTokens = tokens * 0.5
-    
+
     const inputCost = (inputTokens / 1000) * 0.0005
     const outputCost = (outputTokens / 1000) * 0.0015
-    
+
     return inputCost + outputCost
   }
 
@@ -567,15 +603,16 @@ Focus on education and comprehensive understanding rather than immediate actions
       totalRequests: this.totalRequests,
       totalTokens: this.totalTokens,
       estimatedCost: this.calculateEstimatedCost(this.totalTokens),
-      averageTokensPerRequest: this.totalRequests > 0 ? this.totalTokens / this.totalRequests : 0,
-      modelUsage: { ...this.modelUsage }
+      averageTokensPerRequest:
+        this.totalRequests > 0 ? this.totalTokens / this.totalRequests : 0,
+      modelUsage: { ...this.modelUsage },
     }
   }
 
   getHealthStatus(): HealthStatus {
     const uptime = Date.now() - this.startTime
     const errorRate = this.totalRequests > 0 ? (this.lastError ? 1 : 0) : 0
-    
+
     let status: HealthStatus['status'] = 'healthy'
     if (errorRate > 0.1) {
       status = 'degraded'
@@ -589,7 +626,7 @@ Focus on education and comprehensive understanding rather than immediate actions
       uptime,
       version: '1.0.0',
       lastError: this.lastError,
-      requestsProcessed: this.totalRequests
+      requestsProcessed: this.totalRequests,
     }
   }
 }

@@ -22,7 +22,7 @@ describe('Article', () => {
     // Check for actual dark mode classes that exist in the component
     const textElement = screen.getByText(text)
     expect(textElement).toHaveClass('text-gray-700', 'dark:text-gray-300')
-    
+
     // Check confidence score has dark mode classes
     const confidenceElement = screen.getByText('Confidence Score: 50%')
     expect(confidenceElement).toHaveClass('text-blue-600', 'dark:text-blue-400')

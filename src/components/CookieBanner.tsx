@@ -16,7 +16,7 @@ export const CookieBanner: React.FC = () => {
   const [consent, setConsent] = useState<Omit<CookieConsent, 'timestamp'>>({
     necessary: true,
     analytics: false,
-    marketing: false
+    marketing: false,
   })
 
   useEffect(() => {
@@ -24,8 +24,10 @@ export const CookieBanner: React.FC = () => {
     if (savedConsent) {
       try {
         const parsed: CookieConsent = JSON.parse(savedConsent)
-        const isExpired = Date.now() - parsed.timestamp > CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000
-        
+        const isExpired =
+          Date.now() - parsed.timestamp >
+          CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+
         if (!isExpired) {
           setShowBanner(false)
           return
@@ -34,30 +36,30 @@ export const CookieBanner: React.FC = () => {
         console.error('Error parsing saved consent:', error)
       }
     }
-    
+
     setShowBanner(true)
   }, [])
 
   const saveConsent = (consentData: Omit<CookieConsent, 'timestamp'>) => {
     const consentWithTimestamp: CookieConsent = {
       ...consentData,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
-    
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(consentWithTimestamp))
-    
+
     if (consentData.analytics && typeof gtag === 'function') {
       gtag('consent', 'update', {
-        analytics_storage: 'granted'
+        analytics_storage: 'granted',
       })
     }
-    
+
     if (consentData.marketing && typeof gtag === 'function') {
       gtag('consent', 'update', {
-        ad_storage: 'granted'
+        ad_storage: 'granted',
       })
     }
-    
+
     setShowBanner(false)
     setShowPreferences(false)
   }
@@ -66,7 +68,7 @@ export const CookieBanner: React.FC = () => {
     saveConsent({
       necessary: true,
       analytics: true,
-      marketing: true
+      marketing: true,
     })
   }
 
@@ -93,11 +95,12 @@ export const CookieBanner: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                We use cookies to improve your experience, analyze site usage, and assist with marketing efforts. 
-                By continuing to use our site, you consent to our use of cookies.
+                We use cookies to improve your experience, analyze site usage,
+                and assist with marketing efforts. By continuing to use our
+                site, you consent to our use of cookies.
               </p>
-              <a 
-                href="/privacy" 
+              <a
+                href="/privacy"
                 className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -135,19 +138,32 @@ export const CookieBanner: React.FC = () => {
                   onClick={handleClosePreferences}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
-              
+
               <div className="space-y-6">
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white">Necessary Cookies</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        Necessary Cookies
+                      </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Necessary cookies are required for basic site functionality
+                        Necessary cookies are required for basic site
+                        functionality
                       </p>
                     </div>
                     <div className="ml-4">
@@ -164,10 +180,13 @@ export const CookieBanner: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white">Analytics Cookies</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        Analytics Cookies
+                      </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         <label htmlFor="analytics-cookies">
-                          Analytics cookies help us understand how you use our site
+                          Analytics cookies help us understand how you use our
+                          site
                         </label>
                       </p>
                     </div>
@@ -176,7 +195,12 @@ export const CookieBanner: React.FC = () => {
                         id="analytics-cookies"
                         type="checkbox"
                         checked={consent.analytics}
-                        onChange={(e) => setConsent(prev => ({ ...prev, analytics: e.target.checked }))}
+                        onChange={(e) =>
+                          setConsent((prev) => ({
+                            ...prev,
+                            analytics: e.target.checked,
+                          }))
+                        }
                         className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                       />
                     </div>
@@ -186,10 +210,13 @@ export const CookieBanner: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white">Marketing Cookies</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        Marketing Cookies
+                      </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         <label htmlFor="marketing-cookies">
-                          Marketing cookies help us show relevant ads and measure campaign effectiveness
+                          Marketing cookies help us show relevant ads and
+                          measure campaign effectiveness
                         </label>
                       </p>
                     </div>
@@ -198,7 +225,12 @@ export const CookieBanner: React.FC = () => {
                         id="marketing-cookies"
                         type="checkbox"
                         checked={consent.marketing}
-                        onChange={(e) => setConsent(prev => ({ ...prev, marketing: e.target.checked }))}
+                        onChange={(e) =>
+                          setConsent((prev) => ({
+                            ...prev,
+                            marketing: e.target.checked,
+                          }))
+                        }
                         className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                       />
                     </div>

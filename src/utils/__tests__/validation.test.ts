@@ -11,7 +11,7 @@ import {
   isValidCheckoutSessionParams,
   isValidArticleData,
   validateOrThrow,
-  ValidationError
+  ValidationError,
 } from '../validation'
 
 describe('StripeWebhookEventSchema', () => {
@@ -27,12 +27,14 @@ describe('StripeWebhookEventSchema', () => {
           current_period_end: 1706572800,
           cancel_at_period_end: false,
           items: {
-            data: [{
-              price: { id: 'price_1234567890' }
-            }]
-          }
-        }
-      }
+            data: [
+              {
+                price: { id: 'price_1234567890' },
+              },
+            ],
+          },
+        },
+      },
     }
 
     const result = StripeWebhookEventSchema.safeParse(validEvent)
@@ -48,8 +50,8 @@ describe('StripeWebhookEventSchema', () => {
           id: 'obj_1234567890',
           custom_field: 'custom_value',
           // Any structure is allowed for unknown events
-        }
-      }
+        },
+      },
     }
 
     const result = StripeWebhookEventSchema.safeParse(unknownEvent)
@@ -68,12 +70,14 @@ describe('StripeWebhookEventSchema', () => {
           current_period_end: 1706572800,
           cancel_at_period_end: false,
           items: {
-            data: [{
-              price: { id: 'price_1234567890' }
-            }]
-          }
-        }
-      }
+            data: [
+              {
+                price: { id: 'price_1234567890' },
+              },
+            ],
+          },
+        },
+      },
     }
 
     const result = StripeWebhookEventSchema.safeParse(eventWithoutMetadata)
@@ -88,7 +92,7 @@ describe('CheckoutSessionParamsSchema', () => {
       userId: 'user_123',
       userEmail: 'user@example.com',
       successUrl: 'https://example.com/success',
-      cancelUrl: 'https://example.com/cancel'
+      cancelUrl: 'https://example.com/cancel',
     }
 
     const result = CheckoutSessionParamsSchema.safeParse(validParams)
@@ -100,7 +104,7 @@ describe('CheckoutSessionParamsSchema', () => {
     const minimalParams = {
       priceId: 'price_1234567890',
       userId: 'user_123',
-      userEmail: 'user@example.com'
+      userEmail: 'user@example.com',
     }
 
     const result = CheckoutSessionParamsSchema.safeParse(minimalParams)
@@ -111,7 +115,7 @@ describe('CheckoutSessionParamsSchema', () => {
     const invalidParams = {
       priceId: 'price_1234567890',
       userId: 'user_123',
-      userEmail: 'invalid-email'
+      userEmail: 'invalid-email',
     }
 
     const result = CheckoutSessionParamsSchema.safeParse(invalidParams)
@@ -122,7 +126,7 @@ describe('CheckoutSessionParamsSchema', () => {
     const emptyParams = {
       priceId: '',
       userId: '',
-      userEmail: 'user@example.com'
+      userEmail: 'user@example.com',
     }
 
     const result = CheckoutSessionParamsSchema.safeParse(emptyParams)
@@ -135,7 +139,7 @@ describe('CheckoutSessionParamsSchema', () => {
       userId: 'user_123',
       userEmail: 'user@example.com',
       successUrl: 'not-a-url',
-      cancelUrl: 'https://valid-url.com'
+      cancelUrl: 'https://valid-url.com',
     }
 
     const result = CheckoutSessionParamsSchema.safeParse(invalidUrlParams)
@@ -146,16 +150,16 @@ describe('CheckoutSessionParamsSchema', () => {
 describe('ArticleDataSchema', () => {
   it('should validate complete article data', () => {
     const validData = {
-      price: 50000.50,
+      price: 50000.5,
       rsi: 65.5,
       ema12: 49500.25,
       ema26: 49000.75,
       macd: {
         MACD: 200.5,
         signal: 150.25,
-        histogram: 50.25
+        histogram: 50.25,
       },
-      cryptoName: 'Bitcoin'
+      cryptoName: 'Bitcoin',
     }
 
     const result = ArticleDataSchema.safeParse(validData)
@@ -170,7 +174,7 @@ describe('ArticleDataSchema', () => {
       ema12: null,
       ema26: null,
       macd: null,
-      cryptoName: 'Bitcoin'
+      cryptoName: 'Bitcoin',
     }
 
     const result = ArticleDataSchema.safeParse(dataWithNulls)
@@ -183,7 +187,7 @@ describe('ArticleDataSchema', () => {
       rsi: null,
       ema12: null,
       ema26: null,
-      macd: null
+      macd: null,
     }
 
     const result = ArticleDataSchema.safeParse(minimalData)
@@ -196,7 +200,7 @@ describe('ArticleDataSchema', () => {
       rsi: null,
       ema12: null,
       ema26: null,
-      macd: null
+      macd: null,
     }
 
     const result = ArticleDataSchema.safeParse(invalidData)
@@ -209,7 +213,7 @@ describe('ArticleDataSchema', () => {
       rsi: 150, // RSI should be 0-100
       ema12: null,
       ema26: null,
-      macd: null
+      macd: null,
     }
 
     const invalidRsiLow = {
@@ -217,7 +221,7 @@ describe('ArticleDataSchema', () => {
       rsi: -10, // RSI should be 0-100
       ema12: null,
       ema26: null,
-      macd: null
+      macd: null,
     }
 
     expect(ArticleDataSchema.safeParse(invalidRsiHigh).success).toBe(false)
@@ -230,7 +234,7 @@ describe('MACDDataSchema', () => {
     const validMacd = {
       MACD: 100.5,
       signal: 95.25,
-      histogram: 5.25
+      histogram: 5.25,
     }
 
     const result = MACDDataSchema.safeParse(validMacd)
@@ -240,7 +244,7 @@ describe('MACDDataSchema', () => {
   it('should reject incomplete MACD data', () => {
     const incompleteMacd = {
       MACD: 100.5,
-      signal: 95.25
+      signal: 95.25,
       // Missing histogram
     }
 
@@ -253,7 +257,7 @@ describe('LLMResponseSchema', () => {
   it('should validate LLM response', () => {
     const validResponse = {
       text: 'Bitcoin analysis shows bullish momentum.',
-      provider: 'openai'
+      provider: 'openai',
     }
 
     const result = LLMResponseSchema.safeParse(validResponse)
@@ -263,7 +267,7 @@ describe('LLMResponseSchema', () => {
   it('should reject empty text', () => {
     const invalidResponse = {
       text: '',
-      provider: 'openai'
+      provider: 'openai',
     }
 
     const result = LLMResponseSchema.safeParse(invalidResponse)
@@ -273,7 +277,7 @@ describe('LLMResponseSchema', () => {
   it('should reject invalid provider', () => {
     const invalidResponse = {
       text: 'Valid text',
-      provider: 'invalid_provider'
+      provider: 'invalid_provider',
     }
 
     const result = LLMResponseSchema.safeParse(invalidResponse)
@@ -286,7 +290,7 @@ describe('OllamaResponseSchema', () => {
     const validResponse = {
       response: 'Analysis complete',
       done: true,
-      model: 'llama3.1:8b'
+      model: 'llama3.1:8b',
     }
 
     const result = OllamaResponseSchema.safeParse(validResponse)
@@ -295,7 +299,7 @@ describe('OllamaResponseSchema', () => {
 
   it('should validate minimal Ollama response', () => {
     const minimalResponse = {
-      response: 'Analysis complete'
+      response: 'Analysis complete',
     }
 
     const result = OllamaResponseSchema.safeParse(minimalResponse)
@@ -306,11 +310,13 @@ describe('OllamaResponseSchema', () => {
 describe('OpenAIResponseSchema', () => {
   it('should validate OpenAI response', () => {
     const validResponse = {
-      choices: [{
-        message: {
-          content: 'Analysis complete'
-        }
-      }]
+      choices: [
+        {
+          message: {
+            content: 'Analysis complete',
+          },
+        },
+      ],
     }
 
     const result = OpenAIResponseSchema.safeParse(validResponse)
@@ -319,11 +325,13 @@ describe('OpenAIResponseSchema', () => {
 
   it('should validate response with null content', () => {
     const responseWithNull = {
-      choices: [{
-        message: {
-          content: null
-        }
-      }]
+      choices: [
+        {
+          message: {
+            content: null,
+          },
+        },
+      ],
     }
 
     const result = OpenAIResponseSchema.safeParse(responseWithNull)
@@ -332,7 +340,7 @@ describe('OpenAIResponseSchema', () => {
 
   it('should validate response with missing message', () => {
     const responseWithoutMessage = {
-      choices: [{}]
+      choices: [{}],
     }
 
     const result = OpenAIResponseSchema.safeParse(responseWithoutMessage)
@@ -341,7 +349,7 @@ describe('OpenAIResponseSchema', () => {
 
   it('should reject response without choices array', () => {
     const invalidResponse = {
-      choices: 'not-an-array'
+      choices: 'not-an-array',
     }
 
     const result = OpenAIResponseSchema.safeParse(invalidResponse)
@@ -356,7 +364,7 @@ describe('validateOrThrow', () => {
       rsi: 65,
       ema12: 49500,
       ema26: 49000,
-      macd: null
+      macd: null,
     }
 
     const result = validateOrThrow(ArticleDataSchema, validData, 'test data')
@@ -369,7 +377,7 @@ describe('validateOrThrow', () => {
       rsi: 65,
       ema12: 49500,
       ema26: 49000,
-      macd: null
+      macd: null,
     }
 
     expect(() => {
@@ -379,7 +387,7 @@ describe('validateOrThrow', () => {
 
   it('should include context in error message', () => {
     const invalidData = {
-      price: 'not-a-number'
+      price: 'not-a-number',
     }
 
     expect(() => {
@@ -396,12 +404,12 @@ describe('ValidationError', () => {
         expected: 'number',
         received: 'string',
         path: ['price'],
-        message: 'Expected number, received string'
-      }
+        message: 'Expected number, received string',
+      },
     ]
 
     const error = new ValidationError('Test validation error', mockErrors)
-    
+
     expect(error).toBeInstanceOf(Error)
     expect(error).toBeInstanceOf(ValidationError)
     expect(error.name).toBe('ValidationError')

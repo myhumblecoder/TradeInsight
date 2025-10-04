@@ -57,7 +57,7 @@ if (typeof global.fetch === 'undefined') {
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -81,7 +81,7 @@ const localStorageMock = {
 
 Object.defineProperty(global, 'localStorage', {
   value: localStorageMock,
-  writable: true
+  writable: true,
 })
 
 // Handle unhandled promise rejections in tests
@@ -102,7 +102,13 @@ const originalConsoleWarn = console.warn
 
 console.error = (...args: unknown[]) => {
   // Filter out logger-related errors
-  if (args.some(arg => typeof arg === 'string' && (arg.includes('pino') || arg.includes('logger')))) {
+  if (
+    args.some(
+      (arg) =>
+        typeof arg === 'string' &&
+        (arg.includes('pino') || arg.includes('logger'))
+    )
+  ) {
     return
   }
   originalConsoleError(...args)
@@ -110,7 +116,13 @@ console.error = (...args: unknown[]) => {
 
 console.warn = (...args: unknown[]) => {
   // Filter out logger-related warnings
-  if (args.some(arg => typeof arg === 'string' && (arg.includes('pino') || arg.includes('logger')))) {
+  if (
+    args.some(
+      (arg) =>
+        typeof arg === 'string' &&
+        (arg.includes('pino') || arg.includes('logger'))
+    )
+  ) {
     return
   }
   originalConsoleWarn(...args)

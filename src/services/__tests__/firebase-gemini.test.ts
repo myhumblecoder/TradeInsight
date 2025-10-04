@@ -1,37 +1,37 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { 
+import {
   FirebaseGeminiService,
   type GeminiConfig,
   type AnalysisRequest,
   type AnalysisResponse,
-  type GeminiModel
+  type GeminiModel,
 } from '../firebase-gemini'
 
 // Mock Vertex AI
 const mockGenerativeModel = {
   generateContent: vi.fn(),
   generateContentStream: vi.fn(),
-  countTokens: vi.fn()
+  countTokens: vi.fn(),
 }
 
 const mockVertexAI = {
   preview: {
-    getGenerativeModel: vi.fn(() => mockGenerativeModel)
-  }
+    getGenerativeModel: vi.fn(() => mockGenerativeModel),
+  },
 }
 
 vi.mock('@google-cloud/vertexai', () => ({
-  VertexAI: vi.fn(() => mockVertexAI)
+  VertexAI: vi.fn(() => mockVertexAI),
 }))
 
 // Mock Firebase Functions
 const mockFunctions = {
-  httpsCallable: vi.fn()
+  httpsCallable: vi.fn(),
 }
 
 vi.mock('firebase/functions', () => ({
   getFunctions: () => mockFunctions,
-  httpsCallable: (...args: unknown[]) => mockFunctions.httpsCallable(...args)
+  httpsCallable: (...args: unknown[]) => mockFunctions.httpsCallable(...args),
 }))
 
 describe('FirebaseGeminiService', () => {
@@ -39,7 +39,7 @@ describe('FirebaseGeminiService', () => {
   const mockConfig: GeminiConfig = {
     projectId: 'test-project-id',
     location: 'us-central1',
-    apiKey: 'test-api-key'
+    apiKey: 'test-api-key',
   }
 
   const mockAnalysisRequest: AnalysisRequest = {
@@ -52,41 +52,45 @@ describe('FirebaseGeminiService', () => {
     macd: {
       MACD: 150,
       signal: 120,
-      histogram: 30
+      histogram: 30,
     },
     priceAnalysis: {
       entryPoints: {
         conservative: 43000,
         moderate: 44000,
-        aggressive: 45000
+        aggressive: 45000,
       },
       stopLoss: {
         price: 40000,
-        method: 'technical'
+        method: 'technical',
       },
       profitTargets: {
         target1: 47000,
-        target2: 50000
+        target2: 50000,
       },
       riskAssessment: 'medium',
-      confidence: 0.75
+      confidence: 0.75,
     },
-    analysisType: 'technical-report'
+    analysisType: 'technical-report',
   }
 
   const mockGeminiResponse = {
     response: {
       text: () => 'Bitcoin is showing bullish momentum with RSI at 65...',
-      candidates: [{
-        content: {
-          parts: [{
-            text: 'Bitcoin is showing bullish momentum with RSI at 65...'
-          }]
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                text: 'Bitcoin is showing bullish momentum with RSI at 65...',
+              },
+            ],
+          },
+          finishReason: 'STOP',
+          safetyRatings: [],
         },
-        finishReason: 'STOP',
-        safetyRatings: []
-      }]
-    }
+      ],
+    },
   }
 
   beforeEach(() => {
@@ -113,19 +117,21 @@ describe('FirebaseGeminiService', () => {
     })
 
     it('should initialize with default location if not provided', () => {
-      const configWithoutLocation = { 
+      const configWithoutLocation = {
         projectId: 'test-project',
-        apiKey: 'test-key'
+        apiKey: 'test-key',
       }
-      
-      expect(() => new FirebaseGeminiService(configWithoutLocation)).not.toThrow()
+
+      expect(
+        () => new FirebaseGeminiService(configWithoutLocation)
+      ).not.toThrow()
     })
   })
 
   describe('model management', () => {
     it('should get available models correctly', () => {
       const models = geminiService.getAvailableModels()
-      
+
       expect(models).toContain('gemini-pro')
       expect(models).toContain('gemini-pro-vision')
       expect(models.length).toBeGreaterThan(0)
@@ -133,7 +139,9 @@ describe('FirebaseGeminiService', () => {
 
     it('should validate model selection', () => {
       expect(() => geminiService.validateModel('gemini-pro')).not.toThrow()
-      expect(() => geminiService.validateModel('invalid-model' as GeminiModel)).toThrow()
+      expect(() =>
+        geminiService.validateModel('invalid-model' as GeminiModel)
+      ).toThrow()
     })
 
     it('should set model correctly', () => {
@@ -141,7 +149,7 @@ describe('FirebaseGeminiService', () => {
       // Model should be set internally - verify through generation call
       expect(mockVertexAI.preview.getGenerativeModel).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'gemini-pro-vision'
+          model: 'gemini-pro-vision',
         })
       )
     })
@@ -158,11 +166,11 @@ describe('FirebaseGeminiService', () => {
               role: 'user',
               parts: expect.arrayContaining([
                 expect.objectContaining({
-                  text: expect.stringContaining('Bitcoin')
-                })
-              ])
-            })
-          ])
+                  text: expect.stringContaining('Bitcoin'),
+                }),
+              ]),
+            }),
+          ]),
         })
       )
 
@@ -175,15 +183,15 @@ describe('FirebaseGeminiService', () => {
         metadata: expect.objectContaining({
           analysisType: 'technical-report',
           cryptoName: 'Bitcoin',
-          timeframe: '1d'
-        })
+          timeframe: '1d',
+        }),
       })
     })
 
     it('should handle different analysis types', async () => {
       const marketInsightsRequest = {
         ...mockAnalysisRequest,
-        analysisType: 'market-insights' as const
+        analysisType: 'market-insights' as const,
       }
 
       await geminiService.generateAnalysis(marketInsightsRequest)
@@ -197,15 +205,14 @@ describe('FirebaseGeminiService', () => {
         stream: async function* () {
           yield { text: () => 'Partial text 1...' }
           yield { text: () => 'Partial text 2...' }
-        }
+        },
       }
 
       mockGenerativeModel.generateContentStream.mockResolvedValue(mockStream)
 
       const chunks: string[] = []
-      await geminiService.generateAnalysisStream(
-        mockAnalysisRequest,
-        (chunk) => chunks.push(chunk)
+      await geminiService.generateAnalysisStream(mockAnalysisRequest, (chunk) =>
+        chunks.push(chunk)
       )
 
       expect(chunks).toEqual(['Partial text 1...', 'Partial text 2...'])
@@ -225,7 +232,7 @@ describe('FirebaseGeminiService', () => {
       const invalidRequest = {
         ...mockAnalysisRequest,
         price: -1000, // Invalid price
-        cryptoName: '' // Empty name
+        cryptoName: '', // Empty name
       }
 
       await expect(
@@ -238,11 +245,13 @@ describe('FirebaseGeminiService', () => {
     it('should create technical report prompt correctly', async () => {
       await geminiService.generateAnalysis({
         ...mockAnalysisRequest,
-        analysisType: 'technical-report'
+        analysisType: 'technical-report',
       })
 
-      const prompt = mockGenerativeModel.generateContent.mock.calls[0][0].contents[0].parts[0].text
-      
+      const prompt =
+        mockGenerativeModel.generateContent.mock.calls[0][0].contents[0]
+          .parts[0].text
+
       expect(prompt).toContain('technical analysis')
       expect(prompt).toContain('Bitcoin')
       expect(prompt).toContain('$45000')
@@ -253,11 +262,13 @@ describe('FirebaseGeminiService', () => {
     it('should create market insights prompt correctly', async () => {
       await geminiService.generateAnalysis({
         ...mockAnalysisRequest,
-        analysisType: 'market-insights'
+        analysisType: 'market-insights',
       })
 
-      const prompt = mockGenerativeModel.generateContent.mock.calls[0][0].contents[0].parts[0].text
-      
+      const prompt =
+        mockGenerativeModel.generateContent.mock.calls[0][0].contents[0]
+          .parts[0].text
+
       expect(prompt).toContain('market insights')
       expect(prompt).toContain('trading signals')
       expect(prompt).toContain('immediate')
@@ -266,8 +277,10 @@ describe('FirebaseGeminiService', () => {
     it('should include price analysis when available', async () => {
       await geminiService.generateAnalysis(mockAnalysisRequest)
 
-      const prompt = mockGenerativeModel.generateContent.mock.calls[0][0].contents[0].parts[0].text
-      
+      const prompt =
+        mockGenerativeModel.generateContent.mock.calls[0][0].contents[0]
+          .parts[0].text
+
       expect(prompt).toContain('Entry Points')
       expect(prompt).toContain('Stop Loss')
       expect(prompt).toContain('Profit Targets')
@@ -278,12 +291,14 @@ describe('FirebaseGeminiService', () => {
       const minimalRequest = {
         cryptoName: 'Bitcoin',
         price: 45000,
-        analysisType: 'technical-report' as const
+        analysisType: 'technical-report' as const,
       }
 
       await geminiService.generateAnalysis(minimalRequest)
 
-      const prompt = mockGenerativeModel.generateContent.mock.calls[0][0].contents[0].parts[0].text
+      const prompt =
+        mockGenerativeModel.generateContent.mock.calls[0][0].contents[0]
+          .parts[0].text
       expect(prompt).toContain('Bitcoin')
       expect(prompt).toContain('45000')
     })
@@ -299,8 +314,8 @@ describe('FirebaseGeminiService', () => {
         expect.arrayContaining([
           expect.objectContaining({
             category: expect.any(String),
-            threshold: expect.any(String)
-          })
+            threshold: expect.any(String),
+          }),
         ])
       )
     })
@@ -309,12 +324,14 @@ describe('FirebaseGeminiService', () => {
       const blockedResponse = {
         response: {
           text: () => '',
-          candidates: [{
-            content: { parts: [] },
-            finishReason: 'SAFETY',
-            safetyRatings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT' }]
-          }]
-        }
+          candidates: [
+            {
+              content: { parts: [] },
+              finishReason: 'SAFETY',
+              safetyRatings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT' }],
+            },
+          ],
+        },
       }
 
       mockGenerativeModel.generateContent.mockResolvedValue(blockedResponse)
@@ -329,7 +346,7 @@ describe('FirebaseGeminiService', () => {
     it('should cache analysis results', async () => {
       // First call
       const result1 = await geminiService.generateAnalysis(mockAnalysisRequest)
-      
+
       // Second identical call
       const result2 = await geminiService.generateAnalysis(mockAnalysisRequest)
 
@@ -341,14 +358,14 @@ describe('FirebaseGeminiService', () => {
     it('should respect cache expiration', async () => {
       const shortCacheService = new FirebaseGeminiService({
         ...mockConfig,
-        cacheOptions: { ttl: 100 } // 100ms TTL
+        cacheOptions: { ttl: 100 }, // 100ms TTL
       })
 
       await shortCacheService.generateAnalysis(mockAnalysisRequest)
-      
+
       // Wait for cache to expire
-      await new Promise(resolve => setTimeout(resolve, 150))
-      
+      await new Promise((resolve) => setTimeout(resolve, 150))
+
       await shortCacheService.generateAnalysis(mockAnalysisRequest)
 
       expect(mockGenerativeModel.generateContent).toHaveBeenCalledTimes(2)
@@ -356,20 +373,20 @@ describe('FirebaseGeminiService', () => {
 
     it('should provide cache statistics', () => {
       const stats = geminiService.getCacheStats()
-      
+
       expect(stats).toEqual({
         size: expect.any(Number),
         hitRate: expect.any(Number),
         totalRequests: expect.any(Number),
-        cacheHits: expect.any(Number)
+        cacheHits: expect.any(Number),
       })
     })
 
     it('should clear cache when requested', async () => {
       await geminiService.generateAnalysis(mockAnalysisRequest)
-      
+
       geminiService.clearCache()
-      
+
       const stats = geminiService.getCacheStats()
       expect(stats.size).toBe(0)
     })
@@ -396,17 +413,17 @@ describe('FirebaseGeminiService', () => {
       await geminiService.generateAnalysis(mockAnalysisRequest)
       await geminiService.generateAnalysis({
         ...mockAnalysisRequest,
-        cryptoName: 'Ethereum'
+        cryptoName: 'Ethereum',
       })
 
       const analytics = geminiService.getUsageAnalytics()
-      
+
       expect(analytics).toEqual({
         totalRequests: expect.any(Number),
         totalTokens: expect.any(Number),
         estimatedCost: expect.any(Number),
         averageTokensPerRequest: expect.any(Number),
-        modelUsage: expect.any(Object)
+        modelUsage: expect.any(Object),
       })
     })
   })
@@ -420,7 +437,9 @@ describe('FirebaseGeminiService', () => {
       const result = await geminiService.generateAnalysis(mockAnalysisRequest)
 
       expect(mockGenerativeModel.generateContent).toHaveBeenCalledTimes(2)
-      expect(result.text).toBe('Bitcoin is showing bullish momentum with RSI at 65...')
+      expect(result.text).toBe(
+        'Bitcoin is showing bullish momentum with RSI at 65...'
+      )
     })
 
     it('should fail after max retries', async () => {
@@ -459,13 +478,13 @@ describe('FirebaseGeminiService', () => {
       const requests = [
         { ...mockAnalysisRequest, cryptoName: 'Bitcoin' },
         { ...mockAnalysisRequest, cryptoName: 'Ethereum' },
-        { ...mockAnalysisRequest, cryptoName: 'Solana' }
+        { ...mockAnalysisRequest, cryptoName: 'Solana' },
       ]
 
       const results = await geminiService.generateAnalysisBatch(requests)
 
       expect(results).toHaveLength(3)
-      expect(results.every(r => r.text.length > 0)).toBe(true)
+      expect(results.every((r) => r.text.length > 0)).toBe(true)
     })
 
     it('should handle partial batch failures', async () => {
@@ -477,11 +496,11 @@ describe('FirebaseGeminiService', () => {
       const requests = [
         { ...mockAnalysisRequest, cryptoName: 'Bitcoin' },
         { ...mockAnalysisRequest, cryptoName: 'Ethereum' },
-        { ...mockAnalysisRequest, cryptoName: 'Solana' }
+        { ...mockAnalysisRequest, cryptoName: 'Solana' },
       ]
 
       const results = await geminiService.generateAnalysisBatch(requests, {
-        continueOnError: true
+        continueOnError: true,
       })
 
       expect(results).toHaveLength(3)
@@ -497,7 +516,7 @@ describe('FirebaseGeminiService', () => {
         temperature: 0.8,
         maxOutputTokens: 500,
         topP: 0.9,
-        topK: 40
+        topK: 40,
       })
 
       const callConfig = mockGenerativeModel.generateContent.mock.calls[0][0]
@@ -505,7 +524,7 @@ describe('FirebaseGeminiService', () => {
         temperature: 0.8,
         maxOutputTokens: 500,
         topP: 0.9,
-        topK: 40
+        topK: 40,
       })
     })
 
@@ -517,7 +536,7 @@ describe('FirebaseGeminiService', () => {
         temperature: 0.7,
         maxOutputTokens: 1024,
         topP: 0.8,
-        topK: 40
+        topK: 40,
       })
     })
   })
@@ -525,13 +544,13 @@ describe('FirebaseGeminiService', () => {
   describe('health and monitoring', () => {
     it('should provide service health status', () => {
       const health = geminiService.getHealthStatus()
-      
+
       expect(health).toEqual({
         status: 'healthy',
         uptime: expect.any(Number),
         version: expect.any(String),
         lastError: null,
-        requestsProcessed: expect.any(Number)
+        requestsProcessed: expect.any(Number),
       })
     })
 

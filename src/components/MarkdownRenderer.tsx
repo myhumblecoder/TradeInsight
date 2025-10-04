@@ -6,7 +6,10 @@ interface MarkdownRendererProps {
   className?: string
 }
 
-export function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
+export function MarkdownRenderer({
+  content,
+  className = '',
+}: MarkdownRendererProps) {
   return (
     <div className={`markdown-content ${className}`}>
       <ReactMarkdown
@@ -33,14 +36,14 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
               {children}
             </h4>
           ),
-          
+
           // Paragraphs
           p: ({ children }) => (
             <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
               {children}
             </p>
           ),
-          
+
           // Lists
           ul: ({ children }) => (
             <ul className="list-disc list-inside mb-4 space-y-1 text-gray-700 dark:text-gray-300">
@@ -57,7 +60,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
               {children}
             </li>
           ),
-          
+
           // Links
           a: ({ href, children }) => (
             <a
@@ -69,7 +72,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
               {children}
             </a>
           ),
-          
+
           // Code
           code: ({ children, className }) => {
             const isBlock = className?.includes('language-')
@@ -86,14 +89,14 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
               </code>
             )
           },
-          
+
           // Blockquotes
           blockquote: ({ children }) => (
             <blockquote className="border-l-4 border-blue-500 pl-4 mb-4 italic text-gray-600 dark:text-gray-400">
               {children}
             </blockquote>
           ),
-          
+
           // Tables
           table: ({ children }) => (
             <div className="overflow-x-auto mb-4">
@@ -103,9 +106,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
             </div>
           ),
           thead: ({ children }) => (
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              {children}
-            </thead>
+            <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>
           ),
           tbody: ({ children }) => (
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -123,12 +124,12 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
               {children}
             </td>
           ),
-          
+
           // Horizontal rule
           hr: () => (
             <hr className="my-6 border-gray-200 dark:border-gray-700" />
           ),
-          
+
           // Strong and emphasis
           strong: ({ children }) => (
             <strong className="font-semibold text-gray-900 dark:text-white">

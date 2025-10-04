@@ -34,10 +34,18 @@ This is a **bold** statement about the market.
 
     render(<MarkdownRenderer content={content} />)
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('H1 Header')
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('H2 Header')
-    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('H3 Header')
-    expect(screen.getByRole('heading', { level: 4 })).toHaveTextContent('H4 Header')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'H1 Header'
+    )
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
+      'H2 Header'
+    )
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(
+      'H3 Header'
+    )
+    expect(screen.getByRole('heading', { level: 4 })).toHaveTextContent(
+      'H4 Header'
+    )
   })
 
   it('should render lists correctly', () => {
@@ -89,7 +97,9 @@ function test() {
 
     const blockquote = document.querySelector('blockquote')
     expect(blockquote).toBeInTheDocument()
-    expect(blockquote).toHaveTextContent('This is a blockquote with multiple lines')
+    expect(blockquote).toHaveTextContent(
+      'This is a blockquote with multiple lines'
+    )
   })
 
   it('should render tables when using GFM', () => {

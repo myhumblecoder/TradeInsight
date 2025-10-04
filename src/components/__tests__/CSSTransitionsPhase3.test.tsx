@@ -16,7 +16,7 @@ vi.mock('../../hooks/useTopCryptos', () => ({
         current_price: 50000,
         market_cap: 1000000000000,
         price_change_percentage_24h: 2.5,
-      }
+      },
     ],
     loading: false,
     error: null,
@@ -27,10 +27,24 @@ vi.mock('../../hooks/useCoinbaseData', () => ({
   useCoinbaseData: () => ({
     price: 50000,
     candles: [
-      { time: '2024-01-01', open: 49000, high: 51000, low: 48000, close: 50000, volume: 1000 }
+      {
+        time: '2024-01-01',
+        open: 49000,
+        high: 51000,
+        low: 48000,
+        close: 50000,
+        volume: 1000,
+      },
     ],
     ohlcvData: [
-      { time: '2024-01-01', open: 49000, high: 51000, low: 48000, close: 50000, volume: 1000 }
+      {
+        time: '2024-01-01',
+        open: 49000,
+        high: 51000,
+        low: 48000,
+        close: 50000,
+        volume: 1000,
+      },
     ],
     loading: false,
     error: null,
@@ -64,7 +78,7 @@ describe.skip('CSS Transitions - Phase 3', () => {
   describe('Fade transitions between pages', () => {
     it.skip('should have smooth CSS transitions when navigating between pages', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/']}>
@@ -74,8 +88,10 @@ describe.skip('CSS Transitions - Phase 3', () => {
       )
 
       // Find the page container
-      const pageContainer = screen.getByRole('main') || screen.getByText('Top Cryptocurrencies').closest('div')
-      
+      const pageContainer =
+        screen.getByRole('main') ||
+        screen.getByText('Top Cryptocurrencies').closest('div')
+
       // Should have transition CSS classes
       expect(pageContainer).toHaveClass('transition-opacity')
       // Check that the page container has the proper CSS classes for transitions
@@ -86,15 +102,21 @@ describe.skip('CSS Transitions - Phase 3', () => {
       await user.click(bitcoinLink)
 
       // Should transition smoothly to new page
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
     })
 
     it('should maintain opacity during transitions', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/']}>
@@ -111,16 +133,22 @@ describe.skip('CSS Transitions - Phase 3', () => {
       const bitcoinLink = screen.getByRole('link', { name: /bitcoin/i })
       await user.click(bitcoinLink)
 
-      await waitFor(() => {
-        // New page should appear smoothly
-        const newPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(newPage).toBeVisible()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          // New page should appear smoothly
+          const newPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(newPage).toBeVisible()
+        },
+        { timeout: 5000 }
+      )
     })
 
     it('should complete transitions within 200ms', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/']}>
@@ -130,14 +158,20 @@ describe.skip('CSS Transitions - Phase 3', () => {
       )
 
       const bitcoinLink = screen.getByRole('link', { name: /bitcoin/i })
-      
+
       const startTime = performance.now()
       await user.click(bitcoinLink)
 
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       const endTime = performance.now()
       const transitionTime = endTime - startTime
@@ -150,7 +184,7 @@ describe.skip('CSS Transitions - Phase 3', () => {
   describe('No layout shifts during transitions', () => {
     it('should maintain consistent layout structure during page changes', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/']}>
@@ -160,30 +194,46 @@ describe.skip('CSS Transitions - Phase 3', () => {
       )
 
       // Get initial layout measurements
-      const initialHeader = screen.getByRole('banner') || screen.getByText('TradeInsight').closest('header')
+      const initialHeader =
+        screen.getByRole('banner') ||
+        screen.getByText('TradeInsight').closest('header')
       const initialHeaderRect = initialHeader?.getBoundingClientRect()
 
       // Navigate to detail page
       const bitcoinLink = screen.getByRole('link', { name: /bitcoin/i })
       await user.click(bitcoinLink)
 
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       // Check that header layout hasn't shifted
-      const newHeader = screen.getByRole('banner') || screen.getByText(/bitcoin/i).closest('header')
+      const newHeader =
+        screen.getByRole('banner') ||
+        screen.getByText(/bitcoin/i).closest('header')
       const newHeaderRect = newHeader?.getBoundingClientRect()
 
       // Header should maintain same position (allowing for small differences due to content)
-      expect(Math.abs((newHeaderRect?.top || 0) - (initialHeaderRect?.top || 0))).toBeLessThan(5)
-      expect(Math.abs((newHeaderRect?.height || 0) - (initialHeaderRect?.height || 0))).toBeLessThan(10)
+      expect(
+        Math.abs((newHeaderRect?.top || 0) - (initialHeaderRect?.top || 0))
+      ).toBeLessThan(5)
+      expect(
+        Math.abs(
+          (newHeaderRect?.height || 0) - (initialHeaderRect?.height || 0)
+        )
+      ).toBeLessThan(10)
     })
 
     it('should not cause content jumping during transitions', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/']}>
@@ -197,10 +247,15 @@ describe.skip('CSS Transitions - Phase 3', () => {
       await user.click(bitcoinLink)
 
       // Should not show error states or broken layouts
-      await waitFor(() => {
-        expect(screen.queryByText(/error/i)).not.toBeInTheDocument()
-        expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          expect(screen.queryByText(/error/i)).not.toBeInTheDocument()
+          expect(
+            screen.queryByText(/something went wrong/i)
+          ).not.toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
     })
   })
 
@@ -209,7 +264,7 @@ describe.skip('CSS Transitions - Phase 3', () => {
       // Mock reduced motion preference
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
-        value: vi.fn().mockImplementation(query => ({
+        value: vi.fn().mockImplementation((query) => ({
           matches: query === '(prefers-reduced-motion: reduce)',
           media: query,
           onchange: null,
@@ -231,9 +286,11 @@ describe.skip('CSS Transitions - Phase 3', () => {
 
       // Should still render properly even with reduced motion
       expect(screen.getByText('Top Cryptocurrencies')).toBeInTheDocument()
-      
+
       // Page container should still exist but may have different transition classes
-      const pageContainer = screen.getByRole('main') || screen.getByText('Top Cryptocurrencies').closest('div')
+      const pageContainer =
+        screen.getByRole('main') ||
+        screen.getByText('Top Cryptocurrencies').closest('div')
       expect(pageContainer).toBeInTheDocument()
     })
 
@@ -243,7 +300,7 @@ describe.skip('CSS Transitions - Phase 3', () => {
       // Mock reduced motion preference
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
-        value: vi.fn().mockImplementation(query => ({
+        value: vi.fn().mockImplementation((query) => ({
           matches: query === '(prefers-reduced-motion: reduce)',
           media: query,
           onchange: null,
@@ -267,17 +324,23 @@ describe.skip('CSS Transitions - Phase 3', () => {
       const bitcoinLink = screen.getByRole('link', { name: /bitcoin/i })
       await user.click(bitcoinLink)
 
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
     })
   })
 
   describe('CSS-only implementation', () => {
     it('should use CSS classes for transitions, not JavaScript animations', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/']}>
@@ -287,19 +350,27 @@ describe.skip('CSS Transitions - Phase 3', () => {
       )
 
       // Look for CSS transition classes
-      const pageContent = screen.getByRole('main') || document.querySelector('[class*="transition"]')
-      
+      const pageContent =
+        screen.getByRole('main') ||
+        document.querySelector('[class*="transition"]')
+
       // Should have CSS transition classes applied
       expect(pageContent).toBeInTheDocument()
-      
+
       // Navigate and verify CSS handles the transition
       const bitcoinLink = screen.getByRole('link', { name: /bitcoin/i })
       await user.click(bitcoinLink)
 
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       // Should not rely on setTimeout or JavaScript-based animations
       // (This is verified by the fact that transitions complete quickly without JS delays)
@@ -315,8 +386,10 @@ describe.skip('CSS Transitions - Phase 3', () => {
       )
 
       // Look for elements that use CSS transforms and opacity
-      const pageElements = document.querySelectorAll('[class*="transition"], [class*="opacity"], [class*="transform"]')
-      
+      const pageElements = document.querySelectorAll(
+        '[class*="transition"], [class*="opacity"], [class*="transform"]'
+      )
+
       // Should find transition-related CSS classes
       expect(pageElements.length).toBeGreaterThan(0)
     })
@@ -325,7 +398,7 @@ describe.skip('CSS Transitions - Phase 3', () => {
   describe('Route-based transition triggers', () => {
     it('should trigger transitions on route changes', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/']}>
@@ -342,10 +415,16 @@ describe.skip('CSS Transitions - Phase 3', () => {
       await user.click(bitcoinLink)
 
       // Should transition to new route
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       // Old route content should be replaced
       expect(screen.queryByText('Top Cryptocurrencies')).not.toBeInTheDocument()
@@ -353,7 +432,7 @@ describe.skip('CSS Transitions - Phase 3', () => {
 
     it('should handle back navigation transitions', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/crypto/bitcoin']}>
@@ -363,29 +442,40 @@ describe.skip('CSS Transitions - Phase 3', () => {
       )
 
       // Should start on detail page
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       // Find and click back button
       const backButton = screen.getByRole('link', { name: /←/i })
       await user.click(backButton)
 
       // Should transition back to overview
-      await waitFor(() => {
-        expect(screen.getByText('Top Cryptocurrencies')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          expect(screen.getByText('Top Cryptocurrencies')).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
     })
   })
 
   describe('Performance requirements', () => {
     it('should maintain 60fps during transitions', async () => {
       const user = userEvent.setup()
-      
+
       // Mock performance monitoring
       const originalNow = performance.now
-      performance.now = vi.fn().mockImplementation(() => originalNow.call(performance))
+      performance.now = vi
+        .fn()
+        .mockImplementation(() => originalNow.call(performance))
 
       render(
         <ThemeProvider>
@@ -396,15 +486,21 @@ describe.skip('CSS Transitions - Phase 3', () => {
       )
 
       const startTime = performance.now()
-      
+
       // Navigate
       const bitcoinLink = screen.getByRole('link', { name: /bitcoin/i })
       await user.click(bitcoinLink)
 
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       const endTime = performance.now()
       const duration = endTime - startTime
@@ -418,7 +514,7 @@ describe.skip('CSS Transitions - Phase 3', () => {
 
     it('should have low Cumulative Layout Shift (CLS)', async () => {
       const user = userEvent.setup()
-      
+
       render(
         <ThemeProvider>
           <MemoryRouter initialEntries={['/']}>
@@ -434,16 +530,24 @@ describe.skip('CSS Transitions - Phase 3', () => {
       const bitcoinLink = screen.getByRole('link', { name: /bitcoin/i })
       await user.click(bitcoinLink)
 
-      await waitFor(() => {
-        const detailPage = screen.getByRole('heading', { level: 1, name: /bitcoin/i })
-        expect(detailPage).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          const detailPage = screen.getByRole('heading', {
+            level: 1,
+            name: /bitcoin/i,
+          })
+          expect(detailPage).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       // Layout should remain stable (body dimensions shouldn't change drastically)
       const newLayout = document.body.getBoundingClientRect()
-      
+
       // Allow for small changes but prevent major shifts
-      expect(Math.abs(newLayout.height - initialLayout.height)).toBeLessThan(100)
+      expect(Math.abs(newLayout.height - initialLayout.height)).toBeLessThan(
+        100
+      )
     })
   })
 })

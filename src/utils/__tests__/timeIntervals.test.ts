@@ -1,12 +1,26 @@
 import { describe, it, expect } from 'vitest'
-import { TimeInterval, getTimeIntervalConfig, formatTimeInterval, getGranularityFromInterval } from '../timeIntervals'
+import {
+  TimeInterval,
+  getTimeIntervalConfig,
+  formatTimeInterval,
+  getGranularityFromInterval,
+} from '../timeIntervals'
 
 describe('Time Intervals Utils', () => {
   describe('getTimeIntervalConfig', () => {
     it('should return correct config for all supported intervals', () => {
-      const intervals: TimeInterval[] = ['5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M']
-      
-      intervals.forEach(interval => {
+      const intervals: TimeInterval[] = [
+        '5m',
+        '15m',
+        '30m',
+        '1h',
+        '4h',
+        '1d',
+        '1w',
+        '1M',
+      ]
+
+      intervals.forEach((interval) => {
         const config = getTimeIntervalConfig(interval)
         expect(config).toBeDefined()
         expect(config.label).toBeDefined()
@@ -16,7 +30,9 @@ describe('Time Intervals Utils', () => {
     })
 
     it('should throw error for unsupported interval', () => {
-      expect(() => getTimeIntervalConfig('invalid' as TimeInterval)).toThrow('Unsupported time interval')
+      expect(() => getTimeIntervalConfig('invalid' as TimeInterval)).toThrow(
+        'Unsupported time interval'
+      )
     })
 
     it('should return correct seconds for each interval', () => {

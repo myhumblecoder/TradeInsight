@@ -1,4 +1,12 @@
-export type TimeInterval = '5m' | '15m' | '30m' | '1h' | '4h' | '1d' | '1w' | '1M'
+export type TimeInterval =
+  | '5m'
+  | '15m'
+  | '30m'
+  | '1h'
+  | '4h'
+  | '1d'
+  | '1w'
+  | '1M'
 
 export interface TimeIntervalConfig {
   label: string
@@ -12,53 +20,55 @@ export const TIME_INTERVALS: Record<TimeInterval, TimeIntervalConfig> = {
     label: '5 Minutes',
     seconds: 300,
     category: 'Short-term',
-    useCase: 'Scalping, ultra-short-term'
+    useCase: 'Scalping, ultra-short-term',
   },
   '15m': {
-    label: '15 Minutes', 
+    label: '15 Minutes',
     seconds: 900,
     category: 'Short-term',
-    useCase: 'Scalping, short-term trades'
+    useCase: 'Scalping, short-term trades',
   },
   '30m': {
     label: '30 Minutes',
     seconds: 1800,
     category: 'Medium-term',
-    useCase: 'Swing trading, intraday'
+    useCase: 'Swing trading, intraday',
   },
   '1h': {
     label: '1 Hour',
     seconds: 3600,
     category: 'Medium-term',
-    useCase: 'Swing trading, intraday'
+    useCase: 'Swing trading, intraday',
   },
   '4h': {
     label: '4 Hours',
     seconds: 14400,
     category: 'Medium-term',
-    useCase: 'Swing trading, daily analysis'
+    useCase: 'Swing trading, daily analysis',
   },
   '1d': {
     label: '1 Day',
     seconds: 86400,
     category: 'Long-term',
-    useCase: 'Position trading, investing'
+    useCase: 'Position trading, investing',
   },
   '1w': {
     label: '1 Week',
     seconds: 604800,
     category: 'Long-term',
-    useCase: 'Position trading, long-term investing'
+    useCase: 'Position trading, long-term investing',
   },
   '1M': {
     label: '1 Month',
     seconds: 2592000, // 30 days * 24 hours * 60 minutes * 60 seconds
     category: 'Long-term',
-    useCase: 'Long-term investing, macro trends'
-  }
+    useCase: 'Long-term investing, macro trends',
+  },
 }
 
-export const getTimeIntervalConfig = (interval: TimeInterval): TimeIntervalConfig => {
+export const getTimeIntervalConfig = (
+  interval: TimeInterval
+): TimeIntervalConfig => {
   const config = TIME_INTERVALS[interval]
   if (!config) {
     throw new Error(`Unsupported time interval: ${interval}`)
@@ -78,7 +88,7 @@ export const getIntervalsByCategory = () => {
   const categories: Record<string, TimeInterval[]> = {
     'Short-term': [],
     'Medium-term': [],
-    'Long-term': []
+    'Long-term': [],
   }
 
   Object.entries(TIME_INTERVALS).forEach(([interval, config]) => {

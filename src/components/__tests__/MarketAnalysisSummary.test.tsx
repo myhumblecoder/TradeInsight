@@ -8,7 +8,7 @@ const mockUsePriceAnalysis = vi.fn()
 
 // Mock the hooks and utilities
 vi.mock('../../hooks/usePriceAnalysis', () => ({
-  usePriceAnalysis: () => mockUsePriceAnalysis()
+  usePriceAnalysis: () => mockUsePriceAnalysis(),
 }))
 
 vi.mock('../../utils/indicators', () => ({
@@ -18,29 +18,41 @@ vi.mock('../../utils/indicators', () => ({
       macd: 'bullish',
       bollinger: 'normal',
       stochRSI: 'neutral',
-      overall: 'bullish'
-    }
-  }))
+      overall: 'bullish',
+    },
+  })),
 }))
 
 describe('MarketAnalysisSummary', () => {
   const mockOHLCVData: OHLCV[] = [
-    { timestamp: 1000, open: 100, high: 105, low: 95, close: 102, volume: 1000 }
+    {
+      timestamp: 1000,
+      open: 100,
+      high: 105,
+      low: 95,
+      close: 102,
+      volume: 1000,
+    },
   ]
 
   beforeEach(() => {
     // Reset and set default mock behavior
     vi.clearAllMocks()
-    
+
     // Default mock return value
     mockUsePriceAnalysis.mockReturnValue({
       analysis: {
         entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
         stopLoss: { price: 95, percentage: 5 },
-        profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: 2 },
-        confidence: 0.75
+        profitTargets: {
+          target1: 110,
+          target2: 115,
+          target3: 120,
+          riskRewardRatio: 2,
+        },
+        confidence: 0.75,
       },
-      isAnalyzing: false
+      isAnalyzing: false,
     })
   })
 
@@ -67,7 +79,7 @@ describe('MarketAnalysisSummary', () => {
     // Override mock to return analyzing state
     mockUsePriceAnalysis.mockReturnValue({
       analysis: null,
-      isAnalyzing: true
+      isAnalyzing: true,
     })
 
     render(
@@ -115,10 +127,15 @@ describe('MarketAnalysisSummary', () => {
       analysis: {
         entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
         stopLoss: { price: 95, percentage: 5 },
-        profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: NaN },
-        confidence: 0.75
+        profitTargets: {
+          target1: 110,
+          target2: 115,
+          target3: 120,
+          riskRewardRatio: NaN,
+        },
+        confidence: 0.75,
       },
-      isAnalyzing: false
+      isAnalyzing: false,
     })
 
     render(
@@ -141,10 +158,15 @@ describe('MarketAnalysisSummary', () => {
       analysis: {
         entryPoints: { conservative: 105, moderate: 103, aggressive: 101 },
         stopLoss: { price: 95, percentage: 5 },
-        profitTargets: { target1: 110, target2: 115, target3: 120, riskRewardRatio: Infinity },
-        confidence: 0.75
+        profitTargets: {
+          target1: 110,
+          target2: 115,
+          target3: 120,
+          riskRewardRatio: Infinity,
+        },
+        confidence: 0.75,
       },
-      isAnalyzing: false
+      isAnalyzing: false,
     })
 
     render(
@@ -173,9 +195,11 @@ describe('MarketAnalysisSummary', () => {
 
     // Should show the sentiment section
     expect(screen.getByText('Overall Sentiment')).toBeInTheDocument()
-    
+
     // The sentiment section should NOT contain confidence percentage
-    const sentimentSection = screen.getByText('Overall Sentiment').closest('div')
+    const sentimentSection = screen
+      .getByText('Overall Sentiment')
+      .closest('div')
     expect(sentimentSection).not.toHaveTextContent('% confidence')
   })
 
@@ -191,7 +215,7 @@ describe('MarketAnalysisSummary', () => {
 
     // Should show Analysis Confidence as separate section
     expect(screen.getByText('Analysis Confidence:')).toBeInTheDocument()
-    
+
     // Should show a percentage in the confidence section
     expect(screen.getByText(/\d+%/)).toBeInTheDocument()
   })

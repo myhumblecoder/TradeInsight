@@ -1,13 +1,13 @@
 import { RSI, EMA, MACD } from 'technicalindicators'
-import { 
-  calculateBollingerBands, 
-  calculateStochasticRSI, 
+import {
+  calculateBollingerBands,
+  calculateStochasticRSI,
   calculateVolumeProfile,
   calculateFibonacciExtensions,
   type BollingerBands,
   type StochasticRSI,
   type VolumeProfile,
-  type FibonacciExtensions
+  type FibonacciExtensions,
 } from './advancedIndicators'
 import { type OHLCV } from './priceAnalysis'
 
@@ -17,7 +17,10 @@ export const calculateRSI = (prices: number[], period: number = 14): number => {
   return result[result.length - 1] || 0
 }
 
-export const calculateEMA = (prices: number[], period: number = 12): number[] => {
+export const calculateEMA = (
+  prices: number[],
+  period: number = 12
+): number[] => {
   const ema = new EMA({ period, values: prices })
   return ema.getResult()
 }
@@ -44,7 +47,7 @@ export {
   type BollingerBands,
   type StochasticRSI,
   type VolumeProfile,
-  type FibonacciExtensions
+  type FibonacciExtensions,
 }
 
 export { type OHLCV }
@@ -74,22 +77,40 @@ export function analyzeIndicators(data: OHLCV[]): IndicatorAnalysis {
       ema12: null,
       ema26: null,
       macd: null,
-      bollingerBands: { upper: 0, middle: 0, lower: 0, bandwidth: 0, percentB: 0 },
-      stochasticRSI: { k: 50, d: 50, signal: 'neutral', overbought: false, oversold: false },
-      volumeProfile: { levels: [], poc: 0, valueAreaHigh: 0, valueAreaLow: 0, totalVolume: 0 },
+      bollingerBands: {
+        upper: 0,
+        middle: 0,
+        lower: 0,
+        bandwidth: 0,
+        percentB: 0,
+      },
+      stochasticRSI: {
+        k: 50,
+        d: 50,
+        signal: 'neutral',
+        overbought: false,
+        oversold: false,
+      },
+      volumeProfile: {
+        levels: [],
+        poc: 0,
+        valueAreaHigh: 0,
+        valueAreaLow: 0,
+        totalVolume: 0,
+      },
       signals: {
         rsi: 'neutral',
         macd: 'neutral',
         bollinger: 'normal',
         stochRSI: 'neutral',
-        overall: 'neutral'
-      }
+        overall: 'neutral',
+      },
     }
     return emptyAnalysis
   }
 
-  const prices = data.map(candle => candle.close)
-  
+  const prices = data.map((candle) => candle.close)
+
   // Calculate basic indicators
   const rsi = calculateRSI(prices)
   const ema12Array = calculateEMA(prices, 12)
@@ -97,14 +118,20 @@ export function analyzeIndicators(data: OHLCV[]): IndicatorAnalysis {
   const ema12 = ema12Array.length > 0 ? ema12Array[ema12Array.length - 1] : null
   const ema26 = ema26Array.length > 0 ? ema26Array[ema26Array.length - 1] : null
   const macd = calculateMACD(prices)
-  
+
   // Calculate advanced indicators with error handling
   let bollingerBands: BollingerBands
   try {
     bollingerBands = calculateBollingerBands(data)
   } catch (error) {
     console.warn('Error calculating Bollinger Bands:', error)
-    bollingerBands = { upper: 0, middle: 0, lower: 0, bandwidth: 0, percentB: 0 }
+    bollingerBands = {
+      upper: 0,
+      middle: 0,
+      lower: 0,
+      bandwidth: 0,
+      percentB: 0,
+    }
   }
 
   let stochasticRSI: StochasticRSI
@@ -112,7 +139,13 @@ export function analyzeIndicators(data: OHLCV[]): IndicatorAnalysis {
     stochasticRSI = calculateStochasticRSI(data)
   } catch (error) {
     console.warn('Error calculating Stochastic RSI:', error)
-    stochasticRSI = { k: 50, d: 50, signal: 'neutral', overbought: false, oversold: false }
+    stochasticRSI = {
+      k: 50,
+      d: 50,
+      signal: 'neutral',
+      overbought: false,
+      oversold: false,
+    }
   }
 
   let volumeProfile: VolumeProfile
@@ -120,29 +153,47 @@ export function analyzeIndicators(data: OHLCV[]): IndicatorAnalysis {
     volumeProfile = calculateVolumeProfile(data)
   } catch (error) {
     console.warn('Error calculating Volume Profile:', error)
-    volumeProfile = { levels: [], poc: 0, valueAreaHigh: 0, valueAreaLow: 0, totalVolume: 0 }
+    volumeProfile = {
+      levels: [],
+      poc: 0,
+      valueAreaHigh: 0,
+      valueAreaLow: 0,
+      totalVolume: 0,
+    }
   }
-  
+
   // Generate signals
   const rsiSignal = rsi > 70 ? 'overbought' : rsi < 30 ? 'oversold' : 'neutral'
-  
-  const macdSignal = macd && macd.MACD && macd.signal ? 
-    (macd.MACD > macd.signal ? 'bullish' : 'bearish') : 'neutral'
-  
-  const bollingerSignal = bollingerBands.bandwidth < 0.1 ? 'squeeze' : 
-                         bollingerBands.bandwidth > 0.2 ? 'expansion' : 'normal'
-  
+
+  const macdSignal =
+    macd && macd.MACD && macd.signal
+      ? macd.MACD > macd.signal
+        ? 'bullish'
+        : 'bearish'
+      : 'neutral'
+
+  const bollingerSignal =
+    bollingerBands.bandwidth < 0.1
+      ? 'squeeze'
+      : bollingerBands.bandwidth > 0.2
+        ? 'expansion'
+        : 'normal'
+
   const stochRSISignal = stochasticRSI.signal
-  
+
   // Overall signal - simple majority vote
-  const signals = [rsiSignal, macdSignal, stochRSISignal].filter(s => s !== 'neutral')
-  const bullishCount = signals.filter(s => s === 'bullish').length
-  const bearishCount = signals.filter(s => s === 'bearish' || s === 'overbought').length
-  
+  const signals = [rsiSignal, macdSignal, stochRSISignal].filter(
+    (s) => s !== 'neutral'
+  )
+  const bullishCount = signals.filter((s) => s === 'bullish').length
+  const bearishCount = signals.filter(
+    (s) => s === 'bearish' || s === 'overbought'
+  ).length
+
   let overallSignal: 'bullish' | 'bearish' | 'neutral' = 'neutral'
   if (bullishCount > bearishCount) overallSignal = 'bullish'
   else if (bearishCount > bullishCount) overallSignal = 'bearish'
-  
+
   return {
     rsi,
     ema12,
@@ -156,7 +207,7 @@ export function analyzeIndicators(data: OHLCV[]): IndicatorAnalysis {
       macd: macdSignal,
       bollinger: bollingerSignal,
       stochRSI: stochRSISignal,
-      overall: overallSignal
-    }
+      overall: overallSignal,
+    },
   }
 }

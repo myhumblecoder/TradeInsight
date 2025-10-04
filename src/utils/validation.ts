@@ -4,22 +4,32 @@ import { z } from 'zod'
 // Base subscription schema with common fields
 export const BaseStripeSubscriptionSchema = z.object({
   id: z.string(),
-  metadata: z.record(z.string()).optional()
+  metadata: z.record(z.string()).optional(),
 })
 
 // Full subscription schema for active/updated subscriptions
 export const StripeSubscriptionSchema = BaseStripeSubscriptionSchema.extend({
-  status: z.enum(['active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'trialing', 'unpaid']),
+  status: z.enum([
+    'active',
+    'canceled',
+    'incomplete',
+    'incomplete_expired',
+    'past_due',
+    'trialing',
+    'unpaid',
+  ]),
   current_period_start: z.number(),
   current_period_end: z.number(),
   cancel_at_period_end: z.boolean(),
   items: z.object({
-    data: z.array(z.object({
-      price: z.object({
-        id: z.string()
+    data: z.array(
+      z.object({
+        price: z.object({
+          id: z.string(),
+        }),
       })
-    }))
-  })
+    ),
+  }),
 })
 
 // More flexible webhook event schema that handles different event types
@@ -29,9 +39,9 @@ export const StripeWebhookEventSchema = z.object({
     object: z.union([
       StripeSubscriptionSchema,
       BaseStripeSubscriptionSchema,
-      z.object({}).passthrough() // Allow any object for unhandled event types
-    ])
-  })
+      z.object({}).passthrough(), // Allow any object for unhandled event types
+    ]),
+  }),
 })
 
 // Checkout session parameters schema
@@ -40,14 +50,14 @@ export const CheckoutSessionParamsSchema = z.object({
   userId: z.string().min(1, 'User ID is required'),
   userEmail: z.string().email('Valid email is required'),
   successUrl: z.string().url().optional(),
-  cancelUrl: z.string().url().optional()
+  cancelUrl: z.string().url().optional(),
 })
 
 // Article data validation schemas
 export const MACDDataSchema = z.object({
   MACD: z.number(),
   signal: z.number(),
-  histogram: z.number()
+  histogram: z.number(),
 })
 
 export const ArticleDataSchema = z.object({
@@ -58,90 +68,108 @@ export const ArticleDataSchema = z.object({
   macd: MACDDataSchema.nullable(),
   cryptoName: z.string().optional(),
   timeframe: z.string().optional(),
-  priceAnalysis: z.object({
-    entryPoints: z.object({
-      conservative: z.number(),
-      moderate: z.number(),
-      aggressive: z.number(),
-      methods: z.object({
-        conservative: z.string(),
-        moderate: z.string(),
-        aggressive: z.string()
-      }).optional()
-    }),
-    stopLoss: z.object({
-      price: z.number(),
-      percentage: z.number(),
-      method: z.enum(['percentage', 'atr', 'support']),
-      explanation: z.string()
-    }),
-    profitTargets: z.object({
-      target1: z.number(),
-      target2: z.number(),
-      target3: z.number(),
-      riskRewardRatio: z.number(),
-      methods: z.object({
-        target1: z.string(),
-        target2: z.string(),
-        target3: z.string()
-      }).optional()
-    }),
-    timeHorizon: z.string().optional(),
-    riskAssessment: z.string().optional(),
-    confidence: z.number()
-  }).nullable().optional()
+  priceAnalysis: z
+    .object({
+      entryPoints: z.object({
+        conservative: z.number(),
+        moderate: z.number(),
+        aggressive: z.number(),
+        methods: z
+          .object({
+            conservative: z.string(),
+            moderate: z.string(),
+            aggressive: z.string(),
+          })
+          .optional(),
+      }),
+      stopLoss: z.object({
+        price: z.number(),
+        percentage: z.number(),
+        method: z.enum(['percentage', 'atr', 'support']),
+        explanation: z.string(),
+      }),
+      profitTargets: z.object({
+        target1: z.number(),
+        target2: z.number(),
+        target3: z.number(),
+        riskRewardRatio: z.number(),
+        methods: z
+          .object({
+            target1: z.string(),
+            target2: z.string(),
+            target3: z.string(),
+          })
+          .optional(),
+      }),
+      timeHorizon: z.string().optional(),
+      riskAssessment: z.string().optional(),
+      confidence: z.number(),
+    })
+    .nullable()
+    .optional(),
 })
 
 // LLM response validation
 export const LLMResponseSchema = z.object({
   text: z.string().min(1, 'Response text cannot be empty'),
-  provider: z.enum(['openai', 'ollama', 'template'])
+  provider: z.enum(['openai', 'ollama', 'template']),
 })
 
 // Ollama API response schema
 export const OllamaResponseSchema = z.object({
   response: z.string(),
   done: z.boolean().optional(),
-  model: z.string().optional()
+  model: z.string().optional(),
 })
 
 // OpenAI response schema
 export const OpenAIResponseSchema = z.object({
-  choices: z.array(z.object({
-    message: z.object({
-      content: z.string().nullable()
-    }).optional()
-  }))
+  choices: z.array(
+    z.object({
+      message: z
+        .object({
+          content: z.string().nullable(),
+        })
+        .optional(),
+    })
+  ),
 })
 
 // Type guards using Zod
-export const isValidStripeWebhookEvent = (data: unknown): data is z.infer<typeof StripeWebhookEventSchema> => {
+export const isValidStripeWebhookEvent = (
+  data: unknown
+): data is z.infer<typeof StripeWebhookEventSchema> => {
   return StripeWebhookEventSchema.safeParse(data).success
 }
 
-export const isValidCheckoutSessionParams = (data: unknown): data is z.infer<typeof CheckoutSessionParamsSchema> => {
+export const isValidCheckoutSessionParams = (
+  data: unknown
+): data is z.infer<typeof CheckoutSessionParamsSchema> => {
   return CheckoutSessionParamsSchema.safeParse(data).success
 }
 
-export const isValidArticleData = (data: unknown): data is z.infer<typeof ArticleDataSchema> => {
+export const isValidArticleData = (
+  data: unknown
+): data is z.infer<typeof ArticleDataSchema> => {
   return ArticleDataSchema.safeParse(data).success
 }
 
 // Validation error handling
 export class ValidationError extends Error {
   public readonly errors: z.ZodError['errors']
-  
-  constructor(
-    message: string,
-    errors: z.ZodError['errors']
-  ) {
+
+  constructor(message: string, errors: z.ZodError['errors']) {
     super(message)
     this.name = 'ValidationError'
     this.errors = errors
   }
 }
 
-export function validateOrThrow<T>(schema: z.ZodSchema<T>, data: unknown, context: string): T {
+export function validateOrThrow<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown,
+  context: string
+): T {
   const result = schema.safeParse(data)
   if (!result.success) {
     throw new ValidationError(
@@ -154,7 +182,9 @@ export function validateOrThrow<T>(schema: z.ZodSchema<T>, data: unknown, contex
 
 // Export types for convenience
 export type StripeSubscription = z.infer<typeof StripeSubscriptionSchema>
-export type BaseStripeSubscription = z.infer<typeof BaseStripeSubscriptionSchema>
+export type BaseStripeSubscription = z.infer<
+  typeof BaseStripeSubscriptionSchema
+>
 export type StripeWebhookEvent = z.infer<typeof StripeWebhookEventSchema>
 export type CheckoutSessionParams = z.infer<typeof CheckoutSessionParamsSchema>
 export type ArticleData = z.infer<typeof ArticleDataSchema>

@@ -24,6 +24,14 @@ export interface AuthContextType {
   login: () => Promise<void>
   logout: () => Promise<void>
   getAccessToken: () => Promise<string>
+  // Optional Firebase-specific methods — provided when Firebase provider is active.
+  signInWithGoogle?: () => Promise<void>
+  signInWithEmail?: (email: string, password: string) => Promise<void>
+  signUpWithEmail?: (
+    email: string,
+    password: string,
+    displayName?: string
+  ) => Promise<void>
 }
 
 export interface PaywallFeature {

@@ -1,5 +1,13 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
-import { describe, it, expect, vi, type MockedFunction, beforeEach, afterEach } from 'vitest'
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  type MockedFunction,
+  beforeEach,
+  afterEach,
+} from 'vitest'
 import { useCoinbaseData } from '../useCoinbaseData'
 
 // Mock fetch
@@ -46,10 +54,13 @@ describe('useCoinbaseData', () => {
       vi.advanceTimersByTime(1500)
     })
 
-    await waitFor(() => {
-      expect(result.current.price).toBe(50000)
-      expect(result.current.candles).toEqual(expectedCandles)
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(result.current.price).toBe(50000)
+        expect(result.current.candles).toEqual(expectedCandles)
+      },
+      { timeout: 3000 }
+    )
   })
 
   it('should handle API errors', async () => {
@@ -65,8 +76,11 @@ describe('useCoinbaseData', () => {
       vi.advanceTimersByTime(1500)
     })
 
-    await waitFor(() => {
-      expect(result.current.error).toBe('Failed to fetch candles data')
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(result.current.error).toBe('Failed to fetch candles data')
+      },
+      { timeout: 3000 }
+    )
   })
 })

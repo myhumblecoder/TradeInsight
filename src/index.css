@@ -33,7 +33,9 @@ body {
   min-height: 100vh;
   background-color: var(--bg-primary, #f3f4f6);
   color: var(--text-primary, #111827);
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 /* Light mode fallback */
