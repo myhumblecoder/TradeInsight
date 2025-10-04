@@ -5,7 +5,6 @@ import { Overview } from '../Overview'
 import { useTopCryptos } from '../../hooks/useTopCryptos'
 import { useAuth } from '../../hooks/useAuth'
 import { ThemeProvider } from '../../contexts/ThemeContext'
-import { MockAuthProvider } from '../../test/utils/mockAuthProvider'
 
 vi.mock('../../hooks/useTopCryptos')
 vi.mock('../../hooks/useAuth')
